@@ -1,0 +1,199 @@
+﻿<HelpMenuCommands xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <CommandHelpEntry>
+    <HelpMenuCommandEntry>
+      <CommandName>help</CommandName>
+      <CommandDescription>Displays the help menu</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d help</CommandUsage>
+	  <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>balance</CommandName>
+      <CommandDescription>Displays your current balance</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d balance</CommandUsage>
+	  <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>daily</CommandName>
+      <CommandDescription>Redeems the daily credit gift (24 hours)</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d daily</CommandUsage>
+	  <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>debt</CommandName>
+      <CommandDescription>Displays your debt, better pay it off!</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d debt</CommandUsage>
+	  <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>borrow</CommandName>
+      <CommandDescription>Borrows money from the bank, but remember, it's a loan!</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d borrow [amount] // .d borrow 10</CommandUsage>
+	  <CommandUsageDefinition>[amount] | Amount you want to borrow</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>return</CommandName>
+      <CommandDescription>Returns borrowed money to the bank</CommandDescription>
+      <CommandUsage>.d return [amount] // .d return 200</CommandUsage>
+	  <CommandUsageDefinition>[amount] | Amount you want to return</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>moneyTransfer</CommandName>
+      <CommandDescription>Transfers money to the mentioned user</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d moneyTransfer [@user] [amount] // .d moneyTransfer &lt;@387691564098650112&gt; 150</CommandUsage>
+	  <CommandUsageDefinition>[@user] | A @mention of the user you want to transfer money to &#13;&#10; [amount] | The amount of money you want to transfer to the mentioned user</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>bankruptcy</CommandName>
+      <CommandDescription>It's all over now...</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d bankruptcy</CommandUsage>
+	  <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>game slot</CommandName>
+      <CommandDescription>Engage in the act of wasting your life earnings away in gambling</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d game slot [amount] // .d game slot 100</CommandUsage>
+	  <CommandUsageDefinition>[amount] | Amount to gamble</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>stock portfolio</CommandName>
+      <CommandDescription>Displays stocks currently owned by you</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d stock portfolio</CommandUsage>
+	  <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>stock market</CommandName>
+      <CommandDescription>Displays the stock market along with current stock prices</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d stock market</CommandUsage>
+	  <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>stock buy</CommandName>
+      <CommandDescription>Buys selected stock at stock market price</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d stock buy [stockTicker] [amount] // .d stock buy EA 10</CommandUsage>
+	  <CommandUsageDefinition>[stockTicker] | The symbol of the stock, such as EA, AAPL &#13;&#10; [amount] | Amount of specified stock to buy</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>stock sell</CommandName>
+      <CommandDescription>Sells selected stock at stock market price</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d stock sell [stockTicker] [amount] // .d stock sell EA 5</CommandUsage>
+	  <CommandUsageDefinition>[stockTicker] | The symbol of the stock, such as EA, AAPL &#13;&#10; [amount] | Amount of specified stock to sell</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>cs open</CommandName>
+      <CommandDescription>Opens a CS:GO case, maybe you will get a knife?</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d cs open</CommandUsage>
+	  <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+  <HelpMenuCommandEntry>
+      <CommandName>cs drop</CommandName>
+      <CommandDescription>Get an item drop, lesser in quality compared to a case open</CommandDescription>
+      <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d cs drop</CommandUsage>
+      <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>cs case</CommandName>
+      <CommandDescription>Opens the case selection menu</CommandDescription>
+      <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d cs case</CommandUsage>
+      <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>cs inventory</CommandName>
+      <CommandDescription>Displays your current inventory of CS:GO skins</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d cs inventory</CommandUsage>
+	  <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>cs market</CommandName>
+      <CommandDescription>Displays current market of CS:GO skins along with their prices</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d cs market [Optional: filterText] // .d cs market</CommandUsage>
+	  <CommandUsageDefinition>[Optional: filterText] | Optional, Only show items containing filter text</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>cs buy</CommandName>
+      <CommandDescription>Buys specified item from CS:GO skin market</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d cs buy [skinName] // .d cs buy P250 | Sand Dune (Well-Worn)</CommandUsage>
+	  <CommandUsageDefinition>[skinName] | Name of skin you want to buy</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>cs sell</CommandName>
+      <CommandDescription>Sells selected CS:GO skins from your inventory, to sell all skins, use `*` for skin name</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d cs sell [skinName] //.d cs sell AUG | Aristocrat (Field-Tested)</CommandUsage>
+	  <CommandUsageDefinition>[skinName] | Name of skin to sell, **use `*` to sell all skins**</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+  <HelpMenuCommandEntry>
+      <CommandName>cs sellall</CommandName>
+      <CommandDescription>Sells ALL selected CS:GO skins from your inventory</CommandDescription>
+      <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d cs sell [skinName] //.d cs sellall (Field-Tested)</CommandUsage>
+      <CommandUsageDefinition>[skinName] | Words item must contain to be sold</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>cs info</CommandName>
+      <CommandDescription>Displays information about the selected item</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d cs info [skinName] //.d cs info AUG | Aristocrat (Field-Tested)</CommandUsage>
+	  <CommandUsageDefinition>[skinName] | Name of skin to get information on</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>role list</CommandName>
+      <CommandDescription>Lists the available roles you can assign yourself</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d role list</CommandUsage>
+	  <CommandUsageDefinition></CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>role add</CommandName>
+      <CommandDescription>Adds the specified role to yourself</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d role add [roleName]</CommandUsage>
+	  <CommandUsageDefinition>[roleName] | Name of role from .d role list</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>role remove</CommandName>
+      <CommandDescription>Removes the specified role to yourself</CommandDescription>
+	  <CommandRequiredPermissions></CommandRequiredPermissions>
+      <CommandUsage>.d role remove [roleName]</CommandUsage>
+	  <CommandUsageDefinition>[roleName] | Name of role from .d role list</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>elevated clean</CommandName>
+      <CommandDescription>Deletes specified number of messages from current channel</CommandDescription>
+	  <CommandRequiredPermissions>Administrator</CommandRequiredPermissions>
+      <CommandUsage>.d elevated clean [deleteAmount] [Optional: @deleteAuthor]</CommandUsage>
+	  <CommandUsageDefinition>[deleteAmount] | Amount of messages to delete [@deleteAuthor] | @mention of user to delete specified number of messages from</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>elevated role add</CommandName>
+      <CommandDescription>Adds the specified role to guild list</CommandDescription>
+	  <CommandRequiredPermissions>Administrator</CommandRequiredPermissions>
+      <CommandUsage>.d elevated role add [@roleMention] [roleName]</CommandUsage>
+	  <CommandUsageDefinition>[@roleMention] | A @mention of the role &#13;&#10; [roleName] | Name of role from .d role list</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+	<HelpMenuCommandEntry>
+      <CommandName>elevated role remove</CommandName>
+      <CommandDescription>Removes the specified role from guild list</CommandDescription>
+	  <CommandRequiredPermissions>Administrator</CommandRequiredPermissions>
+      <CommandUsage>.d elevated role remove [@roleMention] [roleName]</CommandUsage>
+	  <CommandUsageDefinition>[@roleMention] | A @mention of the role &#13;&#10; [roleName] | Name of role from .d role list</CommandUsageDefinition>
+    </HelpMenuCommandEntry>
+  </CommandHelpEntry>
+</HelpMenuCommands>

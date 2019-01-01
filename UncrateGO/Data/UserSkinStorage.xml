@@ -1,0 +1,23 @@
+﻿<UserSkinStorageRootobject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SkinAmount>0</SkinAmount>
+  <UserSkinEntries>
+    <UserSkinEntry>
+      <OwnerID>257225194391732237</OwnerID>
+      <ClassId>310808218</ClassId>
+      <UnboxDate>2018-12-30T22:04:06.8183316Z</UnboxDate>
+      <MarketName>Galil AR | Shattered (Factory New)</MarketName>
+    </UserSkinEntry>
+    <UserSkinEntry>
+      <OwnerID>285266023475838976</OwnerID>
+      <ClassId>2949548977</ClassId>
+      <UnboxDate>2018-12-31T00:37:38.2777496Z</UnboxDate>
+      <MarketName>Dual Berettas | Shred (Field-Tested)</MarketName>
+    </UserSkinEntry>
+    <UserSkinEntry>
+      <OwnerID>285266023475838976</OwnerID>
+      <ClassId>2961601111</ClassId>
+      <UnboxDate>2018-12-31T00:47:58.6778161Z</UnboxDate>
+      <MarketName>Glock-18 | Warhawk (Factory New)</MarketName>
+    </UserSkinEntry>
+  </UserSkinEntries>
+</UserSkinStorageRootobject>
