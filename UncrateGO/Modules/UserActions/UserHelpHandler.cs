@@ -21,7 +21,7 @@ namespace UncrateGo.Modules.UserActions
                 .WithFooter(footer =>
                 {
                     footer
-                        .WithText($"To check command usage, type {botCommandPrefix} help <command> // Sent by " + context.Message.Author.ToString())
+                        .WithText($"To check command usage, type {botCommandPrefix}help <command> // Sent by " + context.Message.Author.ToString())
                         .WithIconUrl(context.Message.Author.GetAvatarUrl());
                 })
                 .WithAuthor(author =>
@@ -31,7 +31,7 @@ namespace UncrateGo.Modules.UserActions
                         .WithIconUrl(context.Client.CurrentUser.GetAvatarUrl());
                 })
                 .AddField("Currency Commands", "`balance` `moneyTransfer`")
-                .AddField("Case Commands", "`Prefix: case` | `open` `drop` `case` `inventory` `market` `buy` `sell` `info` ")
+                .AddField("Case Commands", "`open` `drop` `select` `inventory` `market` `buy` `sell` `info` ")
                 .AddField("Settings Commands", "`prefix`");
 
             var embed = embedBuilder.Build();

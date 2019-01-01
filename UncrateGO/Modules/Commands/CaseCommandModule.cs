@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 namespace UncrateGo.Modules.Commands
 {
     [UserStorageCheckerPrecondition]
-    [Group("cs")]
-    [Alias("c")]
     public class CaseCommandModule : InteractiveBase<SocketCommandContext>
     {
         [Ratelimit(1, 4, Measure.Seconds)]
@@ -25,7 +23,7 @@ namespace UncrateGo.Modules.Commands
         }
 
         [Ratelimit(1, 5, Measure.Seconds)]
-        [Command("case", RunMode = RunMode.Async)]
+        [Command("select", RunMode = RunMode.Async)]
         public async Task SelectOpenCaseAsync()
         {
             var pager = CsgoCaseSelectionHandler.ShowPossibleCases(Context);

@@ -57,30 +57,6 @@ namespace UncrateGo.Core
             Console.BackgroundColor = ConsoleColor.DarkGray;
             Console.WriteLine(msg.ToString());
 
-            string logLocation = FileAccessManager.GetFileLocation("BotOutputLog.txt");
-            try
-            {
-                using (System.IO.StreamWriter file =
-                new System.IO.StreamWriter(logLocation, true))
-                {
-                    file.WriteLine($"{DateTime.Now,-19} [    Log] {chnl.Guild.Name} || {msg.Channel} - {msg.Author}: {msg.ToString()}");
-                }
-            }
-            catch (Exception)
-            {
-                try
-                {
-                    using (System.IO.StreamWriter file =
-                    new System.IO.StreamWriter(logLocation, true))
-                    {
-                        file.WriteLine($"{DateTime.Now,-19} [    Log] Direct Message >| {msg.Channel} - {msg.Author}: {msg.ToString()}");
-                    }
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("Unable to write to log file!");
-                }
-            }
             Console.BackgroundColor = cc;
             return Task.CompletedTask;
         }

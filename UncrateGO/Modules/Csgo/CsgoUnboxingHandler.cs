@@ -24,30 +24,22 @@ namespace UncrateGo.Modules.Csgo
         /// <returns></returns>
         public static async Task OpenCase(SocketCommandContext context)
         {
-            //Test if user has enough credits
-            if (UserCreditsHandler.AddCredits(context, -300) == true)
-            {
-                var result = ItemDropProcessing.CalculateItemCaseRarity();
+            var result = ItemDropProcessing.CalculateItemCaseRarity();
 
 
-                //Get item
-                var skinItem = ItemDropProcessing.GetItem(result, CsgoDataHandler.rootWeaponSkin, context, false);
+            //Get item
+            var skinItem = ItemDropProcessing.GetItem(result, CsgoDataHandler.rootWeaponSkin, context, false);
 
 
-                //Add item to user file inventory
-                var userSkin = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
+            //Add item to user file inventory
+            var userSkin = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
 
-                userSkin.UserSkinEntries.Add(new UserSkinEntry { ClassId = skinItem.Classid, OwnerID = context.Message.Author.Id, UnboxDate = DateTime.UtcNow, MarketName = skinItem.Name });
+            userSkin.UserSkinEntries.Add(new UserSkinEntry { ClassId = skinItem.Classid, OwnerID = context.Message.Author.Id, UnboxDate = DateTime.UtcNow, MarketName = skinItem.Name });
 
-                XmlManager.ToXmlFile(userSkin, FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
+            XmlManager.ToXmlFile(userSkin, FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
 
-                //Send item into
-                await SendOpenedItemInfo(context, skinItem, Convert.ToInt64(skinItem.Price.AllTime.Average), UnboxType.CaseUnboxing);
-            }
-            else
-            {
-                await context.Channel.SendMessageAsync("**" + context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5) + ", **You do not have enough credits to unbox a case");
-            }
+            //Send item into
+            await SendOpenedItemInfo(context, skinItem, Convert.ToInt64(skinItem.Price.AllTime.Average), UnboxType.CaseUnboxing);
         }
 
         /// <summary>

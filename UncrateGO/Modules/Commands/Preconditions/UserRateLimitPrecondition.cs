@@ -117,20 +117,8 @@ namespace UncrateGo.Modules.Commands.Preconditions
                 ownerId
             };
 
-            FileAccessManager.ReadFromFileToList(FileAccessManager.GetFileLocation("UserWhitelist.txt")).ForEach(u => whitelistedUsers.Add(ulong.Parse(u)));
-
-            //Test if user is whitelisted
-            bool userIsWhiteListed = false;
-            foreach (var user in whitelistedUsers)
-            {
-                if (context.Message.Author.Id == user)
-                {
-                    userIsWhiteListed = true;
-                }
-            }
-
             //Timeout messages
-            if (timeout.TimesInvoked <= _invokeLimit || userIsWhiteListed == true)
+            if (timeout.TimesInvoked <= _invokeLimit)
             {
                 _invokeTracker[key] = timeout;
                 return await Task.FromResult(PreconditionResult.FromSuccess());
@@ -143,14 +131,20 @@ namespace UncrateGo.Modules.Commands.Preconditions
                     //Only send this message once
                     _invokeTracker[key].ReceivedError = true;
 
-                    await context.Channel.SendMessageAsync(context.Message.Author.Mention + " Chill, calm down. Take a drink, have a walk, come back **(You are in cooldown)**");
+                    //Stores the warning message to delete later on
+                    SendWarningMessageAsync(context);
+
                 }
-                
-              
+
                 return await Task.FromResult(PreconditionResult.FromError("User is in cooldown"));
             }
+        }
 
-
+        private static async Task SendWarningMessageAsync(ICommandContext context)
+        {
+            var d = await context.Channel.SendMessageAsync(context.Message.Author.Mention + " Chill, calm down. Take a drink, have a walk, come back **(You are in cooldown)**");
+            await Task.Delay(5000);
+            await d.DeleteAsync();
         }
     }
 
