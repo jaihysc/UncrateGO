@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 
 namespace UncrateGo.Modules.Commands
 {
+    [Ratelimit(1, 4, Measure.Seconds)]
     [UserStorageCheckerPrecondition]
     public class CaseCommandModule : InteractiveBase<SocketCommandContext>
     {
-        [Ratelimit(1, 4, Measure.Seconds)]
+
         [Command("open", RunMode = RunMode.Async)]
         [Alias("o")]
         public async Task OpenCaseAsync()
@@ -22,7 +23,7 @@ namespace UncrateGo.Modules.Commands
             await CsgoUnboxingHandler.OpenCase(Context);
         }
 
-        [Ratelimit(1, 5, Measure.Seconds)]
+
         [Command("select", RunMode = RunMode.Async)]
         public async Task SelectOpenCaseAsync()
         {
@@ -41,7 +42,7 @@ namespace UncrateGo.Modules.Commands
             await CsgoCaseSelectionHandler.SelectOpenCase(Context, response.ToString(), sentMessage);
         }
 
-        [Ratelimit(1, 4, Measure.Seconds)]
+
         [Command("drop", RunMode = RunMode.Async)]
         [Alias("d")]
         public async Task OpenDropAsync()
@@ -50,7 +51,7 @@ namespace UncrateGo.Modules.Commands
         }
 
 
-        [Ratelimit(1, 30, Measure.Seconds)]
+
         [Command("inventory", RunMode = RunMode.Async)]
         [Alias("inv", "i")]
         public async Task DisplayInventoryAsync()
@@ -68,7 +69,7 @@ namespace UncrateGo.Modules.Commands
             });
         }
 
-        [Ratelimit(3, 5, Measure.Seconds)]
+
         [Command("sell", RunMode = RunMode.Async)]
         [Alias("s")]
         public async Task SellInventoryItemAsync([Remainder]string inventoryMarketHash)
@@ -83,7 +84,7 @@ namespace UncrateGo.Modules.Commands
             }           
         }
 
-        [Ratelimit(2, 5, Measure.Seconds)]
+
         [Command("sellall", RunMode = RunMode.Async)]
         [Alias("sa")]
         public async Task SellAllSelectedInventoryItemAsync([Remainder]string inventoryMarketHash = null)
@@ -99,7 +100,7 @@ namespace UncrateGo.Modules.Commands
             }           
         }
 
-        [Ratelimit(1, 4, Measure.Seconds)]
+
         [Command("buy", RunMode = RunMode.Async)]
         [Alias("b")]
         public async Task BuyInventoryItemAsync([Remainder]string inventoryMarketHash)
@@ -107,7 +108,7 @@ namespace UncrateGo.Modules.Commands
             await CsgoTransactionHandler.BuyItemFromMarketAsync(Context, inventoryMarketHash);
         }
 
-        [Ratelimit(3, 30, Measure.Seconds)]
+
         [Command("market", RunMode = RunMode.Async)]
         [Alias("m")]
         public async Task ShowItemMarketAsync([Remainder]string filterString = null)
@@ -123,7 +124,7 @@ namespace UncrateGo.Modules.Commands
             });
         }
 
-        [Ratelimit(1, 5, Measure.Seconds)]
+
         [Command("info", RunMode = RunMode.Async)]
         public async Task ShowItemInfoAsync([Remainder]string filterString)
         {

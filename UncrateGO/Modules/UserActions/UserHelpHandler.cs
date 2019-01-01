@@ -42,7 +42,7 @@ namespace UncrateGo.Modules.UserActions
         public static async Task DisplayCommandHelpMenu(SocketCommandContext Context, string inputCommand)
         {
             //Get command help list from storage
-            var commandHelpDefinitionStorage = XmlManager.FromXmlFile<HelpMenuCommands>(FileAccessManager.GetFileLocation(@"CommandHelpDescription.xml"));
+            var commandHelpDefinitionStorage = XmlManager.FromXmlFile<HelpMenuCommands>(FileAccessManager.GetFileLocation("CommandHelpDescription.xml"));
 
             //Create a boolean to warn user that command does not exist if false
             bool commandHelpDefinitionExists = false;

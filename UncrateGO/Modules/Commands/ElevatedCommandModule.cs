@@ -13,9 +13,8 @@ using System.Threading.Tasks;
 
 namespace UncrateGo.Modules.Commands
 {
+    [Ratelimit(1, 4, Measure.Seconds)]
     [UserStorageCheckerPrecondition]
-    [UserStorageCheckerPrecondition]
-    [RequireUserPermission(GuildPermission.Administrator)]
     public class ElevatedCommandModule : ModuleBase<SocketCommandContext>
     {
         [Group("settings")]

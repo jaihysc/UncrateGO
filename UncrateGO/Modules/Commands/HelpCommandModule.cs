@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace UncrateGo.Modules.Commands
 {
-    [Ratelimit(1, 10, Measure.Seconds)]
+    [Ratelimit(1, 4, Measure.Seconds)]
     [UserStorageCheckerPrecondition]
     public class HelpCommandModule : InteractiveBase
     {
