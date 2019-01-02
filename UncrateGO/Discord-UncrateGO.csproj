@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{B76BCFCC-D8CD-49D8-907B-3BEB6F546C9A}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>UncrateGo</RootNamespace>
     <AssemblyName>UncrateGo</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>

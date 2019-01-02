@@ -55,7 +55,7 @@ namespace UncrateGo.Modules.Csgo
                 AuthorName = context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5) + " Inventory",
                 AuthorURL = context.Message.Author.GetAvatarUrl(),
 
-                Description = $"To sell items, use `{botCommandPrefix} cs sell [name]` \n To sell all items matching filter, use `{botCommandPrefix} cs sellall [name]`",
+                Description = $"To sell items, use `{botCommandPrefix}sell [name]` \n To sell all items matching filter, use `{botCommandPrefix}sellall [name]`",
 
                 DefaultFieldHeader = "You do not have any skins",
                 DefaultFieldDescription = $"Go unbox some with `{botCommandPrefix} case open`",
@@ -156,9 +156,8 @@ namespace UncrateGo.Modules.Csgo
                             //Add weapon skin
                             filteredRootWeaponSkin.Add(emote + " " + skin.Name);
 
-                            //Add tax markup for market item
+                            //Get item value
                             long weaponSkinValue = Convert.ToInt64(skin.Price.AllTime.Average);
-                            weaponSkinValue += Convert.ToInt64(weaponSkinValue * float.Parse(SettingsManager.RetrieveFromConfigFile("taxRate")));
 
                             //Add weapon skin price
                             filteredRootWeaponSkinPrice.Add(emote + " " + weaponSkinValue.ToString());
@@ -179,7 +178,7 @@ namespace UncrateGo.Modules.Csgo
                 AuthorName = "CS:GO Market",
                 AuthorURL = context.Message.Author.GetAvatarUrl(),
 
-                Description = $"Current skin market, to buy skins, use `{botCommandPrefix} cs buy [name]` \n use `{botCommandPrefix} cs market [name]` to filter skins by name \n use `{botCommandPrefix} cs info [name]` to preview skins",
+                Description = $"Current skin market, to buy skins, use `{botCommandPrefix}buy [name]` \n use `{botCommandPrefix}market [name]` to filter skins by name \n use `{botCommandPrefix}info [name]` to preview skins",
 
                 DefaultFieldHeader = "Unable to find specified weapon skin!",
                 DefaultFieldDescription = $"Broaden your search parameters and try again",
@@ -207,8 +206,6 @@ namespace UncrateGo.Modules.Csgo
                 var selectedRootWeaponSkin = rootWeaponSkin.ItemsList.Values.Where(s => s.Name == filterString).FirstOrDefault();
 
                 long weaponSkinPrice = Convert.ToInt64(selectedRootWeaponSkin.Price.AllTime.Average);
-                //Add tax markup for market item
-                weaponSkinPrice += Convert.ToInt32(weaponSkinPrice * float.Parse(SettingsManager.RetrieveFromConfigFile("taxRate")));
 
 
                 //Send embed

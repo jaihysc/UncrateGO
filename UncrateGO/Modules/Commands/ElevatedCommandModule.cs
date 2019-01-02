@@ -17,26 +17,22 @@ namespace UncrateGo.Modules.Commands
     [UserStorageCheckerPrecondition]
     public class ElevatedCommandModule : ModuleBase<SocketCommandContext>
     {
-        [Group("settings")]
-        public class Elevated : ModuleBase<SocketCommandContext>
+        [Command("prefix")]
+        public async Task ChangeGuildCommandPrefixAsync([Remainder]string input)
         {
-            [Command("prefix")]
-            public async Task ChangeGuildCommandPrefixAsync([Remainder]string input)
-            {
-                //Find guild id
-                var chnl = Context.Channel as SocketGuildChannel;
+            //Find guild id
+            var chnl = Context.Channel as SocketGuildChannel;
 
-                //Make sure invoker is owner of guild
-                if (chnl.Guild.OwnerId == Context.Message.Author.Id)
-                {
-                    GuildCommandPrefixManager.ChangeGuildCommandPrefix(Context, input);
-                    await Context.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + $", server prefix has successfully been changed to `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}`");
-                }
-                //Otherwise send error
-                else
-                {
-                    await Context.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + ", only the server owner may invoke this command");
-                }
+            //Make sure invoker is owner of guild
+            if (chnl.Guild.OwnerId == Context.Message.Author.Id)
+            {
+                GuildCommandPrefixManager.ChangeGuildCommandPrefix(Context, input);
+                await Context.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + $", server prefix has successfully been changed to `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}`");
+            }
+            //Otherwise send error
+            else
+            {
+                await Context.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + ", only the server owner may invoke this command");
             }
         }
     }

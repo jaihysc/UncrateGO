@@ -83,75 +83,13 @@ namespace UncrateGo.Modules.Finance.CurrencyManager
 
             return userStorage.UserInfo[context.Message.Author.Id].UserBankingStorage.Credit;
         }
-        /// <summary>
-        /// Returns the credits the specified user has
-        /// </summary>
-        /// <param name="userID">ID of the user to get</param>
-        /// <returns></returns>
-        public static long GetUserCredits(ulong userID)
-        {
-            var userStorage = UserDataManager.GetUserStorage();
-
-            return userStorage.UserInfo[userID].UserBankingStorage.Credit;
-        }
 
         //READ + WRITE
-        /// <summary>
-        /// Sets input amount to user balance
-        /// </summary>
-        /// <param name="context">This is the user, typically the sender</param>
-        /// <param name="setAmount">Amount to set credits balance to</param>
-        public static void SetCredits(SocketCommandContext context, long setAmount)
-        {
-            var userStorage = UserDataManager.GetUserStorage();
-
-            userStorage.UserInfo[context.Message.Author.Id].UserBankingStorage.Credit = setAmount;
-
-            //Write new credits amount 
-            UserDataManager.WriteUserStorage(userStorage);
-        }
-        /// <summary>
-        /// Sets input amount to user balance
-        /// </summary>
-        /// <param name="userId">Target user ID</param>
-        /// <param name="setAmount">Amount to set credits balance to</param>
-        public static void SetCredits(ulong userId, long setAmount)
-        {
-            var userStorage = UserDataManager.GetUserStorage();
-
-            userStorage.UserInfo[userId].UserBankingStorage.Credit = setAmount;
-
-            //Write new credits amount 
-            UserDataManager.WriteUserStorage(userStorage);
-        }
-        /// <summary>
-        /// Sets input amount to user balance
-        /// </summary>
-        /// <param name="context">Used to determine channel to send messages to if necessary</param>
-        /// <param name="guildID">Guild ID where the target user is in</param>
-        /// <param name="userID">Target user ID</param>
-        /// <param name="setAmount">Amount to set credits balance to</param>
-        public static void SetCredits(SocketCommandContext context, ulong guildID, ulong userID, long setAmount)
-        {
-            //Get user credits to list
-            var guild = context.Client.GetGuild(guildID);
-            var user = guild.GetUser(userID);
-
-            //Get user credit storage
-            var userStorage = UserDataManager.GetUserStorage();
-
-            userStorage.UserInfo[context.Message.Author.Id].UserBankingStorage.Credit = setAmount;
-
-            //Write new credits amount 
-            UserDataManager.WriteUserStorage(userStorage);
-        }
-
         /// <summary>
         /// Adds input amount to user balance
         /// </summary>
         /// <param name="context">This is the user, typically the sender</param>
         /// <param name="addAmount">Amount to add</param>
-        /// <param name="deductTaxes">Whether or not deduct taxes from the add amount, tax rate is set in FinanceConfigValues</param>
         /// <returns></returns>
         public static bool AddCredits(SocketCommandContext context, long addAmount)
         {
@@ -180,50 +118,20 @@ namespace UncrateGo.Modules.Finance.CurrencyManager
             }
         }
         /// <summary>
-        /// Adds input amount to user balance, Note: deductTaxes is not supported with this overload, use one with SocketCommandContext for that functionality
-        /// </summary>
-        /// <param name="userID">Target user's discord ID</param>
-        /// <param name="addAmount">Amount to add</param>
-        /// <returns></returns>
-        public static bool AddCredits(ulong userID, long addAmount)
-        {
-            //Get user credits
-            var userStorage = UserDataManager.GetUserStorage();
-
-            //Check if user has sufficient credits
-            if (GetUserCredits(userID) + addAmount > 0)
-            {
-                //Calculate new credits
-                long userCreditsNew = 0;
-
-                userStorage.UserInfo[userID].UserBankingStorage.Credit = userCreditsNew;
-
-                //Write new credits amount 
-                UserDataManager.WriteUserStorage(userStorage);
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        /// <summary>
         /// Adds input amount to user balance
         /// </summary>
-        /// <param name="Context">Used to determine channel to send messages to if necessary</param>
+        /// <param name="context">Used to determine channel to send messages to if necessary</param>
         /// <param name="guildID">Guild ID where the target user is in</param>
         /// <param name="userID">Target user ID</param>
         /// <param name="addAmount">Amount to add</param>
-        /// <param name="deductTaxes">Whether or not deduct taxes from the add amount, tax rate is set in FinaceConfigValues</param>
         /// <returns></returns>
-        public static bool AddCredits(SocketCommandContext Context, ulong userID, long addAmount)
+        public static bool AddCredits(SocketCommandContext context, ulong userID, long addAmount)
         {
             //Get user credits
             var userStorage = UserDataManager.GetUserStorage();
 
             //Check if user has sufficient credits
-            if (GetUserCredits(Context) + addAmount > 0)
+            if (GetUserCredits(context) + addAmount > 0)
             {
                 //Calculate new credits
                 long userCreditsNew = 0;

@@ -18,7 +18,7 @@ namespace UncrateGo.Modules.Commands
         public async Task OpenCaseAsync()
         {
             //See if user has opened a case before, if not, send a help tip
-            if (!CsgoCaseSelectionHandler.GetHasUserSelectedCase(Context)) await ReplyAndDeleteAsync($"Tip: Use `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)} cs case` to select different cases to open", timeout: TimeSpan.FromSeconds(60));
+            if (!CsgoCaseSelectionHandler.GetHasUserSelectedCase(Context)) await ReplyAndDeleteAsync($"Tip: Use `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}select` to select different cases to open", timeout: TimeSpan.FromSeconds(60));
 
             await CsgoUnboxingHandler.OpenCase(Context);
         }
@@ -120,7 +120,8 @@ namespace UncrateGo.Modules.Commands
             {
                 Jump = true,
                 Forward = true,
-                Backward = true
+                Backward = true,
+                Trash = true
             });
         }
 

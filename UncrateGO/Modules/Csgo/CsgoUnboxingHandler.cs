@@ -154,7 +154,7 @@ namespace UncrateGo.Modules.Csgo
                 AuthorName = "CS:GO Containers",
                 AuthorURL = "https://csgostash.com/img/containers/c259.png",
 
-                Description = $"Select a container by typing the appropriate number on the left\nThen use `{botCommandPrefix} cs open` to open cases",
+                Description = $"Select a container by typing the appropriate number on the left\nThen use `{botCommandPrefix}open` to open cases",
 
                 Field1Header = "Number",
                 Field2Header = "Case",
@@ -191,7 +191,7 @@ namespace UncrateGo.Modules.Csgo
             }
             catch (Exception)
             {
-                await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + ", Please input a valid number");
+                await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + ", please input a valid number");
                 return;
             }
 
@@ -207,7 +207,7 @@ namespace UncrateGo.Modules.Csgo
                 CsgoUnboxingHandler.userSelectedCase[context.Message.Author.Id] = userSelectedContainer.Name;
             }
 
-            await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", You set your case to open to **{userSelectedContainer.Name}**");
+            await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you set your case to open to **{userSelectedContainer.Name}**");
         }
 
         public static bool GetHasUserSelectedCase(SocketCommandContext context)

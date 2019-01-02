@@ -25,10 +25,6 @@ namespace UncrateGo.Modules.Csgo
                 //Get market skin cost
                 long weaponSkinValue = Convert.ToInt64(rootWeaponSkins.ItemsList.Values.Where(s => s.Name.ToLower().Contains(itemMarketHash.ToLower())).FirstOrDefault().Price.AllTime.Average);
 
-                //Add tax markup :)
-                weaponSkinValue += Convert.ToInt64(weaponSkinValue * float.Parse(SettingsManager.RetrieveFromConfigFile("taxRate")));
-
-
 
 
                 bool userSpecifiedSkinExistsInMarket = false;
