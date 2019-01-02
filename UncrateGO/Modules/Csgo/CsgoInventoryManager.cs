@@ -197,20 +197,27 @@ namespace UncrateGo.Modules.Csgo
 
         public static async Task DisplayCsgoItemStatistics(SocketCommandContext Context, string filterString)
         {
-            //Get skin data
-            var rootWeaponSkin = CsgoDataHandler.GetRootWeaponSkin();
+            var skinItem = CsgoDataHandler.rootWeaponSkin.ItemsList.Values.Where(c => c.Name.ToLower().Contains(filterString.ToLower())).FirstOrDefault();
 
-            try
+            //Check if the skin exists
+            if (skinItem != null)
             {
-                //Find item equal to filter string
-                var selectedRootWeaponSkin = rootWeaponSkin.ItemsList.Values.Where(s => s.Name == filterString).FirstOrDefault();
+                //Get all collections skin / item is in
+                string skinCaseCollections = "\u200b";
 
-                long weaponSkinPrice = Convert.ToInt64(selectedRootWeaponSkin.Price.AllTime.Average);
+                //Do not display collection info for knives as they have a massive list of interchangeable cases
+                if (skinItem.WeaponType != WeaponType.Knife)
+                {
+                    if (skinItem.Cases != null) skinCaseCollections = string.Join("\n", skinItem.Cases.Select(i => i.CaseCollection));
+                }
+
+                //Get item price
+                long weaponSkinPrice = Convert.ToInt64(skinItem.Price.AllTime.Average);
 
 
                 //Send embed
                 var embedBuilder = new EmbedBuilder()
-                    .WithColor(new Color(Convert.ToUInt32(selectedRootWeaponSkin.RarityColor, 16)))
+                    .WithColor(new Color(Convert.ToUInt32(skinItem.RarityColor, 16)))
                     .WithFooter(footer =>
                     {
                         footer
@@ -223,14 +230,15 @@ namespace UncrateGo.Modules.Csgo
                             .WithName("Item Info")
                             .WithIconUrl("https://i.redd.it/1s0j5e4fhws01.png");
                     })
-                    .AddField(selectedRootWeaponSkin.Name, $"Market Value: {weaponSkinPrice}")
-                    .WithImageUrl("https://steamcommunity.com/economy/image/" + selectedRootWeaponSkin.IconUrlLarge);
+                    .AddField(skinItem.Name, $"{skinCaseCollections}\nMarket Value: {weaponSkinPrice}")
+                    .WithImageUrl("https://steamcommunity.com/economy/image/" + skinItem.IconUrlLarge);
 
                 var embed = embedBuilder.Build();
 
                 await Context.Message.Channel.SendMessageAsync(" ", embed: embed).ConfigureAwait(false);
+
             }
-            catch (Exception)
+            else
             {
                 //Send embed
                 var embedBuilder = new EmbedBuilder()
@@ -253,7 +261,7 @@ namespace UncrateGo.Modules.Csgo
 
                 await Context.Message.Channel.SendMessageAsync(" ", embed: embed).ConfigureAwait(false);
             }
-
+           
         }
 
     }

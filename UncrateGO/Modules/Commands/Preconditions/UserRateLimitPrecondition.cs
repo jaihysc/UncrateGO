@@ -180,4 +180,17 @@ namespace UncrateGo.Modules.Commands.Preconditions
         /// <summary> Set whether or not to apply a limit per guild. </summary>
         ApplyPerGuild = 1 << 2
     }
+
+    internal sealed class CommandTimeout
+    {
+        public uint TimesInvoked { get; set; }
+        public DateTime FirstInvoke { get; }
+        public bool ReceivedError { get; set; }
+
+        public CommandTimeout(DateTime timeStarted)
+        {
+            FirstInvoke = timeStarted;
+            ReceivedError = false;
+        }
+    }
 }

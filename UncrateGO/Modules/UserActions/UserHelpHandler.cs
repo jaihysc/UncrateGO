@@ -113,7 +113,7 @@ namespace UncrateGo.Modules.UserActions
         /// <param name="storedCommands">String list of stored strings</param>
         /// <param name="inputCommand">Input string to check</param>
         /// <returns></returns>
-        public static string FindSimilarCommands(List<string> storedCommands, string inputCommand, int fuzzyIndex=6)
+        public static string FindSimilarCommands(List<string> storedCommands, string inputCommand, int fuzzyIndex=3)
         {
             //Filter out command names to string
             string similarItemsString = "";

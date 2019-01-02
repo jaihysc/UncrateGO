@@ -65,4 +65,9 @@ namespace UncrateGo.Core
             FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
         }
     }
+
+    internal sealed class CommandPrefix
+    {
+        public Dictionary<ulong, string> GuildPrefixes { get; set; }
+    }
 }

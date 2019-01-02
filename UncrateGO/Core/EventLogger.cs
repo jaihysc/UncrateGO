@@ -45,11 +45,11 @@ namespace UncrateGo.Core
             var chnl = msg.Channel as SocketGuildChannel;
             var cc = Console.BackgroundColor;
 
-            try
+            if (chnl.Guild.Name != null)
             {
                 Console.Write($"{DateTime.Now,-19} [    Log] {chnl.Guild.Name} ||  {msg.Channel} - {msg.Author}: ");
             }
-            catch (Exception)
+            else
             {
                 Console.Write($"{DateTime.Now,-19} [    Log] Direct Message >| {msg.Channel} - {msg.Author}: ");
             }

@@ -5,14 +5,69 @@ using UncrateGo.Modules.Commands.Preconditions;
 using UncrateGo.Modules.Csgo;
 using System;
 using System.Threading.Tasks;
+using UncrateGo.Modules.Finance.CurrencyManager;
+using UncrateGo.Modules.Interaction;
+using UncrateGo.Modules.UserActions;
+using Discord.WebSocket;
 
 namespace UncrateGo.Modules.Commands
 {
-    [Ratelimit(1, 4, Measure.Seconds)]
+    [Ratelimit(1, 3, Measure.Seconds)]
     [UserStorageCheckerPrecondition]
-    public class CaseCommandModule : InteractiveBase<SocketCommandContext>
+    public class CommandModule : InteractiveBase<SocketCommandContext>
     {
+        //Help
+        [Command("help")]
+        public async Task HelpAsync([Remainder]string inputCommand = null)
+        {
+            if (!string.IsNullOrEmpty(inputCommand))
+            {
+                await UserHelpHandler.DisplayCommandHelpMenu(Context, inputCommand);
+            }
+            else
+            {
+                await UserHelpHandler.DisplayHelpMenu(Context);
+            }
+        }
 
+        //Settings
+        [Command("prefix")]
+        public async Task ChangeGuildCommandPrefixAsync([Remainder]string input)
+        {
+            //Find guild id
+            var chnl = Context.Channel as SocketGuildChannel;
+
+            //Make sure invoker is owner of guild
+            if (chnl.Guild.OwnerId == Context.Message.Author.Id)
+            {
+                GuildCommandPrefixManager.ChangeGuildCommandPrefix(Context, input);
+                await Context.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + $", server prefix has successfully been changed to `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}`");
+            }
+            //Otherwise send error
+            else
+            {
+                await Context.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + ", only the server owner may invoke this command");
+            }
+        }
+
+        //Finance
+        [Command("balance", RunMode = RunMode.Async)]
+        [Alias("bal")]
+        public async Task SlotBalanceAsync()
+        {
+            long userCredits = UserCreditsHandler.GetUserCredits(Context);
+
+            await Context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + $", you have **{UserBankingHandler.CreditCurrencyFormatter(userCredits)} Credits**");
+        }
+
+        [Command("moneyTransfer", RunMode = RunMode.Async)]
+        [Alias("mt")]
+        public async Task MoneyTransferAsync(string targetUser, long amount)
+        {
+            await UserCreditsHandler.TransferCredits(Context, targetUser, amount);
+        }
+
+        //Cases
         [Command("open", RunMode = RunMode.Async)]
         [Alias("o")]
         public async Task OpenCaseAsync()

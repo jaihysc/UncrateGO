@@ -117,6 +117,7 @@ namespace UncrateGo.Modules.Finance.CurrencyManager
                 return false;
             }
         }
+
         /// <summary>
         /// Adds input amount to user balance
         /// </summary>

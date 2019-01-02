@@ -16,9 +16,7 @@ namespace UncrateGo.Modules.UserActions
             userStorage.UserInfo.Add(context.Message.Author.Id, new UserInfo
             {
                 UserId = context.Message.Author.Id,
-                UserDailyLastUseStorage = new UserDailyLastUseStorage { DateTime = DateTime.UtcNow.AddYears(-1) },
-                UserBankingStorage = new UserBankingStorage { Credit = long.Parse(SettingsManager.RetrieveFromConfigFile("startAmount")), CreditDebt = 0 },
-                UserProhibitedWordsStorage = new UserProhibitedWordsStorage { SwearCount = 0 }
+                UserBankingStorage = new UserBankingStorage { Credit = 0, CreditDebt = 0 },
             });
 
             var userRecord = new UserStorage
@@ -37,9 +35,7 @@ namespace UncrateGo.Modules.UserActions
             userStorage.UserInfo.Add(user.Id, new UserInfo
             {
                 UserId = user.Id,
-                UserDailyLastUseStorage = new UserDailyLastUseStorage { DateTime = DateTime.UtcNow.AddYears(-1) },
-                UserBankingStorage = new UserBankingStorage { Credit = long.Parse(SettingsManager.RetrieveFromConfigFile("startAmount")), CreditDebt = 0 },
-                UserProhibitedWordsStorage = new UserProhibitedWordsStorage { SwearCount = 0 }
+                UserBankingStorage = new UserBankingStorage { Credit = 0, CreditDebt = 0 },
             });
 
             var userRecord = new UserStorage
