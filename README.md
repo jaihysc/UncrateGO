@@ -1,9 +1,7 @@
 # Discord-UncrateGO
-Discord bot using Discord.NET, derived from Discord-DuckBot
+Discord bot using Discord.NET, simulates the CS:GO unboxing experience 
 
 ***
-
-This project/bot is designed for public release, and is therefore heavily tested.
 
 # Features
 
