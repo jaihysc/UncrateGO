@@ -1,10 +1,7 @@
 ﻿using Discord.Commands;
-using UncrateGo.Models;
-using UncrateGo.Modules.UserActions;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
+using UncrateGo.Core;
 
 namespace UncrateGo.Modules.Commands.Preconditions
 {

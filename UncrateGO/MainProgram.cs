@@ -5,8 +5,6 @@ using Discord.WebSocket;
 using UncrateGo.Core;
 using UncrateGo.Models;
 using UncrateGo.Modules.Csgo;
-using UncrateGo.Modules.Interaction;
-using UncrateGo.Modules.UserActions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
@@ -14,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using UncrateGo.Modules;
 
 namespace UncrateGo
 {
@@ -88,7 +87,7 @@ namespace UncrateGo
             _client.MessageReceived += EventLogger.LogUserMessageAsync;
 
             //Joining a guild first time, display help text
-            _client.JoinedGuild += GuildJoinInteraction.SendFirstTimeHelpMenuAsync;
+            _client.JoinedGuild += UserInteraction.SendFirstTimeHelpMenuAsync;
 
             //Handles command on message received event
             _client.MessageReceived += HandleCommandAsync;

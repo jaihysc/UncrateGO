@@ -1,8 +1,6 @@
 ﻿using Discord.Commands;
 using UncrateGo.Core;
 using UncrateGo.Models;
-using UncrateGo.Modules.Finance.CurrencyManager;
-using UncrateGo.Modules.Interaction;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,16 +47,16 @@ namespace UncrateGo.Modules.Csgo
                     await context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", `{itemMarketHash}` does not exist in the current skin market");
                 }
                 //Make sure user has enough credits to buy skin
-                else if (UserCreditsHandler.GetUserCredits(context) < weaponSkinValue)
+                else if (BankingHandler.GetUserCredits(context) < weaponSkinValue)
                 {
-                    await context.Message.Channel.SendMessageAsync($"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**, you do not have enough credits to buy `{itemMarketHash}` | **{UserBankingHandler.CreditCurrencyFormatter(weaponSkinValue)}** - **{UserBankingHandler.CreditCurrencyFormatter(UserCreditsHandler.GetUserCredits(context))}** ");
+                    await context.Message.Channel.SendMessageAsync($"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**, you do not have enough credits to buy `{itemMarketHash}` | **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)}** - **{BankingHandler.CreditCurrencyFormatter(BankingHandler.GetUserCredits(context))}** ");
                 }
                 else
                 {
                     //Checks are true, now give user skin and remove credits
 
                     //Remove user credits
-                    UserCreditsHandler.AddCredits(context, -weaponSkinValue);
+                    BankingHandler.AddCredits(context, -weaponSkinValue);
 
                     //Add skin to inventory
                     var userSkins = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
@@ -76,7 +74,7 @@ namespace UncrateGo.Modules.Csgo
                     //Send receipt
                     await context.Channel.SendMessageAsync(
                         UserInteraction.BoldUserName(context) + $", you bought`{selectedMarketSkin.MarketName}`" +
-                        $" for **{UserBankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
+                        $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
                 }
             }
             catch (Exception ex)
@@ -104,7 +102,7 @@ namespace UncrateGo.Modules.Csgo
                 long weaponSkinValue = Convert.ToInt64(rootWeaponSkin.ItemsList.Values.Where(s => s.Name == selectedSkinToSell.MarketName).FirstOrDefault().Price.AllTime.Average);
 
                 //Give user credits
-                UserCreditsHandler.AddCredits(Context, weaponSkinValue);
+                BankingHandler.AddCredits(Context, weaponSkinValue);
 
 
                 //Remove items that were selected to be sold
@@ -116,7 +114,7 @@ namespace UncrateGo.Modules.Csgo
                 //Send receipt
                 await Context.Channel.SendMessageAsync(
                     UserInteraction.BoldUserName(Context) + $", you sold your `{selectedSkinToSell.MarketName}`" +
-                    $" for **{UserBankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
+                    $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
             }
             catch (Exception)
             {
@@ -143,7 +141,7 @@ namespace UncrateGo.Modules.Csgo
                 long weaponSkinValue = GetItemValue(selectedSkinToSell, rootSkinData);
 
                 //Give user credits
-                UserCreditsHandler.AddCredits(Context, weaponSkinValue);
+                BankingHandler.AddCredits(Context, weaponSkinValue);
 
                 //Remove skin from inventory
                 List<string> filterUserSkinNames = new List<string>();
@@ -161,7 +159,7 @@ namespace UncrateGo.Modules.Csgo
                 //Send receipt
                 await Context.Channel.SendMessageAsync(
                     UserInteraction.BoldUserName(Context) + $", you sold your \n`{string.Join("\n", filterUserSkinNames)}`" +
-                    $" for **{UserBankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
+                    $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
             }
             catch (Exception)
             {
@@ -185,7 +183,7 @@ namespace UncrateGo.Modules.Csgo
                     long weaponSkinValue = GetItemValue(userSkin.UserSkinEntries, rootSkinData);
 
                     //Give user credits
-                    UserCreditsHandler.AddCredits(context, weaponSkinValue);
+                    BankingHandler.AddCredits(context, weaponSkinValue);
 
                     //Remove user skins from inventory
                     var filteredUserSkinEntries = userSkin.UserSkinEntries.Where(s => s.OwnerID != context.Message.Author.Id).ToList();
@@ -194,7 +192,7 @@ namespace UncrateGo.Modules.Csgo
                     WriteUserSkinDataToFile(filteredUserSkinEntries);
 
                     //Send receipt
-                    await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you sold your inventory for **{UserBankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
+                    await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you sold your inventory for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
                 }
                 else
                 {

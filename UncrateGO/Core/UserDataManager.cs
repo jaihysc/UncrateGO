@@ -1,11 +1,9 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
-using UncrateGo.Core;
 using UncrateGo.Models;
 using Newtonsoft.Json;
-using System;
 
-namespace UncrateGo.Modules.UserActions
+namespace UncrateGo.Core
 {
     public class UserDataManager
     {

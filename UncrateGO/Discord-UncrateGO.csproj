@@ -143,8 +143,7 @@
     <Compile Include="Core\PaginationManager.cs" />
     <Compile Include="Core\UnicodeLiteralConverter.cs" />
     <Compile Include="Core\XmlManager.cs" />
-    <Compile Include="Modules\Interaction\GuildJoinInteraction.cs" />
-    <Compile Include="Modules\Interaction\UserInteraction.cs" />
+    <Compile Include="Modules\UserInteraction.cs" />
     <Compile Include="Models\CsgoContainers.cs" />
     <Compile Include="Models\CsgoItemData.cs" />
     <Compile Include="Models\HelpMenuCommands.cs" />
@@ -159,12 +158,11 @@
     <Compile Include="Modules\Csgo\CsgoInventoryManager.cs" />
     <Compile Include="Modules\Csgo\CsgoMarketDataSerializer.cs" />
     <Compile Include="Modules\Csgo\CsgoTransactionHandler.cs" />
-    <Compile Include="Modules\Finance\UserBankingHandler.cs" />
-    <Compile Include="Modules\Finance\UserCreditsHandler.cs" />
+    <Compile Include="Modules\BankingHandler.cs" />
     <Compile Include="MainProgram.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Modules\UserActions\UserDataManager.cs" />
-    <Compile Include="Modules\UserActions\UserHelpHandler.cs" />
+    <Compile Include="Core\UserDataManager.cs" />
+    <Compile Include="Modules\UserHelpHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

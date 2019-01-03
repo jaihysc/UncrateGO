@@ -3,8 +3,6 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using UncrateGo.Core;
 using UncrateGo.Models;
-using UncrateGo.Modules.Finance.CurrencyManager;
-using UncrateGo.Modules.Interaction;
 using System;
 using System.Collections.Generic;
 using System.Linq;

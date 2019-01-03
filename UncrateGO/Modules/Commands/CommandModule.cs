@@ -5,9 +5,6 @@ using UncrateGo.Modules.Commands.Preconditions;
 using UncrateGo.Modules.Csgo;
 using System;
 using System.Threading.Tasks;
-using UncrateGo.Modules.Finance.CurrencyManager;
-using UncrateGo.Modules.Interaction;
-using UncrateGo.Modules.UserActions;
 using Discord.WebSocket;
 
 namespace UncrateGo.Modules.Commands
@@ -55,16 +52,16 @@ namespace UncrateGo.Modules.Commands
         [Alias("bal")]
         public async Task SlotBalanceAsync()
         {
-            long userCredits = UserCreditsHandler.GetUserCredits(Context);
+            long userCredits = BankingHandler.GetUserCredits(Context);
 
-            await Context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + $", you have **{UserBankingHandler.CreditCurrencyFormatter(userCredits)} Credits**");
+            await Context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + $", you have **{BankingHandler.CreditCurrencyFormatter(userCredits)} Credits**");
         }
 
         [Command("moneyTransfer", RunMode = RunMode.Async)]
         [Alias("mt")]
         public async Task MoneyTransferAsync(string targetUser, long amount)
         {
-            await UserCreditsHandler.TransferCredits(Context, targetUser, amount);
+            await BankingHandler.TransferCredits(Context, targetUser, amount);
         }
 
         //Cases
@@ -73,7 +70,7 @@ namespace UncrateGo.Modules.Commands
         public async Task OpenCaseAsync()
         {
             //See if user has opened a case before, if not, send a help tip
-            if (!CsgoCaseSelectionHandler.GetHasUserSelectedCase(Context)) await ReplyAndDeleteAsync($"Tip: Use `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}select` to select different cases to open", timeout: TimeSpan.FromSeconds(60));
+            if (!CsgoCaseSelectionHandler.GetHasUserSelectedCase(Context)) await ReplyAndDeleteAsync($"Tip: Use `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}select` to select different cases to open", timeout: TimeSpan.FromSeconds(30));
 
             await CsgoUnboxingHandler.OpenCase(Context);
         }

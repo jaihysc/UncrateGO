@@ -1,14 +1,37 @@
-﻿using Discord;
-using Discord.Commands;
-using UncrateGo.Core;
-using UncrateGo.Modules.Interaction;
-using UncrateGo.Modules.UserActions;
+﻿using Discord.Commands;
+using Discord.WebSocket;
+using System.Globalization;
+using Discord;
 using System.Threading.Tasks;
+using UncrateGo.Core;
 
-namespace UncrateGo.Modules.Finance.CurrencyManager
+namespace UncrateGo.Modules
 {
-    public class UserCreditsHandler
+    public class BankingHandler
     {
+        public static void CheckIfUserCreditProfileExists(SocketGuildUser user)
+        {
+            var userStorage = UserDataManager.GetUserStorage();
+            //Create txt user credit entry if user does not exist
+            if (!userStorage.UserInfo.TryGetValue(user.Id, out var i))
+            {
+                //Create user profile
+                UserDataManager.CreateNewUserXmlEntry(user);
+            }
+        }
+
+        /// <summary>
+        /// Formats the currency with spaces, as well as a decimal place
+        /// </summary>
+        /// <param name="inputCredits"></param>
+        /// <returns></returns>
+        public static string CreditCurrencyFormatter(long inputCredits)
+        {
+            //Formats number to use currency numeration
+            var numberGroupSeperator = new NumberFormatInfo { NumberGroupSeparator = " " };
+            return inputCredits.ToString("N0", numberGroupSeperator);
+        }
+
         /// <summary>
         /// Transfers credits from sender to target receiver
         /// </summary>
@@ -24,14 +47,14 @@ namespace UncrateGo.Modules.Finance.CurrencyManager
             }
             else if (GetUserCredits(context) - amount < 0)
             {
-                await context.Message.Author.SendMessageAsync(UserInteraction.BoldUserName(context) + ", you do not have enough money to send || **" + UserBankingHandler.CreditCurrencyFormatter(GetUserCredits(context)) + " Credits**");
+                await context.Message.Author.SendMessageAsync(UserInteraction.BoldUserName(context) + ", you do not have enough money to send || **" + BankingHandler.CreditCurrencyFormatter(GetUserCredits(context)) + " Credits**");
             }
             else
             {
                 var recipient = context.Guild.GetUser(MentionUtils.ParseUser(targetUser));
 
                 //Check if recipient has a profile
-                UserBankingHandler.CheckIfUserCreditProfileExists(recipient);
+                BankingHandler.CheckIfUserCreditProfileExists(recipient);
 
                 //Subtract money from sender
                 AddCredits(context, -amount);
@@ -55,11 +78,11 @@ namespace UncrateGo.Modules.Finance.CurrencyManager
                     })
                     .AddInlineField("Sender", context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5))
                     .AddInlineField("Id", context.Message.Author.Id)
-                    .AddInlineField("Total Amount", $"-{UserBankingHandler.CreditCurrencyFormatter(amount)}")
+                    .AddInlineField("Total Amount", $"-{BankingHandler.CreditCurrencyFormatter(amount)}")
 
                     .AddInlineField("Recipient", recipient.ToString().Substring(0, recipient.ToString().Length - 5))
                     .AddInlineField("​", recipient.Id)
-                    .AddInlineField("​", UserBankingHandler.CreditCurrencyFormatter(amount))
+                    .AddInlineField("​", BankingHandler.CreditCurrencyFormatter(amount))
 
                     .AddInlineField("​", "​")
                     .AddInlineField("​", "​");
