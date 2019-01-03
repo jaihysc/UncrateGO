@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using UncrateGo.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UncrateGo.Core
 {
@@ -63,6 +64,18 @@ namespace UncrateGo.Core
             //Write new dictionary to file
             string newJson = JsonConvert.SerializeObject(GuildPrefixDictionary);
             FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
+        }
+
+        public static Task DeleteGuildCommandPrefix(SocketGuild arg)
+        {
+            //Remove guild command on leave
+            GuildPrefixDictionary.GuildPrefixes.Remove(arg.Id);
+
+            //Write new dictionary to file
+            string newJson = JsonConvert.SerializeObject(GuildPrefixDictionary);
+            FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
+
+            return Task.CompletedTask;
         }
     }
 

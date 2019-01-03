@@ -88,6 +88,7 @@ namespace UncrateGo
 
             //Joining a guild first time, display help text
             _client.JoinedGuild += UserInteraction.SendFirstTimeHelpMenuAsync;
+            _client.LeftGuild += GuildCommandPrefixManager.DeleteGuildCommandPrefix;
 
             //Handles command on message received event
             _client.MessageReceived += HandleCommandAsync;
