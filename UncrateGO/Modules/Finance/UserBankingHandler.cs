@@ -27,9 +27,6 @@ namespace UncrateGo.Modules.Finance.CurrencyManager
         {
             //Formats number to use currency numeration
             var numberGroupSeperator = new NumberFormatInfo { NumberGroupSeparator = " " };
-
-            inputCredits = inputCredits / 100;
-
             return inputCredits.ToString("N0", numberGroupSeperator);
         }
     }

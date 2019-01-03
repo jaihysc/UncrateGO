@@ -138,18 +138,18 @@ namespace UncrateGo
                     //If no similar matches are found, send nothing
                     if (string.IsNullOrEmpty(similarItemsString))
                     {
-                        await context.Channel.SendMessageAsync("Invalid command, use `.d help` for a list of commands");
+                        await context.Channel.SendMessageAsync("Invalid command, use `~help` for a list of commands");
                     }
                     //If similar matches are found, send suggestions
                     else
                     {
-                        await context.Channel.SendMessageAsync($"Invalid command, use `.d help` for a list of commands. Did you mean: \n {similarItemsString}");
+                        await context.Channel.SendMessageAsync($"Invalid command, use `~help` for a list of commands. Did you mean: \n {similarItemsString}");
                     }
                     
                 }
                 else if (result.Error == CommandError.BadArgCount)
                 {
-                    await context.Channel.SendMessageAsync($"Invalid command usage, use `.d help <command>` for correct command usage");
+                    await context.Channel.SendMessageAsync($"Invalid command usage, use `~help <command>` for correct command usage");
                 }
             }
         }

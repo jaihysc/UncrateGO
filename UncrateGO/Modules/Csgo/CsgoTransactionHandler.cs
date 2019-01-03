@@ -51,7 +51,7 @@ namespace UncrateGo.Modules.Csgo
                 //Make sure user has enough credits to buy skin
                 else if (UserCreditsHandler.GetUserCredits(context) < weaponSkinValue)
                 {
-                    await context.Message.Channel.SendMessageAsync($"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**, you do not have enough credits to buy`{itemMarketHash}` | **{UserCreditsHandler.GetUserCredits(context)} Credits**");
+                    await context.Message.Channel.SendMessageAsync($"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**, you do not have enough credits to buy `{itemMarketHash}` | **{UserBankingHandler.CreditCurrencyFormatter(weaponSkinValue)}** - **{UserBankingHandler.CreditCurrencyFormatter(UserCreditsHandler.GetUserCredits(context))}** ");
                 }
                 else
                 {
@@ -90,12 +90,12 @@ namespace UncrateGo.Modules.Csgo
         {
             //Get skin data
             var rootWeaponSkin = CsgoDataHandler.GetRootWeaponSkin();
-            var rootUserSkin = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
+            var userSkin = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
 
             try
             {
                 //Find user selected item, make sure it is owned by user
-                var selectedSkinToSell = rootUserSkin.UserSkinEntries
+                var selectedSkinToSell = userSkin.UserSkinEntries
                     .Where(s => s.MarketName.ToLower().Contains(itemMarketHash.ToLower()))
                     .Where(s => s.OwnerID == Context.Message.Author.Id)
                     .FirstOrDefault();
@@ -106,11 +106,12 @@ namespace UncrateGo.Modules.Csgo
                 //Give user credits
                 UserCreditsHandler.AddCredits(Context, weaponSkinValue);
 
-                //Remove skin from inventory
-                var filteredUserSkinEntries = rootUserSkin.UserSkinEntries.Where(s => s.OwnerID == Context.Message.Author.Id).Where(s => s.ClassId != selectedSkinToSell.ClassId).ToList();
+
+                //Remove items that were selected to be sold
+                userSkin.UserSkinEntries.Remove(selectedSkinToSell);
 
                 //Write to file
-                WriteUserSkinDataToFile(filteredUserSkinEntries);
+                WriteUserSkinDataToFile(userSkin);
 
                 //Send receipt
                 await Context.Channel.SendMessageAsync(
@@ -165,12 +166,12 @@ namespace UncrateGo.Modules.Csgo
             catch (Exception)
             {
                 //Send error if user does not have item
-                await Context.Channel.SendMessageAsync($"**{Context.Message.Author.ToString().Substring(0, Context.Message.Author.ToString().Length - 5)}**, you do not have `{itemMarketHash}` in your inventory");
+                await Context.Channel.SendMessageAsync($"**{Context.Message.Author.ToString().Substring(0, Context.Message.Author.ToString().Length - 5)}**, you do not have anything containing `{itemMarketHash}` in your inventory");
             }
 
         }
 
-        public static async Task SellAllInventoryItemAsync(SocketCommandContext Context)
+        public static async Task SellAllInventoryItemAsync(SocketCommandContext context)
         {
             //Get price data
             var rootSkinData = CsgoDataHandler.GetRootWeaponSkin();
@@ -178,21 +179,29 @@ namespace UncrateGo.Modules.Csgo
 
             try
             {
-                long weaponSkinValue = GetItemValue(userSkin.UserSkinEntries, rootSkinData);
+                //If player has items in inventory, sell!
+                if (userSkin.UserSkinEntries.Where(s => s.OwnerID == context.Message.Author.Id).Count() > 0)
+                {
+                    long weaponSkinValue = GetItemValue(userSkin.UserSkinEntries, rootSkinData);
 
-                //Give user credits
-                UserCreditsHandler.AddCredits(Context, weaponSkinValue);
+                    //Give user credits
+                    UserCreditsHandler.AddCredits(context, weaponSkinValue);
 
-                //Remove skin from inventory
-                var filteredUserSkinEntries = userSkin.UserSkinEntries.Where(s => s.OwnerID == Context.Message.Author.Id).Where(s => s.OwnerID != Context.Message.Author.Id).ToList();
+                    //Remove user skins from inventory
+                    var filteredUserSkinEntries = userSkin.UserSkinEntries.Where(s => s.OwnerID != context.Message.Author.Id).ToList();
 
-                //Write to file
-                WriteUserSkinDataToFile(filteredUserSkinEntries);
+                    //Write to file
+                    WriteUserSkinDataToFile(filteredUserSkinEntries);
 
-                //Send receipt
-                await Context.Channel.SendMessageAsync(
-                    UserInteraction.BoldUserName(Context) + $", you sold your inventory" +
-                    $" for **{UserBankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
+                    //Send receipt
+                    await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you sold your inventory for **{UserBankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
+                }
+                else
+                {
+                    //Send error user does not have any items
+                    await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", your inventory is empty! Go unbox some with `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}open`");
+                }
+
             }
             catch (Exception)
             {

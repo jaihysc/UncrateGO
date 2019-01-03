@@ -58,7 +58,7 @@ namespace UncrateGo.Modules.Csgo
                 Description = $"To sell items, use `{botCommandPrefix}sell [name]` \n To sell all items matching filter, use `{botCommandPrefix}sellall [name]`",
 
                 DefaultFieldHeader = "You do not have any skins",
-                DefaultFieldDescription = $"Go unbox some with `{botCommandPrefix} case open`",
+                DefaultFieldDescription = $"Go unbox some with `{botCommandPrefix}open`",
 
                 Field1Header = "Item Name",
                 Field2Header = "Market Value",
