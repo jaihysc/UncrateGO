@@ -39,8 +39,10 @@ namespace UncrateGo.Modules
             await context.Message.Channel.SendMessageAsync(" ", embed: embed).ConfigureAwait(false);
         }
 
-        public static async Task DisplayCommandHelpMenu(SocketCommandContext Context, string inputCommand)
+        public static async Task DisplayCommandHelpMenu(SocketCommandContext context, string inputCommand)
         {
+            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+
             //Get command help list from storage
             var commandHelpDefinitionStorage = XmlManager.FromXmlFile<HelpMenuCommands>(FileAccessManager.GetFileLocation("CommandHelpDescription.xml"));
 
@@ -60,8 +62,8 @@ namespace UncrateGo.Modules
                     .WithFooter(footer =>
                     {
                         footer
-                            .WithText("Sent by " + Context.Message.Author.ToString())
-                            .WithIconUrl(Context.Message.Author.GetAvatarUrl());
+                            .WithText("Sent by " + context.Message.Author.ToString())
+                            .WithIconUrl(context.Message.Author.GetAvatarUrl());
                     })
                     .WithAuthor(author =>
                     {
@@ -75,7 +77,7 @@ namespace UncrateGo.Modules
                         embedBuilder.AddField("Permissions required", $"`{commandHelpDefinition.CommandRequiredPermissions}`");
                     }
 
-                    embedBuilder.AddField("Usage", $"`{commandHelpDefinition.CommandUsage}`");
+                    embedBuilder.AddField("Usage", $"`{commandHelpDefinition.CommandUsage.Replace("(prefix)", botCommandPrefix)}`");
 
                     if (!string.IsNullOrEmpty(commandHelpDefinition.CommandUsageDefinition))
                     {
@@ -84,7 +86,7 @@ namespace UncrateGo.Modules
 
                     var embed = embedBuilder.Build();
 
-                    await Context.Message.Channel.SendMessageAsync(" ", embed: embed).ConfigureAwait(false);
+                    await context.Message.Channel.SendMessageAsync(" ", embed: embed).ConfigureAwait(false);
                 }
             }
 
@@ -96,12 +98,12 @@ namespace UncrateGo.Modules
                 //If no similar matches are found, send nothing
                 if (string.IsNullOrEmpty(similarItemsString))
                 {
-                    await Context.Channel.SendMessageAsync($"Command **{inputCommand}** could not be found");
+                    await context.Channel.SendMessageAsync($"Command **{inputCommand}** could not be found");
                 }
                 //If similar matches are found, send suggestions
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"Command **{inputCommand}** could not be found. Did you mean: \n {similarItemsString}");
+                    await context.Channel.SendMessageAsync($"Command **{inputCommand}** could not be found. Did you mean: \n {similarItemsString}");
                 }
 
             }

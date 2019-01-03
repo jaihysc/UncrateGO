@@ -15,6 +15,7 @@ namespace UncrateGo.Models
         public string Name { get; set; }
         public string CollectionName { get; set; }
         public string IconURL { get; set; }
+        public bool IsSticker { get; set; }
         public bool IsSouvenir { get; set; }
         public bool SouvenirAvailable { get; set; }
         public List<ContainerEntry> ContainerEntries { get; set; }

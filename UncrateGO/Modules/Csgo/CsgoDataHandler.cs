@@ -68,7 +68,7 @@ namespace UncrateGo.Modules.Csgo
                                 //if FN, MW, ETC, it will find all skin conditions + stattrak
 
                                 //For above, append statements for wear 
-                                if (!skinCase.IsSouvenir)
+                                if (!skinCase.IsSouvenir && !skinCase.IsSticker)
                                 {
                                     comparisonItems.Add(skinCaseItem.SkinName + " (Factory New)");
                                     comparisonItems.Add(skinCaseItem.SkinName + " (Minimal Wear)");
@@ -100,13 +100,20 @@ namespace UncrateGo.Modules.Csgo
                                     comparisonItems.Add("\u2605 StatTrak\u2122 " + skinCaseItem.SkinName + " (Battle-Scarred)");
                                 }
 
-                                else if (skinCase.IsSouvenir)
+                                else if (skinCase.IsSouvenir && !skinCase.IsSticker)
                                 {
                                     comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Factory New)");
                                     comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Minimal Wear)");
                                     comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Field-Tested)");
                                     comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Well-Worn)");
                                     comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Battle-Scarred)");
+                                }
+
+                                else if (skinCase.IsSticker)
+                                {
+                                    comparisonItems.Add("Sticker | " + skinCaseItem.SkinName);
+                                    comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Foil)");
+                                    comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Holo)");
                                 }
 
                                 //Check for possible matches, matching CASE skin name

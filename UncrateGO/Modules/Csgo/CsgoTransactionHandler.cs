@@ -130,29 +130,29 @@ namespace UncrateGo.Modules.Csgo
             var rootSkinData = CsgoDataHandler.GetRootWeaponSkin();
             var userSkin = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
 
-            try
+            //Find ALL user selected items, make sure it is owned by user
+            var selectedSkinToSell = userSkin.UserSkinEntries
+                .Where(s => s.MarketName.ToLower().Contains(itemMarketHash.ToLower()))
+                .Where(s => s.OwnerID == Context.Message.Author.Id).ToList();
+
+            //Get item prices
+            long weaponSkinValue = GetItemValue(selectedSkinToSell, rootSkinData);
+
+            //Give user credits
+            BankingHandler.AddCredits(Context, weaponSkinValue);
+
+            //Remove skin from inventory
+            List<string> filterUserSkinNames = new List<string>();
+            foreach (var item in selectedSkinToSell)
             {
-                //Find ALL user selected items, make sure it is owned by user
-                var selectedSkinToSell = userSkin.UserSkinEntries
-                    .Where(s => s.MarketName.ToLower().Contains(itemMarketHash.ToLower()))
-                    .Where(s => s.OwnerID == Context.Message.Author.Id).ToList();
+                //Remove items that were selected to be sold
+                userSkin.UserSkinEntries.Remove(item);
 
-                //Get item prices
-                long weaponSkinValue = GetItemValue(selectedSkinToSell, rootSkinData);
+                filterUserSkinNames.Add(item.MarketName);
+            }
 
-                //Give user credits
-                BankingHandler.AddCredits(Context, weaponSkinValue);
-
-                //Remove skin from inventory
-                List<string> filterUserSkinNames = new List<string>();
-                foreach (var item in selectedSkinToSell)
-                {
-                    //Remove items that were selected to be sold
-                    userSkin.UserSkinEntries.Remove(item);
-
-                    filterUserSkinNames.Add(item.MarketName);
-                }
-
+            if (filterUserSkinNames.Count > 0)
+            {
                 //Write to file
                 WriteUserSkinDataToFile(userSkin);
 
@@ -161,7 +161,7 @@ namespace UncrateGo.Modules.Csgo
                     UserInteraction.BoldUserName(Context) + $", you sold your \n`{string.Join("\n", filterUserSkinNames)}`" +
                     $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
             }
-            catch (Exception)
+            else
             {
                 //Send error if user does not have item
                 await Context.Channel.SendMessageAsync($"**{Context.Message.Author.ToString().Substring(0, Context.Message.Author.ToString().Length - 5)}**, you do not have anything containing `{itemMarketHash}` in your inventory");

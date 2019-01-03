@@ -309,8 +309,11 @@ namespace UncrateGo.Modules.Csgo
             }
 
 
-            //Filter by rarity
-            sortedResult = sortedResult.Where(s => s.Value.Rarity == itemListType.Rarity).ToList();
+            //Filter by rarity if not a sticker
+            if (!CsgoUnboxingHandler.csgoContiners.Containers.Where(i => i.Name == userSelectedCaseName).FirstOrDefault().IsSticker)
+            {
+                sortedResult = sortedResult.Where(s => s.Value.Rarity == itemListType.Rarity).ToList();
+            }     
 
             //If weaponType is not null, filter by weapon type
             if (itemListType.WeaponType != null)
@@ -338,13 +341,10 @@ namespace UncrateGo.Modules.Csgo
                 sortedResult = sortedResult.Where(s => !s.Value.Name.ToLower().Contains("souvenir")).ToList();
             }
 
-            //Filter out stattrak, stickers, music kits, and graffiti
+
+            //Filter out stattrak
             sortedResult = sortedResult
-                .Where(s => !s.Value.Name.ToLower().Contains("stattrak"))
-                .Where(s => !s.Value.Name.ToLower().Contains("sticker"))
-                .Where(s => !s.Value.Name.ToLower().Contains("music kit"))
-                .Where(s => !s.Value.Name.ToLower().Contains(" pin"))
-                .Where(s => !s.Value.Name.ToLower().Contains("graffiti")).ToList();
+                .Where(s => !s.Value.Name.ToLower().Contains("stattrak")).ToList();
 
 
             //Randomly select a skin from the filtered list of possible skins
