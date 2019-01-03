@@ -45,7 +45,7 @@ namespace UncrateGo.Core
             var chnl = msg.Channel as SocketGuildChannel;
             var cc = Console.BackgroundColor;
 
-            if (chnl.Guild.Name != null)
+            if (chnl != null)
             {
                 Console.Write($"{DateTime.Now,-19} [    Log] {chnl.Guild.Name} ||  {msg.Channel} - {msg.Author}: ");
             }

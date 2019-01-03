@@ -110,6 +110,9 @@ namespace UncrateGo
             //integer to determine when commands start
             int argPos = 0;
 
+            //If message is in a DM, return
+            var chnl = messageParam.Channel as SocketGuildChannel;
+            if (chnl == null) return;   
 
             //Ignore commands that are not using the prefix
             var context = new SocketCommandContext(_client, message);
@@ -137,18 +140,18 @@ namespace UncrateGo
                     //If no similar matches are found, send nothing
                     if (string.IsNullOrEmpty(similarItemsString))
                     {
-                        await context.Channel.SendMessageAsync("Invalid command, use `~help` for a list of commands");
+                        await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands");
                     }
                     //If similar matches are found, send suggestions
                     else
                     {
-                        await context.Channel.SendMessageAsync($"Invalid command, use `~help` for a list of commands. Did you mean: \n {similarItemsString}");
+                        await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands. Did you mean: \n {similarItemsString}");
                     }
                     
                 }
                 else if (result.Error == CommandError.BadArgCount)
                 {
-                    await context.Channel.SendMessageAsync($"Invalid command usage, use `~help <command>` for correct command usage");
+                    await context.Channel.SendMessageAsync($"Invalid command usage, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help <command>` for correct command usage");
                 }
             }
         }
