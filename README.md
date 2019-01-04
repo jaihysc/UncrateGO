@@ -19,4 +19,4 @@ After inviting the bot to your server with the link [here](https://discordapp.co
 
 Should you have questions on how to use a command, use `~help [command]`. 
 
-Note that the default prefix `~` can be changed by the guild owner. Therefore consult your server owner for the bot prefix in the event that the default prefix does not work.
+Note that the default prefix `~` can be changed by the guild owner. If the default bot prefix does not work @mention the bot and it will reply with the prefix for the guild you are in.
