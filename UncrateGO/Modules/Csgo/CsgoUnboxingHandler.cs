@@ -340,35 +340,44 @@ namespace UncrateGo.Modules.Csgo
 
 
             //Randomly select a skin from the filtered list of possible skins
-            var selectedSkin = sortedResult[rand.Next(sortedResult.Count())];
-
-            bool giveStatTrak = CalculateStatTrakDrop();
-            //Give stattrak
-            if (giveStatTrak == true)
+            if (sortedResult.Count() > 0)
             {
-                var selectedStatTrakItem = skinData.ItemsList
-                    .Where(s => s.Value.Name.ToLower().Contains(selectedSkin.Value.Name.ToLower()))
-                    .Where(s => s.Value.Name.ToLower().Contains("stattrak")).FirstOrDefault();
+                var selectedSkin = sortedResult[rand.Next(sortedResult.Count())];
 
-                //If filter was unsuccessful at finding stattrak, do not assign item
-                if (selectedStatTrakItem.Value != null)
+                bool giveStatTrak = CalculateStatTrakDrop();
+                //Give stattrak
+                if (giveStatTrak == true)
                 {
-                    selectedSkin = selectedStatTrakItem;
-                }
-            }
+                    var selectedStatTrakItem = skinData.ItemsList
+                        .Where(s => s.Value.Name.ToLower().Contains(selectedSkin.Value.Name.ToLower()))
+                        .Where(s => s.Value.Name.ToLower().Contains("stattrak")).FirstOrDefault();
 
-            //Increment stats counter
-            if (!itemIsSticker)
-            {
-                CsgoDataHandler.IncrementUserStatTracker(context, itemListType);
+                    //If filter was unsuccessful at finding stattrak, do not assign item
+                    if (selectedStatTrakItem.Value != null)
+                    {
+                        selectedSkin = selectedStatTrakItem;
+                    }
+                }
+
+                //Increment stats counter
+                if (!itemIsSticker)
+                {
+                    CsgoDataHandler.IncrementUserStatTracker(context, itemListType);
+                }
+                else
+                {
+                    CsgoDataHandler.IncrementUserStatTracker(context, itemListType, true);
+                }
+
+                return selectedSkin.Value;
             }
             else
             {
-                CsgoDataHandler.IncrementUserStatTracker(context, itemListType, true);
-            }
+                var sortedResult2 = skinData.ItemsList.Where(s => s.Value.Rarity == Rarity.MilSpecGrade).ToList();
+                var selectedSkin = sortedResult2[rand.Next(sortedResult2.Count())];
 
-
-            return selectedSkin.Value;
+                return selectedSkin.Value;
+            }           
         }
 
         private static bool CalculateStatTrakDrop()

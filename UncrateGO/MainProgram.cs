@@ -163,6 +163,10 @@ namespace UncrateGo
                 {
                     await context.Channel.SendMessageAsync($"Invalid command usage, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help <command>` for correct command usage");
                 }
+                else
+                {
+                    EventLogger.LogMessage($"Error - {result.ErrorReason}", ConsoleColor.Red);
+                }
             }
         }
     }

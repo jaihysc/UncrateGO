@@ -34,9 +34,11 @@ namespace UncrateGo.Core
             return Task.CompletedTask;
         }
         
-        public static void LogMessage(string message)
+        public static void LogMessage(string message, ConsoleColor intensity = ConsoleColor.White)
         {
+            Console.ForegroundColor = intensity;
             Console.WriteLine($"{DateTime.Now,-19} [    Info] Logging: {message}");
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
         public static Task LogUserMessageAsync(SocketMessage msg)
