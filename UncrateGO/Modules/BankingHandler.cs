@@ -16,7 +16,7 @@ namespace UncrateGo.Modules
             if (!userStorage.UserInfo.TryGetValue(user.Id, out var i))
             {
                 //Create user profile
-                UserDataManager.CreateNewUserXmlEntry(user);
+                UserDataManager.CreateNewUserEntry(user);
             }
         }
 
@@ -73,7 +73,7 @@ namespace UncrateGo.Modules
                     .WithAuthor(author =>
                     {
                         author
-                            .WithName("Duck Banking Inc.")
+                            .WithName("UncrateGO Banking")
                             .WithIconUrl("https://freeiconshop.com/wp-content/uploads/edd/bank-flat.png");
                     })
                     .AddInlineField("Sender", context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5))

@@ -25,15 +25,8 @@ namespace UncrateGo.Modules.Csgo
             embedFieldsMaster = new List<string>();
             embedPriceFieldsMaster = new List<string>();
 
-            //Get user skins from xml file
-            UserSkinStorageRootobject userSkin = new UserSkinStorageRootobject();
-            try
-            {
-                userSkin = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
-            }
-            catch (Exception)
-            {
-            }
+            //Get user skins from json
+            var userSkin = CsgoDataHandler.GetUserSkinStorageRootobject();
 
             List<UserSkinEntry> foundUserSkins = new List<UserSkinEntry>();
             //Filter userSkinEntries xml file down to skins belonging to sender
@@ -140,38 +133,29 @@ namespace UncrateGo.Modules.Csgo
             List<string> filteredRootWeaponSkin = new List<string>();
             List<string> filteredRootWeaponSkinPrice = new List<string>();
 
-            try
+
+            //Filter rootWeaponSkin to those with a price found in rootWeaponSkinPrice
+            foreach (var skin in rootWeaponSkin.ItemsList.Values)
             {
-                //Filter rootWeaponSkin to those with a price found in rootWeaponSkinPrice
-                foreach (var skin in rootWeaponSkin.ItemsList.Values)
+                //If filter string is not null, filter market results by user filter string
+                if ((!string.IsNullOrEmpty(filterString) && skin.Name.ToLower().Contains(filterString.ToLower())) || (string.IsNullOrEmpty(filterString)))
                 {
-                    //If filter string is not null, filter market results by user filter string
-                    if ((!string.IsNullOrEmpty(filterString) && skin.Name.ToLower().Contains(filterString.ToLower())) || (string.IsNullOrEmpty(filterString)))
-                    {
-                        string skinQualityEmote = GetEmoteBySkinRarity(skin.Rarity, skin.WeaponType);
+                    string skinQualityEmote = GetEmoteBySkinRarity(skin.Rarity, skin.WeaponType);
 
-                        //Add skin entry
-                        try
-                        {
-                            Emote emote = Emote.Parse(skinQualityEmote);
+                    //Add skin entry
 
-                            //Add weapon skin
-                            filteredRootWeaponSkin.Add(emote + " " + skin.Name);
+                    Emote emote = Emote.Parse(skinQualityEmote);
 
-                            //Get item value
-                            long weaponSkinValue = Convert.ToInt64(skin.Price.AllTime.Average);
+                    //Add weapon skin
+                    filteredRootWeaponSkin.Add(emote + " " + skin.Name);
 
-                            //Add weapon skin price
-                            filteredRootWeaponSkinPrice.Add(emote + " " + weaponSkinValue.ToString());
-                        }
-                        catch (Exception)
-                        {
-                        }
-                    }
+                    //Get item value
+                    long weaponSkinValue = Convert.ToInt64(skin.Price.AllTime.Average);
+
+                    //Add weapon skin price
+                    filteredRootWeaponSkinPrice.Add(emote + " " + weaponSkinValue.ToString());
+
                 }
-            }
-            catch (Exception)
-            {
             }
 
             //Configurate paginated message

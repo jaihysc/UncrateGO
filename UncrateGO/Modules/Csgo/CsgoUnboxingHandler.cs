@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace UncrateGo.Modules.Csgo
 {
@@ -22,19 +23,14 @@ namespace UncrateGo.Modules.Csgo
         /// <returns></returns>
         public static async Task OpenCase(SocketCommandContext context)
         {
+            //Get rarity
             var result = ItemDropProcessing.CalculateItemCaseRarity();
-
 
             //Get item
             var skinItem = ItemDropProcessing.GetItem(result, CsgoDataHandler.rootWeaponSkin, context, false);
 
-
             //Add item to user file inventory
-            var userSkin = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
-
-            userSkin.UserSkinEntries.Add(new UserSkinEntry { ClassId = skinItem.Classid, OwnerID = context.Message.Author.Id, UnboxDate = DateTime.UtcNow, MarketName = skinItem.Name });
-
-            XmlManager.ToXmlFile(userSkin, FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
+            CsgoDataHandler.AddItemToUserInventory(context, skinItem);
 
             //Send item into
             await SendOpenedItemInfo(context, skinItem, Convert.ToInt64(skinItem.Price.AllTime.Average), UnboxType.CaseUnboxing);
@@ -50,17 +46,11 @@ namespace UncrateGo.Modules.Csgo
             //Select a rarity, this is slightly modified towards the white side of the spectrum, higher value items are harder to get as this is a drop
             var rarity = ItemDropProcessing.CalculateItemDropRarity();
 
-
             //Get item
             var skinItem = ItemDropProcessing.GetItem(rarity, CsgoDataHandler.rootWeaponSkin, context, true);
 
-
             //Add item to user file inventory
-            var userSkin = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
-
-            userSkin.UserSkinEntries.Add(new UserSkinEntry { ClassId = skinItem.Classid, OwnerID = context.Message.Author.Id, UnboxDate = DateTime.UtcNow, MarketName = skinItem.Name });
-
-            XmlManager.ToXmlFile(userSkin, FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
+            CsgoDataHandler.AddItemToUserInventory(context, skinItem);
 
             //Send item into
             await SendOpenedItemInfo(context, skinItem, Convert.ToInt64(skinItem.Price.AllTime.Average), UnboxType.ItemDrop);
@@ -315,7 +305,7 @@ namespace UncrateGo.Modules.Csgo
             if (!itemIsSticker)
             {
                 sortedResult = sortedResult.Where(s => s.Value.Rarity == itemListType.Rarity).ToList();
-            }     
+            }
 
             //If weaponType is not null, filter by weapon type
             if (itemListType.WeaponType != null)
@@ -376,7 +366,7 @@ namespace UncrateGo.Modules.Csgo
             {
                 CsgoDataHandler.IncrementUserStatTracker(context, itemListType, true);
             }
-            
+
 
             return selectedSkin.Value;
         }

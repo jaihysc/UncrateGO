@@ -16,7 +16,7 @@ namespace UncrateGo.Modules.Commands.Preconditions
             if (!userStorage.UserInfo.TryGetValue(context.Message.Author.Id, out var i))
             {
                 //Create user profile
-                UserDataManager.CreateNewUserXmlEntry(context as SocketCommandContext);
+                UserDataManager.CreateNewUserEntry(context as SocketCommandContext);
             }
 
             return PreconditionResult.FromSuccess();

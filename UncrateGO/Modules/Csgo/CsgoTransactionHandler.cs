@@ -18,7 +18,7 @@ namespace UncrateGo.Modules.Csgo
 
             try
             {
-                UserSkinEntry selectedMarketSkin = new UserSkinEntry();
+                SkinDataItem selectedMarketSkin = new SkinDataItem();
 
                 //Get market skin cost
                 long weaponSkinValue = Convert.ToInt64(rootWeaponSkins.ItemsList.Values.Where(s => s.Name.ToLower().Contains(itemMarketHash.ToLower())).FirstOrDefault().Price.AllTime.Average);
@@ -35,10 +35,8 @@ namespace UncrateGo.Modules.Csgo
                     {
                         userSpecifiedSkinExistsInMarket = true;
 
-                        selectedMarketSkin.ClassId = marketSkin.Classid;
-                        selectedMarketSkin.OwnerID = context.Message.Author.Id;
-                        selectedMarketSkin.UnboxDate = DateTime.UtcNow;
-                        selectedMarketSkin.MarketName = marketSkin.Name;
+                        selectedMarketSkin.Classid = marketSkin.Classid;
+                        selectedMarketSkin.Name = marketSkin.Name;
                     }
                 }
                 //Send error if skin does not exist
@@ -59,21 +57,11 @@ namespace UncrateGo.Modules.Csgo
                     BankingHandler.AddCredits(context, -weaponSkinValue);
 
                     //Add skin to inventory
-                    var userSkins = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
-
-                    userSkins.UserSkinEntries.Add(selectedMarketSkin);
-
-                    var filteredUserSkin = new UserSkinStorageRootobject
-                    {
-                        SkinAmount = 0,
-                        UserSkinEntries = userSkins.UserSkinEntries
-                    };
-
-                    XmlManager.ToXmlFile(filteredUserSkin, FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
+                    CsgoDataHandler.AddItemToUserInventory(context, selectedMarketSkin);
 
                     //Send receipt
                     await context.Channel.SendMessageAsync(
-                        UserInteraction.BoldUserName(context) + $", you bought`{selectedMarketSkin.MarketName}`" +
+                        UserInteraction.BoldUserName(context) + $", you bought`{selectedMarketSkin.Name}`" +
                         $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
                 }
             }
@@ -88,7 +76,7 @@ namespace UncrateGo.Modules.Csgo
         {
             //Get skin data
             var rootWeaponSkin = CsgoDataHandler.GetRootWeaponSkin();
-            var userSkin = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
+            var userSkin = CsgoDataHandler.GetUserSkinStorageRootobject();
 
             try
             {
@@ -109,7 +97,7 @@ namespace UncrateGo.Modules.Csgo
                 userSkin.UserSkinEntries.Remove(selectedSkinToSell);
 
                 //Write to file
-                WriteUserSkinDataToFile(userSkin);
+                CsgoDataHandler.WriteUserSkinStorageRootobject(userSkin);
 
                 //Send receipt
                 await Context.Channel.SendMessageAsync(
@@ -128,7 +116,7 @@ namespace UncrateGo.Modules.Csgo
         {
             //Get skin data
             var rootSkinData = CsgoDataHandler.GetRootWeaponSkin();
-            var userSkin = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
+            var userSkin = CsgoDataHandler.GetUserSkinStorageRootobject();
 
             //Find ALL user selected items, make sure it is owned by user
             var selectedSkinToSell = userSkin.UserSkinEntries
@@ -154,7 +142,7 @@ namespace UncrateGo.Modules.Csgo
             if (filterUserSkinNames.Count > 0)
             {
                 //Write to file
-                WriteUserSkinDataToFile(userSkin);
+                CsgoDataHandler.WriteUserSkinStorageRootobject(userSkin);
 
                 //Send receipt
                 await Context.Channel.SendMessageAsync(
@@ -173,7 +161,7 @@ namespace UncrateGo.Modules.Csgo
         {
             //Get price data
             var rootSkinData = CsgoDataHandler.GetRootWeaponSkin();
-            var userSkin = XmlManager.FromXmlFile<UserSkinStorageRootobject>(FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
+            var userSkin = CsgoDataHandler.GetUserSkinStorageRootobject();
 
             try
             {
@@ -189,7 +177,11 @@ namespace UncrateGo.Modules.Csgo
                     var filteredUserSkinEntries = userSkin.UserSkinEntries.Where(s => s.OwnerID != context.Message.Author.Id).ToList();
 
                     //Write to file
-                    WriteUserSkinDataToFile(filteredUserSkinEntries);
+                    var newUserSkinStorageRoot = new UserSkinStorageRootobject
+                    {
+                        UserSkinEntries = filteredUserSkinEntries
+                    };
+                    CsgoDataHandler.WriteUserSkinStorageRootobject(newUserSkinStorageRoot);
 
                     //Send receipt
                     await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you sold your inventory for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
@@ -215,24 +207,6 @@ namespace UncrateGo.Modules.Csgo
             }
 
             return weaponSkinValue;
-        }
-
-        private static void WriteUserSkinDataToFile(List<UserSkinEntry> skinEntries)
-        {
-            var filteredUserSkin = new UserSkinStorageRootobject
-            {
-                SkinAmount = 0,
-                UserSkinEntries = skinEntries
-            };
-
-            XmlManager.ToXmlFile(filteredUserSkin, FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
-
-        }
-
-        private static void WriteUserSkinDataToFile(UserSkinStorageRootobject skinEntry)
-        {
-            XmlManager.ToXmlFile(skinEntry, FileAccessManager.GetFileLocation("UserSkinStorage.xml"));
-
         }
     }
 }

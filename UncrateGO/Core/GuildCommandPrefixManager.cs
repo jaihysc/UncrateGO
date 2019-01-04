@@ -10,7 +10,7 @@ namespace UncrateGo.Core
     public class GuildCommandPrefixManager
     {
         private static readonly string DefaultCommandPrefix = "~";
-        private static CommandPrefix GuildPrefixDictionary = JsonConvert.DeserializeObject<CommandPrefix>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("GuildCommandPrefix.json")));
+        private static CommandPrefix GuildPrefixDictionary = new CommandPrefix();
 
         /// <summary>
         /// Returns the command prefix for the current guild message is sent in
@@ -26,12 +26,17 @@ namespace UncrateGo.Core
             //Just in case the file is null
             if (GuildPrefixDictionary == null || GuildPrefixDictionary.GuildPrefixes == null)
             {
-                GuildPrefixDictionary = new CommandPrefix { GuildPrefixes = new Dictionary<ulong, string>() };
-                GuildPrefixDictionary.GuildPrefixes.Add(guildId, DefaultCommandPrefix);
+                GuildPrefixDictionary = JsonConvert.DeserializeObject<CommandPrefix>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("GuildCommandPrefix.json")));
 
-                //Write new dictionary to file
-                string newJson = JsonConvert.SerializeObject(GuildPrefixDictionary);
-                FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
+                if (GuildPrefixDictionary == null)
+                {
+                    GuildPrefixDictionary = new CommandPrefix { GuildPrefixes = new Dictionary<ulong, string>() };
+                    GuildPrefixDictionary.GuildPrefixes.Add(guildId, DefaultCommandPrefix);
+
+                    //Write new dictionary to file
+                    string newJson = JsonConvert.SerializeObject(GuildPrefixDictionary);
+                    FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
+                }              
             }
 
             //Look for guild prefix, in event guild does not have one, use default

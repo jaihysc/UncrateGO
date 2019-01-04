@@ -36,19 +36,19 @@ namespace UncrateGo.Core
 
         public static string ReadFromFile(string filePath)
         {
-            try
+            //Create file if it does not exist
+            if (!File.Exists(filePath))
             {
-                using (StreamReader r = new StreamReader(filePath))
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(filePath, true))
                 {
-                    return r.ReadToEnd();
+                    file.WriteLine("");
                 }
-
             }
-            catch (Exception)
+
+            using (StreamReader r = new StreamReader(filePath))
             {
+                return r.ReadToEnd();
             }
-
-            return null;
         }
 
 
