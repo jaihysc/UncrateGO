@@ -47,6 +47,12 @@ namespace UncrateGo.Modules.Commands
             }
         }
 
+        [Command("info")]
+        public async Task InfoAsync()
+        {
+            await Context.Channel.SendMessageAsync("Invite: https://discordapp.com/oauth2/authorize?client_id=523282498265022479&permissions=337984&scope=bot \nBy <@285266023475838976> | Framework: Discord.NET V1.0.2 | Github: github.com/jaihysc/Discord-UncrateGO");
+        }
+
         //Finance
         [Command("balance", RunMode = RunMode.Async)]
         [Alias("bal")]
@@ -178,10 +184,17 @@ namespace UncrateGo.Modules.Commands
         }
 
 
-        [Command("info", RunMode = RunMode.Async)]
+        [Command("view", RunMode = RunMode.Async)]
         public async Task ShowItemInfoAsync([Remainder]string filterString)
         {
             await CsgoInventoryHandler.DisplayCsgoItemStatistics(Context, filterString);
         }
+
+        [Command("statistics", RunMode = RunMode.Async)]
+        public async Task ShowUserStatisticsAsync([Remainder]string filterString = null)
+        {
+            await CsgoDataHandler.DisplayUserStats(Context);
+        }
+
     }
 }

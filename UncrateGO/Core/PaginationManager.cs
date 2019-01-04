@@ -96,7 +96,10 @@ namespace UncrateGo.Core
                         Value = string.Join("\n", embedField2),
                         IsInline = true
                     }
-                }
+                },
+
+                Color = paginationConfig.Color
+
             });
         }
 
@@ -163,6 +166,8 @@ namespace UncrateGo.Core
         public string Field1Header { get; set; }
         public string Field2Header { get; set; }
 
+        public Color Color { get; set; }
+
         public PaginationConfig()
         {
             DefaultFieldHeader = "Default default field header";
@@ -175,6 +180,8 @@ namespace UncrateGo.Core
 
             Field1Header = "Default field 1 header";
             Field2Header = "Default field 2 header";
+
+            Color = new Color(51, 204, 153);
         }
     }
 }

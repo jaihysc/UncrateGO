@@ -20,6 +20,11 @@ namespace UncrateGo.Modules
             return $"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**";
         }
 
+        public static string UserName(SocketCommandContext context)
+        {
+            return $"{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}";
+        }
+
         public static async Task SendFirstTimeHelpMenuAsync(SocketGuild socketGuild)
         {
             //Get first text channel

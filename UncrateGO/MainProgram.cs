@@ -80,6 +80,8 @@ namespace UncrateGo
             stopwatch.Stop();
             EventLogger.LogMessage($"Ready! - Took {stopwatch.ElapsedMilliseconds} milliseconds");
 
+            //Set help text
+            //await _client.SetGameAsync("Mention me in server for command prefix");
 
             //EVENT HANDLERS
             //Log user / console messages
@@ -113,10 +115,17 @@ namespace UncrateGo
 
             //If message is in a DM, return
             var chnl = messageParam.Channel as SocketGuildChannel;
-            if (chnl == null) return;   
+            if (chnl == null) return;
+
+            //Show prefix help if user mentions bot
+            var context = new SocketCommandContext(_client, message);
+            if (message.Content == ("<@" + context.Client.CurrentUser.Id.ToString() + ">"))
+            {
+                await context.Channel.SendMessageAsync($"Current guild prefix: `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}` | Get help with `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help`");
+                return;
+            }
 
             //Ignore commands that are not using the prefix
-            var context = new SocketCommandContext(_client, message);
             string commandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
 
             if (!(message.HasStringPrefix(commandPrefix, ref argPos) ||

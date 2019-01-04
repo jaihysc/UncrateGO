@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Discord.Commands;
+using Discord;
+using System.Threading.Tasks;
 
 namespace UncrateGo.Modules.Csgo
 {
@@ -193,6 +196,112 @@ namespace UncrateGo.Modules.Csgo
 
             CsgoUnboxingHandler.csgoContiners = csgoContainersTemp;
 
+        }
+
+        /// <summary>
+        /// Increments the user stat tracker
+        /// </summary>
+        /// <param name="itemListType"></param>
+        public static void IncrementUserStatTracker(SocketCommandContext context, ItemListType itemListType, bool UseOthersCategory = false, bool UseSpecialCategory = false)
+        {
+            var userStorage = UserDataManager.GetUserStorage();
+
+            //Get case stats
+            var userCaseStats = userStorage.UserInfo[context.Message.Author.Id].UserCsgoStatsStorage;
+
+            if (userCaseStats == null) userCaseStats = new UserCsgoStatsStorage();
+
+            //Increment
+            userCaseStats.CasesOpened++;
+
+            if (!UseOthersCategory)
+            {
+                switch (itemListType.Rarity)
+                {
+                    case Rarity.ConsumerGrade:
+                        userCaseStats.ConsumerGrade++;
+                        break;
+                    case Rarity.IndustrialGrade:
+                        userCaseStats.IndustrialGrade++;
+                        break;
+                    case Rarity.MilSpecGrade:
+                        userCaseStats.MilSpecGrade++;
+                        break;
+                    case Rarity.Restricted:
+                        userCaseStats.Restricted++;
+                        break;
+                    case Rarity.Classified:
+                        userCaseStats.Classified++;
+                        break;
+                }
+
+                if (itemListType.Rarity == Rarity.Covert && itemListType.BlackListWeaponType == WeaponType.Knife) userCaseStats.Covert++;
+                else if (itemListType.Rarity == Rarity.Covert && itemListType.WeaponType == WeaponType.Knife) userCaseStats.Special++;
+            }
+            else
+            {
+                userCaseStats.Other++;
+            }
+
+            if (UseSpecialCategory) userCaseStats.Special++;
+
+            //Set stats back to master list
+            userStorage.UserInfo[context.Message.Author.Id].UserCsgoStatsStorage = userCaseStats;
+
+            UserDataManager.WriteUserStorage(userStorage);
+        }
+
+        public static async Task DisplayUserStats(SocketCommandContext context)
+        {
+            var userStorage = UserDataManager.GetUserStorage();
+
+            //Get case stats
+            var userCaseStats = userStorage.UserInfo[context.Message.Author.Id].UserCsgoStatsStorage;
+
+            string[] statFields = { "**Cases Opened**", "Consumer Grade", "Industrial Grade", "MilSpec Grade", "Restricted", "Classified", "Covert", "Special", "Other" };
+
+            //Add stats to string list
+            List<string> statFieldVal = new List<string>();
+
+            if (userCaseStats != null)
+            {
+                statFieldVal.Add(userCaseStats.CasesOpened.ToString());
+                statFieldVal.Add(userCaseStats.ConsumerGrade.ToString());
+                statFieldVal.Add(userCaseStats.IndustrialGrade.ToString());
+                statFieldVal.Add(userCaseStats.MilSpecGrade.ToString());
+                statFieldVal.Add(userCaseStats.Restricted.ToString());
+                statFieldVal.Add(userCaseStats.Classified.ToString());
+                statFieldVal.Add(userCaseStats.Covert.ToString());
+                statFieldVal.Add(userCaseStats.Special.ToString());
+                statFieldVal.Add(userCaseStats.Other.ToString());
+            }
+            else
+            {
+                statFieldVal.Add("0");
+            }
+            
+
+            //Send embed
+            var embedBuilder = new EmbedBuilder()
+                .WithColor(new Color(255, 127, 80))
+                .WithFooter(footer =>
+                {
+                    footer
+                        .WithText($"Sent by " + context.Message.Author.ToString())
+                        .WithIconUrl(context.Message.Author.GetAvatarUrl());
+                })
+                .WithAuthor(author =>
+                {
+                    author
+                        .WithName(UserInteraction.UserName(context) + " statistics")
+                        .WithIconUrl(context.Message.Author.GetAvatarUrl());
+                })
+                .AddField("\u200b", string.Join("\n", statFields), true)
+                .AddField("\u200b", string.Join("\n", statFieldVal), true);
+
+            var embed = embedBuilder.Build();
+
+            await context.Message.Channel.SendMessageAsync(" ", embed: embed).ConfigureAwait(false);
         }
     }
 }

@@ -14,10 +14,23 @@ namespace UncrateGo.Models
     {
         public ulong UserId { get; set; }
         public UserBankingStorage UserBankingStorage { get; set; }
+        public UserCsgoStatsStorage UserCsgoStatsStorage { get; set; }
     }
     public class UserBankingStorage
     {
         public long Credit { get; set; }
         public long CreditDebt { get; set; }
+    }
+    public class UserCsgoStatsStorage
+    {
+        public long CasesOpened { get; set; }
+        public long ConsumerGrade { get; set; }
+        public long IndustrialGrade { get; set; }
+        public long MilSpecGrade { get; set; }
+        public long Restricted { get; set; }
+        public long Classified { get; set; }
+        public long Covert { get; set; }
+        public long Special { get; set; }
+        public long Other { get; set; }
     }
 }

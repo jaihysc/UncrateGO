@@ -156,6 +156,8 @@ namespace UncrateGo.Modules.Csgo
 
                 Field1Header = "Number",
                 Field2Header = "Case",
+
+                Color = new Color(51, 204, 204)
             };
 
             PaginationManager paginationManager = new PaginationManager();
@@ -308,9 +310,9 @@ namespace UncrateGo.Modules.Csgo
                 }
             }
 
-
+            bool itemIsSticker = CsgoUnboxingHandler.csgoContiners.Containers.Where(i => i.Name == userSelectedCaseName).FirstOrDefault().IsSticker;
             //Filter by rarity if not a sticker
-            if (!CsgoUnboxingHandler.csgoContiners.Containers.Where(i => i.Name == userSelectedCaseName).FirstOrDefault().IsSticker)
+            if (!itemIsSticker)
             {
                 sortedResult = sortedResult.Where(s => s.Value.Rarity == itemListType.Rarity).ToList();
             }     
@@ -364,6 +366,18 @@ namespace UncrateGo.Modules.Csgo
                     selectedSkin = selectedStatTrakItem;
                 }
             }
+
+            //Increment stats counter
+            if (!itemIsSticker)
+            {
+                CsgoDataHandler.IncrementUserStatTracker(context, itemListType);
+            }
+            else
+            {
+                CsgoDataHandler.IncrementUserStatTracker(context, itemListType, true);
+            }
+            
+
             return selectedSkin.Value;
         }
 

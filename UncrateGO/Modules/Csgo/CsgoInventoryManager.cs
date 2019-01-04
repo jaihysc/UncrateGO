@@ -62,6 +62,8 @@ namespace UncrateGo.Modules.Csgo
 
                 Field1Header = "Item Name",
                 Field2Header = "Market Value",
+
+                Color = new Color(0, 153, 0)
             };
 
             var paginationManager = new PaginationManager();
@@ -176,7 +178,7 @@ namespace UncrateGo.Modules.Csgo
             var paginationConfig = new PaginationConfig
             {
                 AuthorName = "CS:GO Market",
-                AuthorURL = context.Message.Author.GetAvatarUrl(),
+                AuthorURL = "https://i.redd.it/1s0j5e4fhws01.png",
 
                 Description = $"Current skin market, to buy skins, use `{botCommandPrefix}buy [name]` \n use `{botCommandPrefix}market [name]` to filter skins by name \n use `{botCommandPrefix}info [name]` to preview skins",
 
@@ -185,6 +187,8 @@ namespace UncrateGo.Modules.Csgo
 
                 Field1Header = "Item Name",
                 Field2Header = "Price",
+
+                Color = new Color(0, 204, 0)
             };
 
             var paginationManager = new PaginationManager();
