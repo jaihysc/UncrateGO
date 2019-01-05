@@ -1,4 +1,7 @@
 # Discord-UncrateGO
+[![](https://discordbots.org/api/widget/status/523282498265022479.svg)](https://discordbots.org/bot/523282498265022479) [![](https://discordbots.org/api/widget/servers/523282498265022479.svg?noavatar=true)](https://discordbots.org/bot/523282498265022479)
+
+
 Discord bot using Discord.NET, simulates the CS:GO unboxing experience 
 
 ***
