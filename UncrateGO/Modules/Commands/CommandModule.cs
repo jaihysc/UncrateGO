@@ -9,11 +9,18 @@ using Discord.WebSocket;
 
 namespace UncrateGo.Modules.Commands
 {
-    [Ratelimit(1, 2, Measure.Seconds)]
+    [Ratelimit(1, 3, Measure.Seconds)]
     [UserStorageCheckerPrecondition]
     public class CommandModule : InteractiveBase<SocketCommandContext>
     {
         //Help
+        [RequireOwner]
+        [Command("setInfo")]
+        public async Task SetInfoAsync([Remainder]string input)
+        {
+            await Context.Client.SetGameAsync(input);
+        }
+
         [Command("help")]
         public async Task HelpAsync([Remainder]string inputCommand = null)
         {

@@ -31,7 +31,7 @@ namespace UncrateGo.Modules.Csgo
                 foreach (var marketSkin in rootWeaponSkins.ItemsList.Values)
                 {
                     //If it does exist, get info on it
-                    if (marketSkin.Name.ToLower().Contains(itemMarketHash.ToLower()))
+                    if (marketSkin.Name.ToLower() == itemMarketHash.ToLower())
                     {
                         userSpecifiedSkinExistsInMarket = true;
 
@@ -39,6 +39,22 @@ namespace UncrateGo.Modules.Csgo
                         selectedMarketSkin.Name = marketSkin.Name;
                     }
                 }
+                //If searching by direct result cannot be found, search by anything that contains the input
+                if (!userSpecifiedSkinExistsInMarket)
+                {
+                    foreach (var marketSkin in rootWeaponSkins.ItemsList.Values)
+                    {
+                        //If it does exist, get info on it
+                        if (marketSkin.Name.ToLower().Contains(itemMarketHash.ToLower()))
+                        {
+                            userSpecifiedSkinExistsInMarket = true;
+
+                            selectedMarketSkin.Classid = marketSkin.Classid;
+                            selectedMarketSkin.Name = marketSkin.Name;
+                        }
+                    }
+                }               
+
                 //Send error if skin does not exist
                 if (userSpecifiedSkinExistsInMarket == false)
                 {
@@ -82,9 +98,18 @@ namespace UncrateGo.Modules.Csgo
             {
                 //Find user selected item, make sure it is owned by user
                 var selectedSkinToSell = userSkin.UserSkinEntries
+                    .Where(s => s.MarketName.ToLower() == itemMarketHash.ToLower())
+                    .Where(s => s.OwnerID == Context.Message.Author.Id)
+                    .FirstOrDefault();
+
+                //If searching by direct comparison results in nothing, search by contain
+                if (selectedSkinToSell == null)
+                {
+                    selectedSkinToSell = userSkin.UserSkinEntries
                     .Where(s => s.MarketName.ToLower().Contains(itemMarketHash.ToLower()))
                     .Where(s => s.OwnerID == Context.Message.Author.Id)
                     .FirstOrDefault();
+                }
 
                 //Get item price
                 long weaponSkinValue = Convert.ToInt64(rootWeaponSkin.ItemsList.Values.Where(s => s.Name == selectedSkinToSell.MarketName).FirstOrDefault().Price.AllTime.Average);
