@@ -9,7 +9,7 @@ using Discord.WebSocket;
 
 namespace UncrateGo.Modules.Commands
 {
-    [Ratelimit(1, 3, Measure.Seconds)]
+    [Ratelimit(2, 6, Measure.Seconds)]
     [UserStorageCheckerPrecondition]
     public class CommandModule : InteractiveBase<SocketCommandContext>
     {

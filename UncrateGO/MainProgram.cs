@@ -163,7 +163,60 @@ namespace UncrateGo
                 }
                 else if (result.Error == CommandError.BadArgCount)
                 {
-                    await context.Channel.SendMessageAsync($"Invalid command usage, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help <command>` for correct command usage");
+                    var commandHelpDefStorage = XmlManager.FromXmlFile<HelpMenuCommands>(FileAccessManager.GetFileLocation("CommandHelpDescription.xml"));
+
+                    //Search 10 spaces up for the command in commandHelpDescription
+                    string userCommand = "[command]";
+
+                    string prefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+                    string str = message.Content.Substring(prefix.Length);
+
+                    string[] tokens = str.Split(' ');
+
+                    //Extract the command from the user (minus prefix and any invalid arguements)
+                    for (int i = 1; i < 10; i++)
+                    {
+                        bool resultFound = false;
+                        
+                        userCommand = "";
+
+                        //Combine the strings
+                        for (int ii = 0; ii < i; ii++)
+                        {
+                            //Make sure next string exists before adding it
+                            if (i <= tokens.Count())
+                            {
+                                //Add a space between the strings after the first
+                                if (ii > 0)
+                                {
+                                    userCommand += " ";
+                                }
+
+                                userCommand += tokens[ii];
+                            }                
+                            
+                        }
+
+                        //Check if the command exists
+                        foreach (var item in commandHelpDefStorage.CommandHelpEntry)
+                        {
+                            //If so break out
+                            if (item.CommandName == userCommand)
+                            {
+                                resultFound = true;
+                                break;
+                            }
+                        }
+
+                        //Break after finding result
+                        if (resultFound) break;
+                    }
+
+                    //Default value in case nothing can be found
+                    if (string.IsNullOrEmpty(userCommand)) userCommand = "[command]";
+                   
+                    //Send message
+                    await context.Channel.SendMessageAsync($"Invalid command usage, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help {userCommand}` for correct command usage");
                 }
                 else
                 {
