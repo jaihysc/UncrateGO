@@ -1,4 +1,7 @@
 # Discord-UncrateGO
+[![](https://discordbots.org/api/widget/status/523282498265022479.svg)](https://discordbots.org/bot/523282498265022479) [![](https://discordbots.org/api/widget/servers/523282498265022479.svg?noavatar=true)](https://discordbots.org/bot/523282498265022479)
+
+
 Discord bot using Discord.NET, simulates the CS:GO unboxing experience 
 
 ***
@@ -19,6 +22,10 @@ Discord bot using Discord.NET, simulates the CS:GO unboxing experience
 ***
 
 * Currency system for bying and selling of CS:GO skins, unboxing and item drops are free at the moment to increase accessibility of the bot to others
+
+![](https://i.imgur.com/7sS9ciE.gif)
+
+***
 
 * Custom Guild/Server prefix, default is `~` and can be changed by server owner
 
