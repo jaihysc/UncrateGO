@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using UncrateGo.Modules;
+using System.Threading;
 
 namespace UncrateGo
 {
@@ -26,11 +27,9 @@ namespace UncrateGo
             stopwatch.Start();
             EventLogger.LogMessage("Hello World! - Beginning startup");
 
-
             //Runs setup if path file is not present
             SetupManager.CheckIfPathsFileExists();
             CsgoDataHandler.GenerateSouvenirCollections();
-
 
             //Setup
             CsgoDataHandler.GetRootWeaponSkin();
@@ -59,6 +58,7 @@ namespace UncrateGo
                 //BuildsServiceProvider
                 .BuildServiceProvider();
 
+            
             //Bot init
             try
             {
@@ -95,7 +95,9 @@ namespace UncrateGo
             //Handles command on message received event
             _client.MessageReceived += HandleCommandAsync;
 
-
+            //Threads
+            Thread discordBotsListUpdater = new Thread(() => DiscordBotsListUpdater.UpdateDiscordBotsListInfo(_client));
+            discordBotsListUpdater.Start();
 
             //All commands before this
             await Task.Delay(-1);
