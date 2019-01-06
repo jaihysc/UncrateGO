@@ -169,7 +169,7 @@ namespace UncrateGo
                     string userCommand = "[command]";
 
                     string prefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
-                    string str = message.Content.Substring(prefix.Length);
+                    string str = message.Content.ToLower().Substring(prefix.Length);
 
                     string[] tokens = str.Split(' ');
 
