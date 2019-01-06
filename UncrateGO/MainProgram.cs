@@ -50,7 +50,7 @@ namespace UncrateGo
         //Main
         public async Task MainAsync()
         {
-            var _config = new DiscordSocketConfig { MessageCacheSize = 100 };
+            var _config = new DiscordSocketConfig { MessageCacheSize = 500 };
 
             _client = new DiscordSocketClient(_config);
             _commands = new CommandService();

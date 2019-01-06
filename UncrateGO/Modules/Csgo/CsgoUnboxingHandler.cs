@@ -190,11 +190,13 @@ namespace UncrateGo.Modules.Csgo
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public static async Task SelectOpenCase(SocketCommandContext context, string input, Discord.IUserMessage sentMessage)
+        public static async Task SelectOpenCase(SocketCommandContext context, string input, IUserMessage sentMessage)
         {
             //Delete the pagination message after receiving user input
-            await sentMessage.DeleteAsync();
-
+            if (sentMessage != null)
+            {
+                await sentMessage.DeleteAsync();
+            }
 
             var continers = CsgoUnboxingHandler.GetCsgoContainers().Containers.Where(c => c.Name != null).ToList();
 
@@ -210,7 +212,7 @@ namespace UncrateGo.Modules.Csgo
             }
             catch (Exception)
             {
-                await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + ", please input a valid number");
+                await context.Channel.SendMessageAsync("Case Selection: " + UserInteraction.BoldUserName(context) + ", please input a valid number. No additional text. E.G `13`");
                 return;
             }
 

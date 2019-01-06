@@ -93,21 +93,27 @@ namespace UncrateGo.Modules.Commands
 
 
         [Command("select", RunMode = RunMode.Async)]
-        public async Task SelectOpenCaseAsync()
+        public async Task SelectOpenCaseAsync(string inputNumber = null)
         {
-            var pager = CsgoCaseSelectionHandler.ShowPossibleCases(Context);
-
-            //Send paginated message
-            Discord.IUserMessage sentMessage = await PagedReplyAsync(pager, new ReactionList
+            if (inputNumber == null)
             {
-                Forward = true,
-                Backward = true,
-            });
+                var pager = CsgoCaseSelectionHandler.ShowPossibleCases(Context);
 
-            //Get user response
-            var response = await NextMessageAsync();
+                //Send paginated message
+                Discord.IUserMessage sentMessage = await PagedReplyAsync(pager, new ReactionList
+                {
+                    Forward = true,
+                    Backward = true,
+                });
 
-            await CsgoCaseSelectionHandler.SelectOpenCase(Context, response.ToString(), sentMessage);
+                //Get user response
+                var response = await NextMessageAsync();
+
+                await CsgoCaseSelectionHandler.SelectOpenCase(Context, response.ToString(), sentMessage);
+            }
+
+            await CsgoCaseSelectionHandler.SelectOpenCase(Context, inputNumber.ToString(), null);
+
         }
 
 
