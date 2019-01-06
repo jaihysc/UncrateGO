@@ -17,13 +17,15 @@ Discord bot using Discord.NET, simulates the CS:GO unboxing experience
 
 * Inventory system to store and view your unboxed/dropped skins
 
-![](http://i.imgur.com/KTzF839.gif)
+![](https://i.imgur.com/X371XRQ.gif)
 
 ***
 
 * Currency system for bying and selling of CS:GO skins, unboxing and item drops are free at the moment to increase accessibility of the bot to others
 
 ![](https://i.imgur.com/7sS9ciE.gif)
+
+![](https://i.imgur.com/TYYmhCe.gif)
 
 ***
 
