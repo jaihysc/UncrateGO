@@ -213,10 +213,12 @@ namespace UncrateGo
                     }
 
                     //Default value in case nothing can be found
-                    if (string.IsNullOrEmpty(userCommand)) userCommand = "[command]";
-                   
+                    //if (string.IsNullOrEmpty(userCommand)) userCommand = "[command]";
+                    //await context.Channel.SendMessageAsync($"Invalid command usage, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help {userCommand}` for correct command usage");
+
                     //Send message
-                    await context.Channel.SendMessageAsync($"Invalid command usage, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help {userCommand}` for correct command usage");
+                    await context.Channel.SendMessageAsync(context.Message.Author.Mention + $", you used `{userCommand}` incorrectly, below is the correct usage");
+                    if (!string.IsNullOrEmpty(userCommand)) await UserHelpHandler.DisplayCommandHelpMenu(context, userCommand);
                 }
                 else
                 {

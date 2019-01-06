@@ -27,7 +27,7 @@ namespace UncrateGo.Modules
                 .WithAuthor(author =>
                 {
                     author
-                        .WithName("UncrateGO Help")
+                        .WithName("UncrateGO help")
                         .WithIconUrl(context.Client.CurrentUser.GetAvatarUrl());
                 })
                 .AddField("Currency Commands", "`balance` `moneyTransfer`")
@@ -68,8 +68,8 @@ namespace UncrateGo.Modules
                     .WithAuthor(author =>
                     {
                         author
-                            .WithName("UncrateGO Help - " + inputCommand)
-                            .WithIconUrl("https://ubisafe.org/images/duck-transparent-jpeg-5.png");
+                            .WithName("UncrateGO help - " + inputCommand)
+                            .WithIconUrl(context.Client.CurrentUser.GetAvatarUrl());
                     });
 
                     if (!string.IsNullOrEmpty(commandHelpDefinition.CommandRequiredPermissions))
