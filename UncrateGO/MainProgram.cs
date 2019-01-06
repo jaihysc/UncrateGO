@@ -121,7 +121,7 @@ namespace UncrateGo
 
             //Show prefix help if user mentions bot
             var context = new SocketCommandContext(_client, message);
-            if (message.Content == ("<@" + context.Client.CurrentUser.Id.ToString() + ">"))
+            if (message.Content == ("<@" + context.Client.CurrentUser.Id.ToString() + ">") || message.Content == ("<@!" + context.Client.CurrentUser.Id.ToString() + ">"))
             {
                 await context.Channel.SendMessageAsync($"Current guild prefix: `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}` | Get help with `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help`");
                 return;
