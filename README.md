@@ -11,7 +11,7 @@ Discord bot using Discord.NET, simulates the CS:GO unboxing experience
 
 * Unbox CS:GO skins, real case contents, real drop chances, real market values
 
-![](http://i.imgur.com/AvlC6K6.gif)
+![](https://i.imgur.com/y8wunMD.gif)
 
 ***
 
