@@ -62,7 +62,6 @@ namespace UncrateGo.Modules.Commands
 
         //Finance
         [Command("balance", RunMode = RunMode.Async)]
-        [Alias("bal")]
         public async Task SlotBalanceAsync()
         {
             long userCredits = BankingHandler.GetUserCredits(Context);
@@ -71,7 +70,6 @@ namespace UncrateGo.Modules.Commands
         }
 
         [Command("moneyTransfer", RunMode = RunMode.Async)]
-        [Alias("mt")]
         public async Task MoneyTransferAsync(string targetUser, long amount)
         {
             await BankingHandler.TransferCredits(Context, targetUser, amount);
@@ -79,7 +77,6 @@ namespace UncrateGo.Modules.Commands
 
         //Cases
         [Command("open", RunMode = RunMode.Async)]
-        [Alias("o")]
         public async Task OpenCaseAsync()
         {
             //See if user has opened a case before, if not, send a help tip
@@ -109,7 +106,6 @@ namespace UncrateGo.Modules.Commands
 
 
         [Command("drop", RunMode = RunMode.Async)]
-        [Alias("d")]
         public async Task OpenDropAsync()
         {
             await CsgoUnboxingHandler.OpenDrop(Context);
@@ -118,7 +114,6 @@ namespace UncrateGo.Modules.Commands
 
 
         [Command("inventory", RunMode = RunMode.Async)]
-        [Alias("inv", "i")]
         public async Task DisplayInventoryAsync()
         {
             //Get paginated message
@@ -136,7 +131,6 @@ namespace UncrateGo.Modules.Commands
 
 
         [Command("sell", RunMode = RunMode.Async)]
-        [Alias("s")]
         public async Task SellInventoryItemAsync([Remainder]string inventoryMarketHash)
         {
             if (inventoryMarketHash == "*")
@@ -151,7 +145,6 @@ namespace UncrateGo.Modules.Commands
 
 
         [Command("sellall", RunMode = RunMode.Async)]
-        [Alias("sa")]
         public async Task SellAllSelectedInventoryItemAsync([Remainder]string inventoryMarketHash = null)
         {
             //If user does not specify filter, sell all
@@ -167,7 +160,6 @@ namespace UncrateGo.Modules.Commands
 
 
         [Command("buy", RunMode = RunMode.Async)]
-        [Alias("b")]
         public async Task BuyInventoryItemAsync([Remainder]string inventoryMarketHash)
         {
             await CsgoTransactionHandler.BuyItemFromMarketAsync(Context, inventoryMarketHash);
@@ -175,7 +167,6 @@ namespace UncrateGo.Modules.Commands
 
 
         [Command("market", RunMode = RunMode.Async)]
-        [Alias("m")]
         public async Task ShowItemMarketAsync([Remainder]string filterString = null)
         {
             var pager = CsgoInventoryHandler.GetCsgoMarketInventory(Context, filterString);

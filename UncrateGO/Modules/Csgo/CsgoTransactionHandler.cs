@@ -16,74 +16,69 @@ namespace UncrateGo.Modules.Csgo
             //Get skin data
             var rootWeaponSkins = CsgoDataHandler.GetRootWeaponSkin();
 
-            try
+            SkinDataItem selectedMarketSkin = new SkinDataItem();
+
+            //Get market skin cost
+            long weaponSkinValue = 0;
+
+
+
+            bool userSpecifiedSkinExistsInMarket = false;
+
+            //Make sure skin exists in market
+            foreach (var marketSkin in rootWeaponSkins.ItemsList.Values)
             {
-                SkinDataItem selectedMarketSkin = new SkinDataItem();
+                //If it does exist, get info on it
+                if (marketSkin.Name.ToLower() == itemMarketHash.ToLower())
+                {
+                    weaponSkinValue = Convert.ToInt64(rootWeaponSkins.ItemsList.Values.Where(s => s.Name == marketSkin.Name).FirstOrDefault().Price.AllTime.Average);
+                    userSpecifiedSkinExistsInMarket = true;
 
-                //Get market skin cost
-                long weaponSkinValue = Convert.ToInt64(rootWeaponSkins.ItemsList.Values.Where(s => s.Name.ToLower().Contains(itemMarketHash.ToLower())).FirstOrDefault().Price.AllTime.Average);
-
-
-
-                bool userSpecifiedSkinExistsInMarket = false;
-
-                //Make sure skin exists in market
+                    selectedMarketSkin.Classid = marketSkin.Classid;
+                    selectedMarketSkin.Name = marketSkin.Name;
+                }
+            }
+            //If searching by direct result cannot be found, search by anything that contains the input
+            if (!userSpecifiedSkinExistsInMarket)
+            {
                 foreach (var marketSkin in rootWeaponSkins.ItemsList.Values)
                 {
                     //If it does exist, get info on it
-                    if (marketSkin.Name.ToLower() == itemMarketHash.ToLower())
+                    if (marketSkin.Name.ToLower().Contains(itemMarketHash.ToLower()))
                     {
+                        weaponSkinValue = Convert.ToInt64(rootWeaponSkins.ItemsList.Values.Where(s => s.Name == marketSkin.Name).FirstOrDefault().Price.AllTime.Average);
                         userSpecifiedSkinExistsInMarket = true;
 
                         selectedMarketSkin.Classid = marketSkin.Classid;
                         selectedMarketSkin.Name = marketSkin.Name;
                     }
                 }
-                //If searching by direct result cannot be found, search by anything that contains the input
-                if (!userSpecifiedSkinExistsInMarket)
-                {
-                    foreach (var marketSkin in rootWeaponSkins.ItemsList.Values)
-                    {
-                        //If it does exist, get info on it
-                        if (marketSkin.Name.ToLower().Contains(itemMarketHash.ToLower()))
-                        {
-                            userSpecifiedSkinExistsInMarket = true;
+            }               
 
-                            selectedMarketSkin.Classid = marketSkin.Classid;
-                            selectedMarketSkin.Name = marketSkin.Name;
-                        }
-                    }
-                }               
-
-                //Send error if skin does not exist
-                if (userSpecifiedSkinExistsInMarket == false)
-                {
-                    await context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", `{itemMarketHash}` does not exist in the current skin market");
-                }
-                //Make sure user has enough credits to buy skin
-                else if (BankingHandler.GetUserCredits(context) < weaponSkinValue)
-                {
-                    await context.Message.Channel.SendMessageAsync($"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**, you do not have enough credits to buy `{itemMarketHash}` | **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)}** - **{BankingHandler.CreditCurrencyFormatter(BankingHandler.GetUserCredits(context))}** ");
-                }
-                else
-                {
-                    //Checks are true, now give user skin and remove credits
-
-                    //Remove user credits
-                    BankingHandler.AddCredits(context, -weaponSkinValue);
-
-                    //Add skin to inventory
-                    CsgoDataHandler.AddItemToUserInventory(context, selectedMarketSkin);
-
-                    //Send receipt
-                    await context.Channel.SendMessageAsync(
-                        UserInteraction.BoldUserName(context) + $", you bought`{selectedMarketSkin.Name}`" +
-                        $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
-                }
-            }
-            catch (Exception ex)
+            //Send error if skin does not exist
+            if (!userSpecifiedSkinExistsInMarket)
             {
-                Console.WriteLine(ex.StackTrace);
+                await context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", `{itemMarketHash}` does not exist in the current skin market");
+            }
+            //Make sure user has enough credits to buy skin
+            else if (BankingHandler.GetUserCredits(context) < weaponSkinValue)
+            {
+                await context.Message.Channel.SendMessageAsync($"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**, you do not have enough credits to buy `{selectedMarketSkin.Name}` | **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)}** - **{BankingHandler.CreditCurrencyFormatter(BankingHandler.GetUserCredits(context))}** ");
+            }
+            else
+            {
+                //Checks are true, now give user skin and remove credits
+
+                //Remove user credits
+                BankingHandler.AddCredits(context, -weaponSkinValue);
+
+                //Add skin to inventory
+                CsgoDataHandler.AddItemToUserInventory(context, selectedMarketSkin);
+
+                //Send receipt
+                await context.Channel.SendMessageAsync(
+                    UserInteraction.BoldUserName(context) + $", you bought`{selectedMarketSkin.Name}`" +
+                    $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
             }
         }
 
@@ -94,23 +89,28 @@ namespace UncrateGo.Modules.Csgo
             var rootWeaponSkin = CsgoDataHandler.GetRootWeaponSkin();
             var userSkin = CsgoDataHandler.GetUserSkinStorageRootobject();
 
-            try
+            //Find user selected item, make sure it is owned by user
+            var selectedSkinToSell = userSkin.UserSkinEntries
+                .Where(s => s.MarketName.ToLower() == itemMarketHash.ToLower())
+                .Where(s => s.OwnerID == Context.Message.Author.Id)
+                .FirstOrDefault();
+
+            //If searching by direct comparison results in nothing, search by contain
+            if (selectedSkinToSell == null)
             {
-                //Find user selected item, make sure it is owned by user
-                var selectedSkinToSell = userSkin.UserSkinEntries
-                    .Where(s => s.MarketName.ToLower() == itemMarketHash.ToLower())
-                    .Where(s => s.OwnerID == Context.Message.Author.Id)
-                    .FirstOrDefault();
+                selectedSkinToSell = userSkin.UserSkinEntries
+                .Where(s => s.MarketName.ToLower().Contains(itemMarketHash.ToLower()))
+                .Where(s => s.OwnerID == Context.Message.Author.Id)
+                .FirstOrDefault();
+            }
 
-                //If searching by direct comparison results in nothing, search by contain
-                if (selectedSkinToSell == null)
-                {
-                    selectedSkinToSell = userSkin.UserSkinEntries
-                    .Where(s => s.MarketName.ToLower().Contains(itemMarketHash.ToLower()))
-                    .Where(s => s.OwnerID == Context.Message.Author.Id)
-                    .FirstOrDefault();
-                }
-
+            if (selectedSkinToSell == null)
+            {
+                //Send error if user does not have item
+                await Context.Channel.SendMessageAsync($"**{Context.Message.Author.ToString().Substring(0, Context.Message.Author.ToString().Length - 5)}**, you do not have `{itemMarketHash}` in your inventory");
+            }
+            else
+            {
                 //Get item price
                 long weaponSkinValue = Convert.ToInt64(rootWeaponSkin.ItemsList.Values.Where(s => s.Name == selectedSkinToSell.MarketName).FirstOrDefault().Price.AllTime.Average);
 
@@ -128,11 +128,6 @@ namespace UncrateGo.Modules.Csgo
                 await Context.Channel.SendMessageAsync(
                     UserInteraction.BoldUserName(Context) + $", you sold your `{selectedSkinToSell.MarketName}`" +
                     $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
-            }
-            catch (Exception)
-            {
-                //Send error if user does not have item
-                await Context.Channel.SendMessageAsync($"**{Context.Message.Author.ToString().Substring(0, Context.Message.Author.ToString().Length - 5)}**, you do not have `{itemMarketHash}` in your inventory");
             }
 
         }
@@ -188,38 +183,31 @@ namespace UncrateGo.Modules.Csgo
             var rootSkinData = CsgoDataHandler.GetRootWeaponSkin();
             var userSkin = CsgoDataHandler.GetUserSkinStorageRootobject();
 
-            try
+            //If player has items in inventory, sell!
+            if (userSkin.UserSkinEntries.Where(s => s.OwnerID == context.Message.Author.Id).Count() > 0)
             {
-                //If player has items in inventory, sell!
-                if (userSkin.UserSkinEntries.Where(s => s.OwnerID == context.Message.Author.Id).Count() > 0)
+                long weaponSkinValue = GetItemValue(userSkin.UserSkinEntries, rootSkinData);
+
+                //Give user credits
+                BankingHandler.AddCredits(context, weaponSkinValue);
+
+                //Remove user skins from inventory
+                var filteredUserSkinEntries = userSkin.UserSkinEntries.Where(s => s.OwnerID != context.Message.Author.Id).ToList();
+
+                //Write to file
+                var newUserSkinStorageRoot = new UserSkinStorageRootobject
                 {
-                    long weaponSkinValue = GetItemValue(userSkin.UserSkinEntries, rootSkinData);
+                    UserSkinEntries = filteredUserSkinEntries
+                };
+                CsgoDataHandler.WriteUserSkinStorageRootobject(newUserSkinStorageRoot);
 
-                    //Give user credits
-                    BankingHandler.AddCredits(context, weaponSkinValue);
-
-                    //Remove user skins from inventory
-                    var filteredUserSkinEntries = userSkin.UserSkinEntries.Where(s => s.OwnerID != context.Message.Author.Id).ToList();
-
-                    //Write to file
-                    var newUserSkinStorageRoot = new UserSkinStorageRootobject
-                    {
-                        UserSkinEntries = filteredUserSkinEntries
-                    };
-                    CsgoDataHandler.WriteUserSkinStorageRootobject(newUserSkinStorageRoot);
-
-                    //Send receipt
-                    await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you sold your inventory for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
-                }
-                else
-                {
-                    //Send error user does not have any items
-                    await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", your inventory is empty! Go unbox some with `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}open`");
-                }
-
+                //Send receipt
+                await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you sold your inventory for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
             }
-            catch (Exception)
+            else
             {
+                //Send error user does not have any items
+                await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", your inventory is empty! Go unbox some with `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}open`");
             }
         }
 
