@@ -17,13 +17,15 @@ Discord bot using Discord.NET, simulates the CS:GO unboxing experience
 
 * Inventory system to store and view your unboxed/dropped skins
 
-![](http://i.imgur.com/KTzF839.gif)
+![](https://i.imgur.com/X371XRQ.gif)
 
 ***
 
 * Currency system for bying and selling of CS:GO skins, unboxing and item drops are free at the moment to increase accessibility of the bot to others
 
 ![](https://i.imgur.com/7sS9ciE.gif)
+
+![](https://i.imgur.com/TYYmhCe.gif)
 
 ***
 
@@ -33,6 +35,6 @@ Discord bot using Discord.NET, simulates the CS:GO unboxing experience
 
 After inviting the bot to your server with the link [here](https://discordapp.com/api/oauth2/authorize?client_id=523282498265022479&permissions=337984&scope=bot), **Use `~help` for initial help**. 
 
-Should you have questions on how to use a command, use `~help [command]`. 
+Should you have questions on how to use a command, use `~help [command]`. Otherwise, the bot will automatically display help for the command in the event you incorrectly used a command.
 
 Note that the default prefix `~` can be changed by the guild owner. If the default bot prefix does not work @mention the bot and it will reply with the prefix for the guild you are in.
