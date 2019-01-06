@@ -15,6 +15,7 @@ namespace UncrateGo.Modules.Csgo
     public class CsgoDataHandler
     {
         public static RootSkinData rootWeaponSkin;
+        private static UserSkinStorage userSkinStorage;
 
         /// <summary>
         /// Gathers weapon skin data, if it has not been processed, it will process it
@@ -59,7 +60,7 @@ namespace UncrateGo.Modules.Csgo
 
                         //Sort each skin into corropsonding cases
                         //Read from case data config
-                        var skinCases = CsgoUnboxingHandler.csgoContiners;
+                        var skinCases = CsgoUnboxingHandler.GetCsgoContainers();
 
                         //Find the container for each skin
                         foreach (var skinCase in skinCases.Containers)
@@ -165,8 +166,8 @@ namespace UncrateGo.Modules.Csgo
         public static void GenerateSouvenirCollections()
         {
             //Create a tempory csgoContainers to work with while main one is in a foreach loop
-            var csgoContainersTemp = CsgoUnboxingHandler.csgoContiners;
-            foreach (var container in CsgoUnboxingHandler.csgoContiners.Containers.ToList())
+            var csgoContainersTemp = CsgoUnboxingHandler.GetCsgoContainers();
+            foreach (var container in CsgoUnboxingHandler.GetCsgoContainers().Containers.ToList())
             {
                 if (container.SouvenirAvailable)
                 {
@@ -186,7 +187,7 @@ namespace UncrateGo.Modules.Csgo
                 }
             }
 
-            CsgoUnboxingHandler.csgoContiners = csgoContainersTemp;
+            CsgoUnboxingHandler.SetCsgoContainers(csgoContainersTemp);
 
         }
 
@@ -194,20 +195,26 @@ namespace UncrateGo.Modules.Csgo
         /// Gets the user skin storage
         /// </summary>
         /// <returns></returns>
-        public static UserSkinStorageRootobject GetUserSkinStorageRootobject()
+        public static UserSkinStorage GetUserSkinStorage()
         {
-            var userSkin = JsonConvert.DeserializeObject<UserSkinStorageRootobject>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("UserSkinStorage.json")));
-
-            if (userSkin == null)
+            //Read from file if this is null
+            if (userSkinStorage == null)
             {
-                userSkin = new UserSkinStorageRootobject
-                {
-                    UserSkinEntries = new List<UserSkinEntry>()
-                };
+                var userSkin = JsonConvert.DeserializeObject<UserSkinStorage>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("UserSkinStorage.json")));
 
+                if (userSkin == null)
+                {
+                    userSkin = new UserSkinStorage
+                    {
+                        UserSkinEntries = new List<UserSkinEntry>()
+                    };
+
+                }
+
+                userSkinStorage = userSkin;
             }
 
-            return userSkin;
+            return userSkinStorage;
         }
 
         /// <summary>
@@ -217,24 +224,31 @@ namespace UncrateGo.Modules.Csgo
         /// <param name="skinItem"></param>
         public static void AddItemToUserInventory(SocketCommandContext context, SkinDataItem skinItem)
         {
-            var userSkin = CsgoDataHandler.GetUserSkinStorageRootobject();
+            var userSkin = CsgoDataHandler.GetUserSkinStorage();
             userSkin.UserSkinEntries.Add(new UserSkinEntry
             {
                 ClassId = skinItem.Classid,
                 OwnerID = context.Message.Author.Id,
                 UnboxDate = DateTime.UtcNow, MarketName = skinItem.Name
             });
+        }
 
-            CsgoDataHandler.WriteUserSkinStorageRootobject(userSkin);
+        /// <summary>
+        /// Sets the current user skin storage to the input
+        /// </summary>
+        /// <param name="input"></param>
+        public static void SetUserSkinStorage(UserSkinStorage input)
+        {
+            userSkinStorage = input;
         }
 
         /// <summary>
         /// Writes to the user skin storage
         /// </summary>
         /// <param name="userSkin"></param>
-        public static void WriteUserSkinStorageRootobject(UserSkinStorageRootobject userSkin)
+        public static void FlushUserSkinStorage()
         {
-            var json = JsonConvert.SerializeObject(userSkin);
+            var json = JsonConvert.SerializeObject(userSkinStorage);
             FileAccessManager.WriteStringToFile(json, true, FileAccessManager.GetFileLocation("UserSkinStorage.json"));
         }
 
@@ -287,8 +301,6 @@ namespace UncrateGo.Modules.Csgo
 
             //Set stats back to master list
             userStorage.UserInfo[context.Message.Author.Id].UserCsgoStatsStorage = userCaseStats;
-
-            UserDataManager.WriteUserStorage(userStorage);
         }
 
         public static async Task DisplayUserStatsAsync(SocketCommandContext context)

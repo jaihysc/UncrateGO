@@ -13,12 +13,18 @@ namespace UncrateGo.Modules.Commands
     [UserStorageCheckerPrecondition]
     public class CommandModule : InteractiveBase<SocketCommandContext>
     {
-        //Help
         [RequireOwner]
         [Command("setInfo")]
         public async Task SetInfoAsync([Remainder]string input)
         {
             await Context.Client.SetGameAsync(input);
+        }
+
+        [RequireOwner]
+        [Command("flush")]
+        public async Task FlushDataAsync()
+        {
+            MainProgram.FlushAllData();
         }
 
         [Command("help")]

@@ -8,63 +8,65 @@ namespace UncrateGo.Core
 {
     public class UserDataManager
     {
+        private static UserStorage userStorage;
+
         public static void CreateNewUserEntry(SocketCommandContext context)
         {
-            var userStorage = GetUserStorage();
-
             userStorage.UserInfo.Add(context.Message.Author.Id, new UserInfo
             {
                 UserId = context.Message.Author.Id,
                 UserBankingStorage = new UserBankingStorage { Credit = 0, CreditDebt = 0 },
             });
-
-            var userRecord = new UserStorage
-            {
-                UserInfo = userStorage.UserInfo
-            };
-
-
-            WriteUserStorage(userRecord);
         }
 
         public static void CreateNewUserEntry(SocketGuildUser user)
         {
-            var userStorage = GetUserStorage();
-
             userStorage.UserInfo.Add(user.Id, new UserInfo
             {
                 UserId = user.Id,
                 UserBankingStorage = new UserBankingStorage { Credit = 0, CreditDebt = 0 },
             });
-
-            var userRecord = new UserStorage
-            {
-                UserInfo = userStorage.UserInfo
-            };
-
-
-            WriteUserStorage(userRecord);
         }
 
+        /// <summary>
+        /// Gets the user storage data
+        /// </summary>
+        /// <returns></returns>
         public static UserStorage GetUserStorage()
         {
-            var json = FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("UserStorage.json"));
-            var deserialized = JsonConvert.DeserializeObject<UserStorage>(json);
-
-            //In case the user storage file is blank
-            if (deserialized == null)
+            if (userStorage == null)
             {
-                var newUserStorage = new UserStorage
-                {
-                    UserInfo = new Dictionary<ulong, UserInfo>()
-                };
+                var json = FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("UserStorage.json"));
+                var deserializedUserStorage = JsonConvert.DeserializeObject<UserStorage>(json);
 
-                return newUserStorage;
+                //In case the user storage file is blank
+                if (deserializedUserStorage == null)
+                {
+                    deserializedUserStorage = new UserStorage
+                    {
+                        UserInfo = new Dictionary<ulong, UserInfo>()
+                    };
+                }
+
+                userStorage = deserializedUserStorage;
             }
 
-            return deserialized;
+            return userStorage;
         }
-        public static void WriteUserStorage(UserStorage userStorage)
+
+        /// <summary>
+        /// Sets the current userStorage to the input
+        /// </summary>
+        /// <param name="input"></param>
+        public static void SetUserStorage(UserStorage input)
+        {
+            userStorage = input;
+        }
+
+        /// <summary>
+        /// Writes current userStorge to file
+        /// </summary>
+        public static void FlushUserStorage()
         {
             string jsonToWrite = JsonConvert.SerializeObject(userStorage);
             FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("UserStorage.json"));

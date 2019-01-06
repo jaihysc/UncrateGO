@@ -87,7 +87,7 @@ namespace UncrateGo.Modules.Csgo
         {
             //Get skin data
             var rootWeaponSkin = CsgoDataHandler.GetRootWeaponSkin();
-            var userSkin = CsgoDataHandler.GetUserSkinStorageRootobject();
+            var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
             //Find user selected item, make sure it is owned by user
             var selectedSkinToSell = userSkin.UserSkinEntries
@@ -121,8 +121,8 @@ namespace UncrateGo.Modules.Csgo
                 //Remove items that were selected to be sold
                 userSkin.UserSkinEntries.Remove(selectedSkinToSell);
 
-                //Write to file
-                CsgoDataHandler.WriteUserSkinStorageRootobject(userSkin);
+                //Set skin storage
+                CsgoDataHandler.SetUserSkinStorage(userSkin);
 
                 //Send receipt
                 await Context.Channel.SendMessageAsync(
@@ -136,7 +136,7 @@ namespace UncrateGo.Modules.Csgo
         {
             //Get skin data
             var rootSkinData = CsgoDataHandler.GetRootWeaponSkin();
-            var userSkin = CsgoDataHandler.GetUserSkinStorageRootobject();
+            var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
             //Find ALL user selected items, make sure it is owned by user
             var selectedSkinToSell = userSkin.UserSkinEntries
@@ -161,8 +161,8 @@ namespace UncrateGo.Modules.Csgo
 
             if (filterUserSkinNames.Count > 0)
             {
-                //Write to file
-                CsgoDataHandler.WriteUserSkinStorageRootobject(userSkin);
+                //Set skin storage
+                CsgoDataHandler.SetUserSkinStorage(userSkin);
 
                 //Send receipt
                 await Context.Channel.SendMessageAsync(
@@ -181,7 +181,7 @@ namespace UncrateGo.Modules.Csgo
         {
             //Get price data
             var rootSkinData = CsgoDataHandler.GetRootWeaponSkin();
-            var userSkin = CsgoDataHandler.GetUserSkinStorageRootobject();
+            var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
             //If player has items in inventory, sell!
             if (userSkin.UserSkinEntries.Where(s => s.OwnerID == context.Message.Author.Id).Count() > 0)
@@ -195,11 +195,13 @@ namespace UncrateGo.Modules.Csgo
                 var filteredUserSkinEntries = userSkin.UserSkinEntries.Where(s => s.OwnerID != context.Message.Author.Id).ToList();
 
                 //Write to file
-                var newUserSkinStorageRoot = new UserSkinStorageRootobject
+                var newUserSkinStorageRoot = new UserSkinStorage
                 {
                     UserSkinEntries = filteredUserSkinEntries
                 };
-                CsgoDataHandler.WriteUserSkinStorageRootobject(newUserSkinStorageRoot);
+
+                //Set skin storage
+                CsgoDataHandler.SetUserSkinStorage(newUserSkinStorageRoot);
 
                 //Send receipt
                 await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you sold your inventory for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");

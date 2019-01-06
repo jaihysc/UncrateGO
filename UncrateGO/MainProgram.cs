@@ -33,6 +33,9 @@ namespace UncrateGo
 
             //Setup
             CsgoDataHandler.GetRootWeaponSkin();
+            UserDataManager.GetUserStorage();
+            CsgoDataHandler.GetUserSkinStorage();
+            GuildCommandPrefixManager.PopulateGuildCommandPrefix();
 
             //Main
             new MainProgram().MainAsync().GetAwaiter().GetResult();
@@ -99,6 +102,9 @@ namespace UncrateGo
             Thread discordBotsListUpdater = new Thread(() => DiscordBotsListUpdater.UpdateDiscordBotsListInfo(_client));
             discordBotsListUpdater.Start();
 
+            Thread fileAutoFlush = new Thread(() => FlushDataTimer());
+            fileAutoFlush.Start();
+
             //All commands before this
             await Task.Delay(-1);
 
@@ -144,7 +150,7 @@ namespace UncrateGo
                 if (result.Error == CommandError.UnknownCommand)
                 {
                     //Find similar commands
-                    var commandHelpDefinitionStorage = XmlManager.FromXmlFile<HelpMenuCommands>(FileAccessManager.GetFileLocation(@"CommandHelpDescription.xml"));
+                    var commandHelpDefinitionStorage = UserHelpHandler.GetHelpMenuCommands();
                     string similarItemsString = UserHelpHandler.FindSimilarCommands(
                         commandHelpDefinitionStorage.CommandHelpEntry.Select(i => i.CommandName).ToList(), 
                         message.ToString().Substring(GuildCommandPrefixManager.GetGuildCommandPrefix(context).Length + 1));
@@ -163,7 +169,7 @@ namespace UncrateGo
                 }
                 else if (result.Error == CommandError.BadArgCount)
                 {
-                    var commandHelpDefStorage = XmlManager.FromXmlFile<HelpMenuCommands>(FileAccessManager.GetFileLocation("CommandHelpDescription.xml"));
+                    var commandHelpDefStorage = UserHelpHandler.GetHelpMenuCommands();
 
                     //Search 10 spaces up for the command in commandHelpDescription
                     string userCommand = "[command]";
@@ -225,6 +231,33 @@ namespace UncrateGo
                     EventLogger.LogMessage($"Error - {result.ErrorReason}", ConsoleColor.Red);
                 }
             }
+        }
+
+        private static void FlushDataTimer()
+        {
+            while (true)
+            {
+                //Delay the initial flush since startup
+                Thread.Sleep(300000);
+
+                FlushAllData();
+
+                Thread.Sleep(300000);
+            }
+        }
+
+        /// <summary>
+        /// Flushes all data stored to file
+        /// </summary>
+        public static void FlushAllData()
+        {
+            EventLogger.LogMessage("Flushing data to file...", ConsoleColor.Yellow);
+
+            UserDataManager.FlushUserStorage();
+            CsgoDataHandler.FlushUserSkinStorage();
+            GuildCommandPrefixManager.FlushGuildCommandDictionary();
+
+            EventLogger.LogMessage("Flushing data to file - DONE!", ConsoleColor.Yellow);
         }
     }
 }

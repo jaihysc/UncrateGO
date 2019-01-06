@@ -43,7 +43,7 @@ namespace UncrateGo.Modules
         {
             if (amount <= 0)
             {
-                await context.Message.Author.SendMessageAsync(UserInteraction.BoldUserName(context) + ", you must send **1 or more** Credits**");
+                await context.Message.Author.SendMessageAsync(UserInteraction.BoldUserName(context) + ", you must send **1 or more** Credits");
             }
             else if (GetUserCredits(context) - amount < 0)
             {
@@ -129,8 +129,8 @@ namespace UncrateGo.Modules
 
                 userStorage.UserInfo[context.Message.Author.Id].UserBankingStorage.Credit = userCreditsNew;
 
-                //Write new credits amount 
-                UserDataManager.WriteUserStorage(userStorage);
+                //Set new credits amount 
+                UserDataManager.SetUserStorage(userStorage);
 
                 return true;
             }
@@ -164,8 +164,8 @@ namespace UncrateGo.Modules
 
                 userStorage.UserInfo[userID].UserBankingStorage.Credit = userCreditsNew;
 
-                //Write new credits amount 
-                UserDataManager.WriteUserStorage(userStorage);
+                //Set new credits amount 
+                UserDataManager.SetUserStorage(userStorage);
 
                 return true;
             }

@@ -12,28 +12,7 @@ namespace UncrateGo.Core
         //This must be set prior to using the methods in this class
         internal static string rootLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-        public static List<string> ReadFromFileToList(string filePath)
-        {
-            List<string> returnFileInfoList = new List<string>();
-
-            try
-            {
-                //Check path file for specified name of txt file
-                //E.G "UserCredits.txt"
-                foreach (var item in File.ReadAllLines(filePath))
-                {
-                    returnFileInfoList.Add(item);
-                }
-
-            }
-            catch (Exception)
-            {
-            }
-
-
-            return returnFileInfoList;
-        }
-
+        
         public static string ReadFromFile(string filePath)
         {
             //Create file if it does not exist
@@ -50,36 +29,9 @@ namespace UncrateGo.Core
                 return r.ReadToEnd();
             }
         }
+        
 
-
-        public static void WriteListToFile(List<string> listToWrite, bool overwriteExistingContent, string filePath)
-        {
-            try
-            {
-                //Overwrite existing contents if true
-                if (overwriteExistingContent == true)
-                {
-                    File.WriteAllText(filePath, "");
-                }
-
-                //Write items from list
-                foreach (var item in listToWrite)
-                {
-                    using (System.IO.StreamWriter file = new System.IO.StreamWriter(filePath, true))
-                    {
-                        file.WriteLine(item);
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.StackTrace);
-            }
-
-
-        }
-
+            
         public static void WriteStringToFile(string stringToWrite, bool overwriteExistingContent, string filePath)
         {
             try
@@ -102,7 +54,7 @@ namespace UncrateGo.Core
             }
 
         }
-
+        
 
         public static string GetFileLocation(string fileName)
         {

@@ -14,7 +14,36 @@ namespace UncrateGo.Modules.Csgo
     public class CsgoUnboxingHandler : InteractiveBase<SocketCommandContext>
     {
         public static Dictionary<ulong, string> userSelectedCase = new Dictionary<ulong, string>();
-        public static CsgoContainers csgoContiners = XmlManager.FromXmlFile<CsgoContainers>(FileAccessManager.GetFileLocation("skinCases.xml"));
+        private static CsgoContainers csgoContainers;
+
+        public static CsgoContainers GetCsgoContainers()
+        {
+            if (csgoContainers == null)
+            {
+                var tempCsgoContiners = XmlManager.FromXmlFile<CsgoContainers>(FileAccessManager.GetFileLocation("skinCases.xml"));
+
+                if (tempCsgoContiners == null)
+                {
+                    tempCsgoContiners = new CsgoContainers
+                    {
+                        Containers = new List<Container>()
+                    };
+                }
+
+                csgoContainers = tempCsgoContiners;
+            }
+
+            return csgoContainers;
+        }
+
+        /// <summary>
+        /// Sets the CsgoContainers to the input
+        /// </summary>
+        /// <param name="input"></param>
+        public static void SetCsgoContainers(CsgoContainers input)
+        {
+            csgoContainers = input;
+        }
 
         /// <summary>
         /// Opens a virtual CS:GO case, result is sent to Context channel in a method
@@ -67,7 +96,7 @@ namespace UncrateGo.Modules.Csgo
             }
 
             //Get user selected case
-            string selectedCaseIcon = csgoContiners.Containers.Where(s => s.Name == userSelectedCase[context.Message.Author.Id]).Select(s => s.IconURL).FirstOrDefault();
+            string selectedCaseIcon = csgoContainers.Containers.Where(s => s.Name == userSelectedCase[context.Message.Author.Id]).Select(s => s.IconURL).FirstOrDefault();
 
             //Set name to unboxing or item drop
             string title = "";
@@ -129,7 +158,7 @@ namespace UncrateGo.Modules.Csgo
             List<string> filteredContainers = new List<string>();
 
             //Find containers whose name is not null
-            filteredContainers = CsgoUnboxingHandler.csgoContiners.Containers.Where(c => c.Name != null).Select(c => c.Name).ToList();
+            filteredContainers = CsgoUnboxingHandler.GetCsgoContainers().Containers.Where(c => c.Name != null).Select(c => c.Name).ToList();
             //Create a list of ascending numbers to reference each container
             for (int i = 0; i < filteredContainers.Count(); i++)
             {
@@ -167,7 +196,7 @@ namespace UncrateGo.Modules.Csgo
             await sentMessage.DeleteAsync();
 
 
-            var continers = CsgoUnboxingHandler.csgoContiners.Containers.Where(c => c.Name != null).ToList();
+            var continers = CsgoUnboxingHandler.GetCsgoContainers().Containers.Where(c => c.Name != null).ToList();
 
             //Try to turn user input to string
             int userInput = 0;
@@ -259,7 +288,7 @@ namespace UncrateGo.Modules.Csgo
             }
 
             //Filter skins to those in user's case
-            string selectedCase = CsgoUnboxingHandler.csgoContiners.Containers.Where(s => s.Name == CsgoUnboxingHandler.userSelectedCase[context.Message.Author.Id]).Select(s => s.Name).FirstOrDefault();
+            string selectedCase = CsgoUnboxingHandler.GetCsgoContainers().Containers.Where(s => s.Name == CsgoUnboxingHandler.userSelectedCase[context.Message.Author.Id]).Select(s => s.Name).FirstOrDefault();
 
             //Add skins matching user's case to sorted result
             if (byPassCaseFilter == false)
@@ -300,7 +329,7 @@ namespace UncrateGo.Modules.Csgo
                 }
             }
 
-            bool itemIsSticker = CsgoUnboxingHandler.csgoContiners.Containers.Where(i => i.Name == userSelectedCaseName).FirstOrDefault().IsSticker;
+            bool itemIsSticker = CsgoUnboxingHandler.GetCsgoContainers().Containers.Where(i => i.Name == userSelectedCaseName).FirstOrDefault().IsSticker;
             //Filter by rarity if not a sticker
             if (!itemIsSticker)
             {
@@ -322,7 +351,7 @@ namespace UncrateGo.Modules.Csgo
             }
 
             //If case is not a souvenir, filter out souvenir items, if it is, filter out non souvenir items
-            if (byPassCaseFilter == false && CsgoUnboxingHandler.csgoContiners.Containers.Where(c => c.Name == selectedCase).FirstOrDefault().IsSouvenir)
+            if (byPassCaseFilter == false && CsgoUnboxingHandler.GetCsgoContainers().Containers.Where(c => c.Name == selectedCase).FirstOrDefault().IsSouvenir)
             {
                 //True
                 sortedResult = sortedResult.Where(s => s.Value.Name.ToLower().Contains("souvenir")).ToList();

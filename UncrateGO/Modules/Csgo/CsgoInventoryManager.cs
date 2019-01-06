@@ -26,7 +26,7 @@ namespace UncrateGo.Modules.Csgo
             embedPriceFieldsMaster = new List<string>();
 
             //Get user skins from json
-            var userSkin = CsgoDataHandler.GetUserSkinStorageRootobject();
+            var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
             List<UserSkinEntry> foundUserSkins = new List<UserSkinEntry>();
             //Filter userSkinEntries xml file down to skins belonging to sender

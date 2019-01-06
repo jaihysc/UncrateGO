@@ -10,6 +10,8 @@ namespace UncrateGo.Modules
 {
     public class UserHelpHandler : ModuleBase<SocketCommandContext>
     {
+        private static HelpMenuCommands helpMenuCommands;
+
         public static async Task DisplayHelpMenu(SocketCommandContext context)
         {
             string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
@@ -44,7 +46,7 @@ namespace UncrateGo.Modules
             string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
 
             //Get command help list from storage
-            var commandHelpDefinitionStorage = XmlManager.FromXmlFile<HelpMenuCommands>(FileAccessManager.GetFileLocation("CommandHelpDescription.xml"));
+            var commandHelpDefinitionStorage = GetHelpMenuCommands();
 
             //Create a boolean to warn user that command does not exist if false
             bool commandHelpDefinitionExists = false;
@@ -107,6 +109,28 @@ namespace UncrateGo.Modules
                 }
 
             }
+        }
+
+        public static HelpMenuCommands GetHelpMenuCommands()
+        {
+            //Read from file if unassigned
+            if (helpMenuCommands == null)
+            {
+                var tempHelpMenuCommands = XmlManager.FromXmlFile<HelpMenuCommands>(FileAccessManager.GetFileLocation("CommandHelpDescription.xml"));
+
+                //Create new help menu commands if null
+                if (tempHelpMenuCommands == null)
+                {
+                    tempHelpMenuCommands = new HelpMenuCommands
+                    {
+                        CommandHelpEntry = new List<HelpMenuCommandEntry>()
+                    };
+                }
+
+                helpMenuCommands = tempHelpMenuCommands;
+            }
+
+            return helpMenuCommands;
         }
 
         /// <summary>

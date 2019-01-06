@@ -15,7 +15,7 @@ namespace UncrateGo.Models
     }
 
 
-    public class UserSkinStorageRootobject
+    public class UserSkinStorage
     {
         public long SkinAmount { get; set; }
         public List<UserSkinEntry> UserSkinEntries { get; set; }

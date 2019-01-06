@@ -8,6 +8,7 @@ namespace UncrateGo.Core
 {
     public class XmlManager
     {
+        
         public static bool NewLineOnAttributes { get; set; }
         /// <summary>
         /// Serializes an object to an XML string, using the specified namespaces.
@@ -98,5 +99,6 @@ namespace UncrateGo.Core
                 sr.Close();
             }
         }
+        
     }
 }
