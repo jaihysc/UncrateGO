@@ -11,7 +11,7 @@ Discord bot using Discord.NET, simulates the CS:GO unboxing experience
 
 * Unbox CS:GO skins, real case contents, real drop chances, real market values
 
-![](http://i.imgur.com/AvlC6K6.gif)
+![](https://i.imgur.com/cbkcRkC.gif)
 
 ***
 
@@ -21,7 +21,7 @@ Discord bot using Discord.NET, simulates the CS:GO unboxing experience
 
 ***
 
-* Currency system for bying and selling of CS:GO skins, unboxing and item drops are free at the moment to increase accessibility of the bot to others
+* Currency system for buying and selling of CS:GO skins, unboxing and item drops are free at the moment to increase accessibility of the bot to others
 
 ![](https://i.imgur.com/7sS9ciE.gif)
 
