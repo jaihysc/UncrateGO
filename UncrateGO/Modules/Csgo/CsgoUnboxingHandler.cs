@@ -171,7 +171,7 @@ namespace UncrateGo.Modules.Csgo
                 AuthorName = "CS:GO Containers",
                 AuthorURL = "https://csgostash.com/img/containers/c259.png",
 
-                Description = $"Select a container by typing the appropriate number on the left\nThen use `{botCommandPrefix}open` to open cases",
+                Description = $"Select a container by typing the appropriate number on the left. No additional text. E.G `13`\nThen use `{botCommandPrefix}open` to open cases",
 
                 Field1Header = "Number",
                 Field2Header = "Case",
@@ -390,14 +390,35 @@ namespace UncrateGo.Modules.Csgo
                     }
                 }
 
+                bool itemIsSouvenir = CsgoUnboxingHandler.GetCsgoContainers().Containers.Where(i => i.Name == userSelectedCaseName).FirstOrDefault().IsSouvenir;
                 //Increment stats counter
-                if (!itemIsSticker)
+                //Sticker
+                if (itemIsSticker && !byPassCaseFilter)
                 {
-                    CsgoDataHandler.IncrementUserStatTracker(context, itemListType);
+                    CsgoLeaderboardsManager.IncrementCaseStatTracker(context, CsgoLeaderboardsManager.CaseCategory.Sticker);
+                    CsgoLeaderboardsManager.IncrementStatTracker(context, itemListType, CsgoLeaderboardsManager.ItemCategory.Sticker);
+                }
+                //Souvenir
+                else if (itemIsSouvenir && !byPassCaseFilter)
+                {
+                    CsgoLeaderboardsManager.IncrementCaseStatTracker(context, CsgoLeaderboardsManager.CaseCategory.Souvenir);
+                    CsgoLeaderboardsManager.IncrementStatTracker(context, itemListType, CsgoLeaderboardsManager.ItemCategory.Default);
+                }
+                //Case
+                else if (!byPassCaseFilter)
+                {
+                    CsgoLeaderboardsManager.IncrementCaseStatTracker(context, CsgoLeaderboardsManager.CaseCategory.Case);
+                    CsgoLeaderboardsManager.IncrementStatTracker(context, itemListType, CsgoLeaderboardsManager.ItemCategory.Default);
+                }
+                //Drop
+                else if (byPassCaseFilter)
+                {
+                    CsgoLeaderboardsManager.IncrementCaseStatTracker(context, CsgoLeaderboardsManager.CaseCategory.Drop);
+                    CsgoLeaderboardsManager.IncrementStatTracker(context, itemListType, CsgoLeaderboardsManager.ItemCategory.Default);
                 }
                 else
                 {
-                    CsgoDataHandler.IncrementUserStatTracker(context, itemListType, true);
+                    CsgoLeaderboardsManager.IncrementStatTracker(context, itemListType, CsgoLeaderboardsManager.ItemCategory.Other);
                 }
 
                 return selectedSkin.Value;

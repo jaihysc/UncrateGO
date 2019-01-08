@@ -24,6 +24,10 @@ namespace UncrateGo.Models
     public class UserCsgoStatsStorage
     {
         public long CasesOpened { get; set; }
+        public long SouvenirsOpened { get; set; }
+        public long DropsOpened { get; set; }
+        public long StickersOpened { get; set; }
+
         public long ConsumerGrade { get; set; }
         public long IndustrialGrade { get; set; }
         public long MilSpecGrade { get; set; }
@@ -31,6 +35,7 @@ namespace UncrateGo.Models
         public long Classified { get; set; }
         public long Covert { get; set; }
         public long Special { get; set; }
+        public long Stickers { get; set; }
         public long Other { get; set; }
     }
 }

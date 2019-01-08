@@ -203,7 +203,7 @@ namespace UncrateGo.Modules.Commands
         [Command("statistics", RunMode = RunMode.Async)]
         public async Task ShowUserStatisticsAsync([Remainder]string filterString = null)
         {
-            await CsgoDataHandler.DisplayUserStatsAsync(Context);
+            await CsgoLeaderboardsManager.DisplayUserStatsAsync(Context);
         }
 
     }
