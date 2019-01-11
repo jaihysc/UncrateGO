@@ -6,10 +6,12 @@ using UncrateGo.Modules.Csgo;
 using System;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using System.Linq;
+using UncrateGo.Models;
 
 namespace UncrateGo.Modules.Commands
 {
-    [Ratelimit(2, 6, Measure.Seconds)]
+    [Ratelimit(2, 8, Measure.Seconds)]
     [UserStorageCheckerPrecondition]
     public class CommandModule : InteractiveBase<SocketCommandContext>
     {
@@ -89,6 +91,36 @@ namespace UncrateGo.Modules.Commands
             if (!CsgoCaseSelectionHandler.GetHasUserSelectedCase(Context)) await ReplyAndDeleteAsync($"Tip: Use `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}select` to select different cases to open", timeout: TimeSpan.FromSeconds(30));
 
             await CsgoUnboxingHandler.OpenCase(Context);
+        }
+
+        [Command("reset", RunMode = RunMode.Async)]
+        public async Task ResetUserAsync()
+        {
+            await Context.Message.Channel.SendMessageAsync(Context.Message.Author.Mention + ", are you sure you want to reset your profile?\nType **Y** to confirm");
+
+            var userInput = await NextMessageAsync();
+
+            //Check if user entered y
+            if (userInput.Content.ToLower() == "y")
+            {
+                //Reset user's credits
+                var userStorage = UserDataManager.GetUserStorage();
+
+                userStorage.UserInfo[Context.Message.Author.Id].UserBankingStorage.Credit = 0;
+
+                //Reset inventory
+                var userSkinStorage = CsgoDataHandler.GetUserSkinStorage();
+                var userSkinStorageNew = userSkinStorage.UserSkinEntries.Where(i => i.OwnerID != Context.Message.Author.Id).ToList();
+
+                CsgoDataHandler.SetUserSkinStorage(new UserSkinStorage { UserSkinEntries = userSkinStorageNew });
+
+                await Context.Message.Channel.SendMessageAsync(Context.Message.Author.Mention + ", your profile has been reset");
+            }
+            else
+            {
+                await Context.Message.Channel.SendMessageAsync(Context.Message.Author.Mention + ", reset cancelled");
+            }
+            
         }
 
 

@@ -211,7 +211,7 @@ namespace UncrateGo.Modules.Csgo
             //If player has items in inventory, sell!
             if (userSkin.UserSkinEntries.Where(s => s.OwnerID == context.Message.Author.Id).Count() > 0)
             {
-                long weaponSkinValue = GetItemValue(userSkin.UserSkinEntries, rootSkinData);
+                long weaponSkinValue = GetItemValue(userSkin.UserSkinEntries.Where(s => s.OwnerID == context.Message.Author.Id).ToList(), rootSkinData);
 
                 //Give user credits
                 BankingHandler.AddCredits(context, weaponSkinValue);

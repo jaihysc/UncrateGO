@@ -15,7 +15,7 @@ namespace UncrateGo.Core
             userStorage.UserInfo.Add(context.Message.Author.Id, new UserInfo
             {
                 UserId = context.Message.Author.Id,
-                UserBankingStorage = new UserBankingStorage { Credit = 0, CreditDebt = 0 },
+                UserBankingStorage = new UserBankingStorage { Credit = 0},
             });
         }
 
@@ -24,7 +24,7 @@ namespace UncrateGo.Core
             userStorage.UserInfo.Add(user.Id, new UserInfo
             {
                 UserId = user.Id,
-                UserBankingStorage = new UserBankingStorage { Credit = 0, CreditDebt = 0 },
+                UserBankingStorage = new UserBankingStorage { Credit = 0},
             });
         }
 

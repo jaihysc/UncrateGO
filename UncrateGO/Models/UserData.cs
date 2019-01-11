@@ -19,7 +19,6 @@ namespace UncrateGo.Models
     public class UserBankingStorage
     {
         public long Credit { get; set; }
-        public long CreditDebt { get; set; }
     }
     public class UserCsgoStatsStorage
     {
