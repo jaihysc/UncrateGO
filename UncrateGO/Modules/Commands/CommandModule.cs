@@ -118,7 +118,7 @@ namespace UncrateGo.Modules.Commands
             }
             else
             {
-                await Context.Message.Channel.SendMessageAsync(Context.Message.Author.Mention + ", reset cancelled");
+                await Context.Message.Channel.SendMessageAsync(Context.Message.Author.Mention + ", profile reset cancelled");
             }
             
         }

@@ -22,59 +22,37 @@ namespace UncrateGo.Modules.Csgo
             long weaponSkinValue = 0;
 
 
-
-            bool userSpecifiedSkinExistsInMarket = false;
-
             //Make sure skin exists in market
-            foreach (var marketSkin in rootWeaponSkins.ItemsList.Values)
-            {
-                //If it does exist, get info on it
-                if (marketSkin.Name.ToLower() == itemMarketHash.ToLower())
-                {
-                    weaponSkinValue = Convert.ToInt64(rootWeaponSkins.ItemsList.Values.Where(s => s.Name == marketSkin.Name).FirstOrDefault().Price.AllTime.Average);
-                    userSpecifiedSkinExistsInMarket = true;
+            var marketSkin = rootWeaponSkins.ItemsList.Values.Where(s => s.Name.ToLower().Contains(itemMarketHash.ToLower())).ToList().FirstOrDefault();
 
-                    selectedMarketSkin.Classid = marketSkin.Classid;
-                    selectedMarketSkin.Name = marketSkin.Name;
-                    break;
-                }
-            }
             //If searching by direct result cannot be found, search by anything that contains the input
-            if (!userSpecifiedSkinExistsInMarket)
+            if (marketSkin == null)
             {
-                foreach (var marketSkin in rootWeaponSkins.ItemsList.Values)
-                {
-                    //If it does exist, get info on it
-                    if (marketSkin.Name.ToLower().Contains(itemMarketHash.ToLower()))
-                    {
-                        weaponSkinValue = Convert.ToInt64(rootWeaponSkins.ItemsList.Values.Where(s => s.Name == marketSkin.Name).FirstOrDefault().Price.AllTime.Average);
-                        userSpecifiedSkinExistsInMarket = true;
-
-                        selectedMarketSkin.Classid = marketSkin.Classid;
-                        selectedMarketSkin.Name = marketSkin.Name;
-                        break;
-                    }
-                }
+                marketSkin = rootWeaponSkins.ItemsList.Values.Where(s => s.Name.ToLower().Contains(itemMarketHash.ToLower())).ToList().FirstOrDefault();
             }       
             //If it still cannot be found, search by whole words
-            if (!userSpecifiedSkinExistsInMarket)
+            if (marketSkin == null)
             {
-                var marketSkin = FindSimilarItemsByWords(rootWeaponSkins, context, itemMarketHash).FirstOrDefault();
-
-                weaponSkinValue = Convert.ToInt64(rootWeaponSkins.ItemsList.Values.Where(s => s.Name == marketSkin.Name).FirstOrDefault().Price.AllTime.Average);
-                userSpecifiedSkinExistsInMarket = true;
-
-                selectedMarketSkin.Classid = marketSkin.Classid;
-                selectedMarketSkin.Name = marketSkin.Name;
+                marketSkin = FindSimilarItemsByWords(rootWeaponSkins, context, itemMarketHash).FirstOrDefault();
             }
 
             //Send error if skin does not exist
-            if (!userSpecifiedSkinExistsInMarket)
+            if (marketSkin == null)
             {
                 await context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", `{itemMarketHash}` does not exist in the current skin market");
+                return;
             }
+            else
+            {
+                //If skin does exist, get info on it
+                weaponSkinValue = Convert.ToInt64(rootWeaponSkins.ItemsList.Values.Where(s => s.Name == marketSkin.Name).FirstOrDefault().Price.AllTime.Average);
+                selectedMarketSkin.Classid = marketSkin.Classid;
+                selectedMarketSkin.Name = marketSkin.Name;
+
+            }
+
             //Make sure user has enough credits to buy skin
-            else if (BankingHandler.GetUserCredits(context) < weaponSkinValue)
+            if (BankingHandler.GetUserCredits(context) < weaponSkinValue)
             {
                 await context.Message.Channel.SendMessageAsync($"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**, you do not have enough credits to buy `{selectedMarketSkin.Name}` | **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)}** - **{BankingHandler.CreditCurrencyFormatter(BankingHandler.GetUserCredits(context))}** ");
             }
@@ -90,7 +68,7 @@ namespace UncrateGo.Modules.Csgo
 
                 //Send receipt
                 await context.Channel.SendMessageAsync(
-                    UserInteraction.BoldUserName(context) + $", you bought`{selectedMarketSkin.Name}`" +
+                    UserInteraction.BoldUserName(context) + $", you bought `{selectedMarketSkin.Name}`" +
                     $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
             }
         }

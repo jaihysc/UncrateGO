@@ -34,7 +34,7 @@ namespace UncrateGo.Modules
                 })
                 .AddField("Currency Commands", "`balance` `moneyTransfer`")
                 .AddField("Case Commands", "`open` `drop` `select` `inventory` `market` `buy` `sell` `view` `statistics`")
-                .AddField("Settings Commands", "`prefix` `info`");
+                .AddField("Settings Commands", "`prefix` `info` `reset`");
 
             var embed = embedBuilder.Build();
 
