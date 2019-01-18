@@ -24,25 +24,32 @@ namespace UncrateGo
 
         public static void Main(string[] args)
         {
-            DisableConsoleQuickEdit.Go();
+            try
+            {
+                DisableConsoleQuickEdit.Go();
 
-            //Injection
-            stopwatch.Start();
-            EventLogger.LogMessage("Hello World! - Beginning startup");
+                //Injection
+                stopwatch.Start();
+                EventLogger.LogMessage("Hello World! - Beginning startup");
 
-            //Runs setup if path file is not present
-            SetupManager.CheckIfPathsFileExists();
-            CsgoDataHandler.GenerateSouvenirCollections();
+                //Runs setup if path file is not present
+                SetupManager.CheckIfPathsFileExists();
+                CsgoDataHandler.GenerateSouvenirCollections();
 
-            //Setup
-            CsgoDataHandler.GetRootWeaponSkin();
-            UserDataManager.GetUserStorage();
-            CsgoDataHandler.GetUserSkinStorage();
-            GuildCommandPrefixManager.PopulateGuildCommandPrefix();
+                //Setup
+                CsgoDataHandler.GetRootWeaponSkin();
+                UserDataManager.GetUserStorage();
+                CsgoDataHandler.GetUserSkinStorage();
+                GuildCommandPrefixManager.PopulateGuildCommandPrefix();
 
-            //Main
-            new MainProgram().MainAsync().GetAwaiter().GetResult();
-
+                //Main
+                new MainProgram().MainAsync().GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Oh no, something went wrong!!! \n" + ex.Source + ex.StackTrace);
+                Console.ReadLine();
+            }
 
         }
 

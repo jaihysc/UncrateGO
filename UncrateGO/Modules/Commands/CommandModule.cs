@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using System.Linq;
 using UncrateGo.Models;
+using Discord;
 
 namespace UncrateGo.Modules.Commands
 {
-    [Ratelimit(2, 8, Measure.Seconds)]
+    [Ratelimit(2, 10, Measure.Seconds)]
     [UserStorageCheckerPrecondition]
     public class CommandModule : InteractiveBase<SocketCommandContext>
     {
@@ -132,19 +133,24 @@ namespace UncrateGo.Modules.Commands
                 var pager = CsgoCaseSelectionHandler.ShowPossibleCases(Context);
 
                 //Send paginated message
-                Discord.IUserMessage sentMessage = await PagedReplyAsync(pager, new ReactionList
+                IUserMessage sentMessage = await PagedReplyAsync(pager, new ReactionList
                 {
                     Forward = true,
                     Backward = true,
                 });
 
+                //Auto delete message after 1 minute
+                DeleteMessage(sentMessage, TimeSpan.FromMinutes(1));
+
                 //Get user response
-                var response = await NextMessageAsync();
+                var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(1));
 
-                await CsgoCaseSelectionHandler.SelectOpenCase(Context, response.ToString(), sentMessage);
+                if (response != null) await CsgoCaseSelectionHandler.SelectOpenCase(Context, response.ToString(), sentMessage);
             }
-
-            await CsgoCaseSelectionHandler.SelectOpenCase(Context, inputNumber.ToString(), null);
+            else
+            {
+                await CsgoCaseSelectionHandler.SelectOpenCase(Context, inputNumber.ToString(), null);
+            }          
 
         }
 
@@ -164,13 +170,16 @@ namespace UncrateGo.Modules.Commands
             var pager = CsgoInventoryHandler.DisplayUserCsgoInventory(Context);
 
             //Send paginated message
-            await PagedReplyAsync(pager, new ReactionList
+            var sentMessage = await PagedReplyAsync(pager, new ReactionList
             {
                 Forward = true,
                 Backward = true,
                 Jump = true,
                 Trash = true
             });
+
+            //Auto delete message after 5 minutes
+            DeleteMessage(sentMessage, TimeSpan.FromMinutes(5));
         }
 
 
@@ -216,13 +225,16 @@ namespace UncrateGo.Modules.Commands
             var pager = CsgoInventoryHandler.GetCsgoMarketInventory(Context, filterString);
 
             //Send paginated message
-            await PagedReplyAsync(pager, new ReactionList
+            var sentMessage = await PagedReplyAsync(pager, new ReactionList
             {
                 Jump = true,
                 Forward = true,
                 Backward = true,
                 Trash = true
             });
+
+            //Auto delete message after 5 minutes
+            DeleteMessage(sentMessage, TimeSpan.FromMinutes(5));
         }
 
 
@@ -238,5 +250,18 @@ namespace UncrateGo.Modules.Commands
             await CsgoLeaderboardsManager.DisplayUserStatsAsync(Context);
         }
 
+        /// <summary>
+        /// Deletes the specified sent message after the specified amount of time, do not await this for the program to keep running
+        /// </summary>
+        /// <param name="sentMessage"></param>
+        /// <param name="timeSpan"></param>
+        /// <returns></returns>
+        private async Task DeleteMessage(IUserMessage sentMessage, TimeSpan timeSpan)
+        {
+            await Task.Delay(timeSpan);
+
+            //This may throw an exception if the message has already been deleted
+            await sentMessage.DeleteAsync();
+        }
     }
 }
