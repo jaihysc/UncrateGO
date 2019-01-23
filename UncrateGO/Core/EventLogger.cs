@@ -45,7 +45,6 @@ namespace UncrateGo.Core
         {
             //Log user message to file
             var chnl = msg.Channel as SocketGuildChannel;
-            var cc = Console.BackgroundColor;
 
             if (chnl != null)
             {
@@ -59,7 +58,7 @@ namespace UncrateGo.Core
             Console.BackgroundColor = ConsoleColor.DarkGray;
             Console.WriteLine(msg.ToString());
 
-            Console.BackgroundColor = cc;
+            Console.BackgroundColor = ConsoleColor.Black;
             return Task.CompletedTask;
         }
 

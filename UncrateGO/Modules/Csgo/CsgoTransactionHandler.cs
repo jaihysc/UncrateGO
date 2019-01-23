@@ -167,9 +167,14 @@ namespace UncrateGo.Modules.Csgo
                 //Set skin storage
                 CsgoDataHandler.SetUserSkinStorage(userSkin);
 
+                //join weapon string
+                string soldWeaponsString = string.Join("\n", filterUserSkinNames);
+                //Cut string off if length is greater than 1000
+                if (soldWeaponsString.Length > 1000) soldWeaponsString = soldWeaponsString.Substring(0, 1000) + "...";
+
                 //Send receipt
                 await context.Channel.SendMessageAsync(
-                    UserInteraction.BoldUserName(context) + $", you sold your \n`{string.Join("\n", filterUserSkinNames)}`" +
+                    UserInteraction.BoldUserName(context) + $", you sold your \n`{soldWeaponsString}`" +
                     $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
             }
             else
