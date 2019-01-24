@@ -34,7 +34,9 @@ namespace UncrateGo
 
                 //Runs setup if path file is not present
                 SetupManager.CheckIfPathsFileExists();
+
                 CsgoDataHandler.GenerateSouvenirCollections();
+                CsgoDataHandler.UpdateRootWeaponSkinTimer();
 
                 //Setup
                 CsgoDataHandler.GetRootWeaponSkin();
