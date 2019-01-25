@@ -44,6 +44,10 @@ namespace UncrateGo
                 CsgoDataHandler.GetUserSkinStorage();
                 GuildCommandPrefixManager.PopulateGuildCommandPrefix();
 
+                //Exception handling
+                AppDomain currentDomain = AppDomain.CurrentDomain;
+                currentDomain.UnhandledException += new UnhandledExceptionEventHandler(ExceptionHandler);
+
                 //Main
                 new MainProgram().MainAsync().GetAwaiter().GetResult();
             }
@@ -87,7 +91,7 @@ namespace UncrateGo
             }
             catch (Exception)
             {
-                throw new Exception("Unable to initialize! - Could it be because of an invalid token?");
+                Console.WriteLine("Unable to initialize! - Could it be because of an invalid token?");
             }
 
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
@@ -119,7 +123,6 @@ namespace UncrateGo
 
             //All commands before this
             await Task.Delay(-1);
-
         }
 
         //Command Handler
@@ -267,6 +270,22 @@ namespace UncrateGo
             GuildCommandPrefixManager.FlushGuildCommandDictionary();
 
             EventLogger.LogMessage("Flushing data to file - DONE!", ConsoleColor.Yellow);
+        }
+
+        /// <summary>
+        /// Exception handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        static void ExceptionHandler(object sender, UnhandledExceptionEventArgs args)
+        {
+            Exception e = (Exception)args.ExceptionObject;
+            Console.WriteLine("Caught: " + e.Message);
+            Console.WriteLine("Runtime terminating: {0}", args.IsTerminating);
+            Console.WriteLine(e.StackTrace);
+
+            //Write a crashlog to file
+            FileAccessManager.WriteStringToFile(e.Message + e.StackTrace, false, FileAccessManager.GetFileLocation("crashlog.txt"));
         }
 
         //https://stackoverflow.com/questions/13656846/how-to-programmatic-disable-c-sharp-console-applications-quick-edit-mode

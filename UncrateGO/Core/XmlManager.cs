@@ -92,7 +92,8 @@ namespace UncrateGo.Core
             }
             catch (Exception e)
             {
-                throw new Exception("There was an error attempting to read the file " + filePath + "\n\n" + e.InnerException.Message);
+                Console.WriteLine("There was an error attempting to read the file " + filePath + "\n\n" + e.InnerException.Message);
+                return default(T);
             }
             finally
             {

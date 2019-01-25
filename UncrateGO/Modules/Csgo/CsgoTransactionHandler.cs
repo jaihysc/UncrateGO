@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 
 namespace UncrateGo.Modules.Csgo
 {
@@ -230,6 +231,78 @@ namespace UncrateGo.Modules.Csgo
             }
 
             return weaponSkinValue;
+        }
+
+        public static async Task DisplayCsgoItemStatistics(SocketCommandContext context, string filterString)
+        {
+            //Search by exact, then contain, then whole words
+            var skinItem = CsgoDataHandler.rootWeaponSkin.ItemsList.Values.Where(c => c.Name.ToLower() == filterString.ToLower()).FirstOrDefault();
+            if (skinItem == null) skinItem = CsgoDataHandler.rootWeaponSkin.ItemsList.Values.Where(c => c.Name.ToLower().Contains(filterString.ToLower())).FirstOrDefault();
+            if (skinItem == null) skinItem = FindSimilarItemsByWords(CsgoDataHandler.rootWeaponSkin, context, filterString).FirstOrDefault();
+
+            //Check if the skin exists
+            if (skinItem != null)
+            {
+                //Get all collections skin / item is in
+                string skinCaseCollections = "\u200b";
+
+                //Do not display collection info for knives as they have a massive list of interchangeable cases
+                if (skinItem.WeaponType != WeaponType.Knife)
+                {
+                    if (skinItem.Cases != null) skinCaseCollections = string.Join("\n", skinItem.Cases.Select(i => i.CaseCollection));
+                }
+
+                //Get item price
+                long weaponSkinPrice = Convert.ToInt64(skinItem.Price.AllTime.Average);
+
+
+                //Send embed
+                var embedBuilder = new EmbedBuilder()
+                    .WithColor(new Color(Convert.ToUInt32(skinItem.RarityColor, 16)))
+                    .WithFooter(footer =>
+                    {
+                        footer
+                            .WithText("Sent by " + context.Message.Author.ToString())
+                            .WithIconUrl(context.Message.Author.GetAvatarUrl());
+                    })
+                    .WithAuthor(author =>
+                    {
+                        author
+                            .WithName("Item Info")
+                            .WithIconUrl("https://i.redd.it/1s0j5e4fhws01.png");
+                    })
+                    .AddField(skinItem.Name, $"{skinCaseCollections}\nMarket Value: {weaponSkinPrice}")
+                    .WithImageUrl("https://steamcommunity.com/economy/image/" + skinItem.IconUrlLarge);
+
+                var embed = embedBuilder.Build();
+
+                await context.Message.Channel.SendMessageAsync(" ", embed: embed).ConfigureAwait(false);
+
+            }
+            else
+            {
+                //Send embed
+                var embedBuilder = new EmbedBuilder()
+                    .WithColor(new Color(0, 200, 0))
+                    .WithFooter(footer =>
+                    {
+                        footer
+                            .WithText("Sent by " + context.Message.Author.ToString())
+                            .WithIconUrl(context.Message.Author.GetAvatarUrl());
+                    })
+                    .WithAuthor(author =>
+                    {
+                        author
+                            .WithName("Item Info")
+                            .WithIconUrl("https://i.redd.it/1s0j5e4fhws01.png");
+                    })
+                    .AddField("The selected item could not be found", "Broaden your search parameters and try again");
+
+                var embed = embedBuilder.Build();
+
+                await context.Message.Channel.SendMessageAsync(" ", embed: embed).ConfigureAwait(false);
+            }
+
         }
 
 

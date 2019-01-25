@@ -210,7 +210,8 @@ namespace UncrateGo.Modules.Csgo
                 case "5":
                     return Exterior.WellWorn;
             }
-            throw new Exception("Cannot unmarshal type Exterior");
+            Console.WriteLine("Exception - Cannot unmarshal type Exterior");
+            return null;
         }
 
         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
@@ -242,7 +243,7 @@ namespace UncrateGo.Modules.Csgo
                     serializer.Serialize(writer, "Well-Worn");
                     return;
             }
-            throw new Exception("Cannot marshal type Exterior");
+            Console.WriteLine("Exception - Cannot marshal type Exterior");
         }
 
         public static readonly ExteriorConverter Singleton = new ExteriorConverter();
@@ -261,7 +262,8 @@ namespace UncrateGo.Modules.Csgo
             {
                 return l;
             }
-            throw new Exception("Cannot unmarshal type long");
+            Console.WriteLine("Exception - Cannot unmarshal type long");
+            return null;
         }
 
         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
@@ -428,7 +430,8 @@ namespace UncrateGo.Modules.Csgo
                 case "33":
                     return GunType.Xm1014;
             }
-            throw new Exception("Cannot unmarshal type GunType");
+            Console.WriteLine("Exception - Cannot unmarshal type GunType");
+            return null;
         }
 
         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
@@ -544,7 +547,7 @@ namespace UncrateGo.Modules.Csgo
                     serializer.Serialize(writer, "XM1014");
                     return;
             }
-            throw new Exception("Cannot marshal type GunType");
+            Console.WriteLine("Exception - Cannot marshal type GunType");
         }
 
         public static readonly GunTypeConverter Singleton = new GunTypeConverter();
@@ -620,7 +623,8 @@ namespace UncrateGo.Modules.Csgo
                 case "13":
                     return KnifeType.UrsusKnife;
             }
-            throw new Exception("Cannot unmarshal type KnifeType");
+            Console.WriteLine("Exception - Cannot unmarshal type KnifeType");
+            return null;
         }
 
         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
@@ -676,7 +680,7 @@ namespace UncrateGo.Modules.Csgo
                     serializer.Serialize(writer, "Ursus Knife");
                     return;
             }
-            throw new Exception("Cannot marshal type KnifeType");
+            Console.WriteLine("Exception - Cannot marshal type KnifeType");
         }
 
         public static readonly KnifeTypeConverter Singleton = new KnifeTypeConverter();
@@ -744,7 +748,8 @@ namespace UncrateGo.Modules.Csgo
                 case "11":
                     return Rarity.Restricted;
             }
-            throw new Exception("Cannot unmarshal type Rarity");
+            Console.WriteLine("Exception - Cannot unmarshal type Rarity");
+            return null;
         }
 
         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
@@ -794,7 +799,7 @@ namespace UncrateGo.Modules.Csgo
                     serializer.Serialize(writer, "Restricted");
                     return;
             }
-            throw new Exception("Cannot marshal type Rarity");
+            Console.WriteLine("Exception - Cannot marshal type Rarity");
         }
 
         public static readonly RarityConverter Singleton = new RarityConverter();
@@ -849,7 +854,8 @@ namespace UncrateGo.Modules.Csgo
                 case "8":
                     return TypeEnum.Weapon;
             }
-            throw new Exception("Cannot unmarshal type TypeEnum");
+            Console.WriteLine("Exception - Cannot unmarshal type TypeEnum");
+            return null;
         }
 
         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
@@ -890,7 +896,7 @@ namespace UncrateGo.Modules.Csgo
                     serializer.Serialize(writer, "Weapon");
                     return;
             }
-            throw new Exception("Cannot marshal type TypeEnum");
+            Console.WriteLine("Exception - Cannot marshal type TypeEnum");
         }
 
         public static readonly TypeEnumConverter Singleton = new TypeEnumConverter();
@@ -938,7 +944,8 @@ namespace UncrateGo.Modules.Csgo
                 case "6":
                     return WeaponType.SniperRifle;
             }
-            throw new Exception("Cannot unmarshal type WeaponType");
+            Console.WriteLine("Exception - Cannot unmarshal type WeaponType");
+            return null;
         }
 
         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
@@ -973,7 +980,7 @@ namespace UncrateGo.Modules.Csgo
                     serializer.Serialize(writer, "Sniper Rifle");
                     return;
             }
-            throw new Exception("Cannot marshal type WeaponType");
+            Console.WriteLine("Exception - Cannot marshal type WeaponType");
         }
 
         public static readonly WeaponTypeConverter Singleton = new WeaponTypeConverter();

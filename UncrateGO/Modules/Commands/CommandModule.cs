@@ -12,7 +12,7 @@ using Discord;
 
 namespace UncrateGo.Modules.Commands
 {
-    [Ratelimit(2, 10, Measure.Seconds)]
+    [Ratelimit(2, 9, Measure.Seconds)]
     [UserStorageCheckerPrecondition]
     public class CommandModule : InteractiveBase<SocketCommandContext>
     {
@@ -241,7 +241,7 @@ namespace UncrateGo.Modules.Commands
         [Command("view", RunMode = RunMode.Async)]
         public async Task ShowItemInfoAsync([Remainder]string filterString)
         {
-            await CsgoInventoryHandler.DisplayCsgoItemStatistics(Context, filterString);
+            await CsgoTransactionHandler.DisplayCsgoItemStatistics(Context, filterString);
         }
 
         [Command("statistics", RunMode = RunMode.Async)]
@@ -261,7 +261,14 @@ namespace UncrateGo.Modules.Commands
             await Task.Delay(timeSpan);
 
             //This may throw an exception if the message has already been deleted
-            await sentMessage.DeleteAsync();
+            try
+            {
+                await sentMessage.DeleteAsync();
+            }
+            catch (Exception)
+            {
+            }
+            
         }
     }
 }
