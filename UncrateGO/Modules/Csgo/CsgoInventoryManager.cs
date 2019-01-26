@@ -48,12 +48,12 @@ namespace UncrateGo.Modules.Csgo
                 AuthorName = context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5) + " Inventory",
                 AuthorURL = context.Message.Author.GetAvatarUrl(),
 
-                Description = $"To sell items, use `{botCommandPrefix}sell [name]` \n To sell all items matching filter, use `{botCommandPrefix}sellall [name]`",
+                Description = $"Sell items: `{botCommandPrefix}sell [name]` \n Sell all items matching filter: `{botCommandPrefix}sellall [name]`",
 
-                DefaultFieldHeader = "You do not have any skins",
-                DefaultFieldDescription = $"Go unbox some with `{botCommandPrefix}open`",
+                DefaultFieldHeader = "You do not have any items",
+                DefaultFieldDescription = $"Go unbox some with `{botCommandPrefix}open` or `{botCommandPrefix}drop`",
 
-                Field1Header = "Item Name",
+                Field1Header = "Name",
                 Field2Header = "Market Value",
 
                 Color = new Color(0, 153, 0)
@@ -164,12 +164,12 @@ namespace UncrateGo.Modules.Csgo
                 AuthorName = "CS:GO Market",
                 AuthorURL = "https://i.redd.it/1s0j5e4fhws01.png",
 
-                Description = $"Current skin market, to buy skins, use `{botCommandPrefix}buy [name]` \n use `{botCommandPrefix}market [name]` to filter skins by name \n use `{botCommandPrefix}info [name]` to preview skins",
+                Description = $"Buy item: `{botCommandPrefix}buy [name]`\nFilter market items by name: `{botCommandPrefix}market [name]`\nView item: `{botCommandPrefix}view [name]`",
 
-                DefaultFieldHeader = "Unable to find specified weapon skin!",
+                DefaultFieldHeader = "Unable to find specified item!",
                 DefaultFieldDescription = $"Broaden your search parameters and try again",
 
-                Field1Header = "Item Name",
+                Field1Header = "Name",
                 Field2Header = "Price",
 
                 Color = new Color(0, 204, 0)
