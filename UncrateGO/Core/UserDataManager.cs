@@ -68,7 +68,9 @@ namespace UncrateGo.Core
         /// </summary>
         public static void FlushUserStorage()
         {
-            string jsonToWrite = JsonConvert.SerializeObject(userStorage);
+            //Create a copy to write so that we don't get an error if it was modified mid write
+            var tempUserStorage = userStorage;
+            string jsonToWrite = JsonConvert.SerializeObject(tempUserStorage);
             FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("UserStorage.json"));
         }
     }

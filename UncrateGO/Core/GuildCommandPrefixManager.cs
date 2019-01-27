@@ -90,9 +90,10 @@ namespace UncrateGo.Core
         }
 
         public static void FlushGuildCommandDictionary()
-        { 
+        {
             //Write new dictionary to file
-            string json = JsonConvert.SerializeObject(GuildPrefixDictionary);
+            var tempGuildPrefixDictionary = GuildPrefixDictionary;
+            string json = JsonConvert.SerializeObject(tempGuildPrefixDictionary);
             FileAccessManager.WriteStringToFile(json, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
         }
     }
