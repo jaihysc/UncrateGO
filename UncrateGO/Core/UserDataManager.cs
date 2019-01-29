@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using UncrateGo.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System;
 
 namespace UncrateGo.Core
 {
@@ -68,10 +69,16 @@ namespace UncrateGo.Core
         /// </summary>
         public static void FlushUserStorage()
         {
-            //Create a copy to write so that we don't get an error if it was modified mid write
-            var tempUserStorage = userStorage;
-            string jsonToWrite = JsonConvert.SerializeObject(tempUserStorage);
-            FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("UserStorage.json"));
+            try
+            {
+                //Create a copy to write so that we don't get an error if it was modified mid write
+                var tempUserStorage = userStorage;
+                string jsonToWrite = JsonConvert.SerializeObject(tempUserStorage);
+                FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("UserStorage.json"));
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }

@@ -287,6 +287,8 @@ namespace UncrateGo
             Console.WriteLine("Runtime terminating: {0}", args.IsTerminating);
             Console.WriteLine(e.StackTrace);
 
+            FlushAllData();
+
             //Write a crashlog to file
             FileAccessManager.WriteStringToFile(e.Message + e.StackTrace, false, FileAccessManager.GetFileLocation("crashlog.txt"));
         }

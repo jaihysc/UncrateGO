@@ -334,9 +334,16 @@ namespace UncrateGo.Modules.Csgo
         /// <param name="userSkin"></param>
         public static void FlushUserSkinStorage()
         {
-            var tempUserSkinStorage = userSkinStorage;
-            var json = JsonConvert.SerializeObject(tempUserSkinStorage);
-            FileAccessManager.WriteStringToFile(json, true, FileAccessManager.GetFileLocation("UserSkinStorage.json"));
+            try
+            {
+                var tempUserSkinStorage = userSkinStorage;
+                var json = JsonConvert.SerializeObject(tempUserSkinStorage);
+                FileAccessManager.WriteStringToFile(json, true, FileAccessManager.GetFileLocation("UserSkinStorage.json"));
+            }
+            catch (Exception)
+            {
+            }
+
         }
 
     }

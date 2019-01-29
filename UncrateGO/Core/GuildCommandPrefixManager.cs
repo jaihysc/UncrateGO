@@ -4,6 +4,7 @@ using UncrateGo.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace UncrateGo.Core
 {
@@ -91,10 +92,17 @@ namespace UncrateGo.Core
 
         public static void FlushGuildCommandDictionary()
         {
-            //Write new dictionary to file
-            var tempGuildPrefixDictionary = GuildPrefixDictionary;
-            string json = JsonConvert.SerializeObject(tempGuildPrefixDictionary);
-            FileAccessManager.WriteStringToFile(json, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
+            try
+            {
+                //Write new dictionary to file
+                var tempGuildPrefixDictionary = GuildPrefixDictionary;
+                string json = JsonConvert.SerializeObject(tempGuildPrefixDictionary);
+                FileAccessManager.WriteStringToFile(json, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
+            }
+            catch (Exception)
+            {
+            }
+
         }
     }
 
