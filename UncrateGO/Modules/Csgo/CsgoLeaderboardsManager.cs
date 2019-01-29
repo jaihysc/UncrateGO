@@ -192,7 +192,7 @@ namespace UncrateGo.Modules.Csgo
         {
             while (true)
             {
-                await Task.Delay(30000);
+                await Task.Delay(60000);
                 GetStatisticsLeader();
             }
         }
@@ -213,16 +213,19 @@ namespace UncrateGo.Modules.Csgo
             LeaderboardData sticksOpened = new LeaderboardData();
 
             //Find the leaders
-            foreach (var item in userData.UserInfo.Values)
+            foreach (var user in userData.UserInfo.Values)
             {
-                //Cases opened
-                FindEntryLeader(item, item.UserCsgoStatsStorage.CasesOpened, casesOpened);
-                //Souvenirs opened
-                FindEntryLeader(item, item.UserCsgoStatsStorage.SouvenirsOpened, souvenirsOpened);
-                //Drops opened
-                FindEntryLeader(item, item.UserCsgoStatsStorage.DropsOpened, dropsOpened);
-                //StickersOpened
-                FindEntryLeader(item, item.UserCsgoStatsStorage.StickersOpened, sticksOpened);
+                if (user.UserCsgoStatsStorage != null)
+                {
+                    //Cases opened
+                    FindEntryLeader(user, user.UserCsgoStatsStorage.CasesOpened, casesOpened);
+                    //Souvenirs opened
+                    FindEntryLeader(user, user.UserCsgoStatsStorage.SouvenirsOpened, souvenirsOpened);
+                    //Drops opened
+                    FindEntryLeader(user, user.UserCsgoStatsStorage.DropsOpened, dropsOpened);
+                    //StickersOpened
+                    FindEntryLeader(user, user.UserCsgoStatsStorage.StickersOpened, sticksOpened);
+                }
             }
 
             //Generate the string to return
@@ -244,10 +247,17 @@ namespace UncrateGo.Modules.Csgo
         /// <returns></returns>
         private static LeaderboardData FindEntryLeader(UserInfo user, long comparisonInputNew, LeaderboardData comparisonInputOriginal)
         {
-            if (comparisonInputNew > comparisonInputOriginal.Value)
+            try
             {
-                comparisonInputOriginal.Value = comparisonInputNew;
-                comparisonInputOriginal.UserID = user.UserId;
+                if (comparisonInputNew > comparisonInputOriginal.Value)
+                {
+                    comparisonInputOriginal.Value = comparisonInputNew;
+                    comparisonInputOriginal.UserID = user.UserId;
+                }
+
+            }
+            catch (Exception)
+            {
             }
 
             return comparisonInputOriginal;
