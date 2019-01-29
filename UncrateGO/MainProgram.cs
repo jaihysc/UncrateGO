@@ -36,7 +36,10 @@ namespace UncrateGo
                 SetupManager.CheckIfPathsFileExists();
 
                 CsgoDataHandler.GenerateSouvenirCollections();
+
+                //Timers - do not await these
                 CsgoDataHandler.UpdateRootWeaponSkinTimer();
+                CsgoLeaderboardsManager.GetStatisticsLeaderTimer();
 
                 //Setup
                 CsgoDataHandler.GetRootWeaponSkin();

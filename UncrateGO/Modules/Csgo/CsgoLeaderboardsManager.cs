@@ -12,6 +12,8 @@ namespace UncrateGo.Modules.Csgo
 {
     public class CsgoLeaderboardsManager
     {
+        private static List<string> LeaderboardsLeaders = new List<string>();
+
         /// <summary>
         /// Increments the user stat tracker
         /// </summary>
@@ -128,6 +130,7 @@ namespace UncrateGo.Modules.Csgo
 
             //Add stats to string list
             List<string> statFieldVal = new List<string>();
+            List<string> statFieldLeadVal = LeaderboardsLeaders;
 
             if (userCaseStats != null)
             {
@@ -155,6 +158,11 @@ namespace UncrateGo.Modules.Csgo
                 
             }
 
+            //If there are no leaders, leader stats list will print N/A
+            if (statFieldLeadVal == null || statFieldLeadVal.Count() == 0)
+            {
+                statFieldLeadVal.Add("N/A");
+            }
 
             //Send embed
             var embedBuilder = new EmbedBuilder()
@@ -172,11 +180,83 @@ namespace UncrateGo.Modules.Csgo
                         .WithIconUrl(context.Message.Author.GetAvatarUrl());
                 })
                 .AddField("\u200b", string.Join("\n", statFields), true)
-                .AddField("\u200b", string.Join("\n", statFieldVal), true);
+                .AddField("\u200b", string.Join("\n", statFieldVal), true)
+                .AddField("Top", string.Join("\n", statFieldLeadVal), true);
 
             var embed = embedBuilder.Build();
 
             await context.Message.Channel.SendMessageAsync(" ", embed: embed).ConfigureAwait(false);
+        }
+
+        public static async Task GetStatisticsLeaderTimer()
+        {
+            while (true)
+            {
+                await Task.Delay(30000);
+                GetStatisticsLeader();
+            }
+        }
+
+        /// <summary>
+        /// Finds the leaderboard leaders, returns a list of strings ready to be displayed in embed
+        /// </summary>
+        private static void GetStatisticsLeader()
+        {
+            //!!! Possibly rewrite this later to be more effective with a dictionary instead
+
+            var userData = UserDataManager.GetUserStorage();
+
+            //Variables to store the leaders and their values
+            LeaderboardData casesOpened = new LeaderboardData();
+            LeaderboardData souvenirsOpened = new LeaderboardData();
+            LeaderboardData dropsOpened = new LeaderboardData();
+            LeaderboardData sticksOpened = new LeaderboardData();
+
+            //Find the leaders
+            foreach (var item in userData.UserInfo.Values)
+            {
+                //Cases opened
+                FindEntryLeader(item, item.UserCsgoStatsStorage.CasesOpened, casesOpened);
+                //Souvenirs opened
+                FindEntryLeader(item, item.UserCsgoStatsStorage.SouvenirsOpened, souvenirsOpened);
+                //Drops opened
+                FindEntryLeader(item, item.UserCsgoStatsStorage.DropsOpened, dropsOpened);
+                //StickersOpened
+                FindEntryLeader(item, item.UserCsgoStatsStorage.StickersOpened, sticksOpened);
+            }
+
+            //Generate the string to return
+            List<string> returnString = new List<string>();
+            returnString.Add(casesOpened.Value + " <@" + casesOpened.UserID + ">");
+            returnString.Add(souvenirsOpened.Value + " <@" + souvenirsOpened.UserID + ">");
+            returnString.Add(dropsOpened.Value + " <@" + dropsOpened.UserID + ">");
+            returnString.Add(sticksOpened.Value + " <@" + sticksOpened.UserID + ">");
+
+            LeaderboardsLeaders = returnString;
+        }
+
+        /// <summary>
+        /// Helper method to find the leaders for each category
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="comparisonInputNew"></param>
+        /// <param name="comparisonInputOriginal"></param>
+        /// <returns></returns>
+        private static LeaderboardData FindEntryLeader(UserInfo user, long comparisonInputNew, LeaderboardData comparisonInputOriginal)
+        {
+            if (comparisonInputNew > comparisonInputOriginal.Value)
+            {
+                comparisonInputOriginal.Value = comparisonInputNew;
+                comparisonInputOriginal.UserID = user.UserId;
+            }
+
+            return comparisonInputOriginal;
+        }
+
+        private class LeaderboardData
+        {
+            public long Value { get; set; }
+            public ulong UserID { get; set; }
         }
 
         public enum CaseCategory { Case, Drop, Souvenir, Sticker};
