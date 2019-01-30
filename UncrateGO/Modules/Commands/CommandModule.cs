@@ -12,7 +12,7 @@ using Discord;
 
 namespace UncrateGo.Modules.Commands
 {
-    [Ratelimit(2, 9, Measure.Seconds)]
+    [Ratelimit()]
     [UserStorageCheckerPrecondition]
     public class CommandModule : InteractiveBase<SocketCommandContext>
     {

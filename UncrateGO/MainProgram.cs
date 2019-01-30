@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using UncrateGo.Modules;
 using System.Threading;
 using System.Runtime.InteropServices;
+using UncrateGo.Modules.Commands.Preconditions;
 
 namespace UncrateGo
 {
@@ -167,21 +168,27 @@ namespace UncrateGo
             {
                 if (result.Error == CommandError.UnknownCommand)
                 {
-                    //Find similar commands
-                    var commandHelpDefinitionStorage = UserHelpHandler.GetHelpMenuCommands();
-                    string similarItemsString = UserHelpHandler.FindSimilarCommands(
-                        commandHelpDefinitionStorage.CommandHelpEntry.Select(i => i.CommandName).ToList(), 
-                        message.ToString().Substring(GuildCommandPrefixManager.GetGuildCommandPrefix(context).Length + 1));
+                    //Only send help if user is not in cooldown
+                    bool sendHelp = !await RatelimitAttribute.UserRateLimit(context.Message.Author.Id);
 
-                    //If no similar matches are found, send nothing
-                    if (string.IsNullOrEmpty(similarItemsString))
+                    if (sendHelp)
                     {
-                        await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands");
-                    }
-                    //If similar matches are found, send suggestions
-                    else
-                    {
-                        await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands. Did you mean: \n {similarItemsString}");
+                        //Find similar commands
+                        var commandHelpDefinitionStorage = UserHelpHandler.GetHelpMenuCommands();
+                        string similarItemsString = UserHelpHandler.FindSimilarCommands(
+                            commandHelpDefinitionStorage.CommandHelpEntry.Select(i => i.CommandName).ToList(),
+                            message.ToString().Substring(GuildCommandPrefixManager.GetGuildCommandPrefix(context).Length + 1));
+
+                        //If no similar matches are found, send nothing
+                        if (string.IsNullOrEmpty(similarItemsString))
+                        {
+                            await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands");
+                        }
+                        //If similar matches are found, send suggestions
+                        else
+                        {
+                            await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands. Did you mean: \n {similarItemsString}");
+                        }
                     }
                     
                 }

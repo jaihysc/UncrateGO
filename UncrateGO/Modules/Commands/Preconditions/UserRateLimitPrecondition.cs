@@ -19,30 +19,26 @@ namespace UncrateGo.Modules.Commands.Preconditions
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public sealed class RatelimitAttribute : PreconditionAttribute
     {
-        private readonly uint _invokeLimit;
-        private readonly bool _noLimitInDMs;
-        private readonly bool _noLimitForAdmins;
-        private readonly bool _applyPerGuild;
-        private readonly TimeSpan _invokeLimitPeriod;
-        private readonly Dictionary<(ulong, ulong?), CommandTimeout> _invokeTracker = new Dictionary<(ulong, ulong?), CommandTimeout>();
+        private static readonly uint _invokeLimit;
+        private static readonly TimeSpan _invokeLimitPeriod;
+        //Ulong is userId, commandTimeout is class storing timeout info
+        private static readonly Dictionary<ulong, CommandTimeout> _invokeTracker = new Dictionary<ulong, CommandTimeout>();
 
         /// <summary> Sets how often a user is allowed to use this command. </summary>
         /// <param name="times">The number of times a user may use the command within a certain period.</param>
         /// <param name="period">The amount of time since first invoke a user has until the limit is lifted.</param>
         /// <param name="measure">The scale in which the <paramref name="period"/> parameter should be measured.</param>
         /// <param name="flags">Flags to set behavior of the ratelimit.</param>
-        public RatelimitAttribute(
-            uint times,
-            double period,
-            Measure measure,
-            RatelimitFlags flags = RatelimitFlags.None)
+        static RatelimitAttribute()
         {
-            _invokeLimit = times;
-            _noLimitInDMs = (flags & RatelimitFlags.NoLimitInDMs) == RatelimitFlags.NoLimitInDMs;
-            _noLimitForAdmins = (flags & RatelimitFlags.NoLimitForAdmins) == RatelimitFlags.NoLimitForAdmins;
-            _applyPerGuild = (flags & RatelimitFlags.ApplyPerGuild) == RatelimitFlags.ApplyPerGuild;
+            //Ratelimit Config
+            uint times = 2;
+            double period = 9;
+            Measure measure = Measure.Seconds;
 
-            //TODO: C# 8 candidate switch expression
+            //-Config
+            _invokeLimit = times;
+
             switch (measure)
             {
                 case Measure.Days:
@@ -60,23 +56,6 @@ namespace UncrateGo.Modules.Commands.Preconditions
             }
         }
 
-        /// <summary> Sets how often a user is allowed to use this command. </summary>
-        /// <param name="times">The number of times a user may use the command within a certain period.</param>
-        /// <param name="period">The amount of time since first invoke a user has until the limit is lifted.</param>
-        /// <param name="flags">Flags to set bahavior of the ratelimit.</param>
-        public RatelimitAttribute(
-            uint times,
-            TimeSpan period,
-            RatelimitFlags flags = RatelimitFlags.None)
-        {
-            _invokeLimit = times;
-            _noLimitInDMs = (flags & RatelimitFlags.NoLimitInDMs) == RatelimitFlags.NoLimitInDMs;
-            _noLimitForAdmins = (flags & RatelimitFlags.NoLimitForAdmins) == RatelimitFlags.NoLimitForAdmins;
-            _applyPerGuild = (flags & RatelimitFlags.ApplyPerGuild) == RatelimitFlags.ApplyPerGuild;
-
-            _invokeLimitPeriod = period;
-        }
-
         /// <summary>
         /// Handels actual user ratelimit
         /// </summary>
@@ -84,44 +63,62 @@ namespace UncrateGo.Modules.Commands.Preconditions
         /// <param name="command"></param>
         /// <param name="_services"></param>
         /// <returns></returns>
-        public async override Task<PreconditionResult> CheckPermissions(
-            ICommandContext context,
-            CommandInfo command,
-            IServiceProvider _services)
+        public async override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider _services)
         {
-            if (_noLimitInDMs && context.Channel is IPrivateChannel)
-                return await Task.FromResult(PreconditionResult.FromSuccess());
+            bool UserRatelimited = await UserRateLimit(context.Message.Author.Id, context as SocketCommandContext);
 
-            if (_noLimitForAdmins && context.User is IGuildUser gu && gu.GuildPermissions.Administrator)
+            //Timeout messages
+            if (!UserRatelimited)
+            {
                 return await Task.FromResult(PreconditionResult.FromSuccess());
+            }
+            else
+            {
+                return await Task.FromResult(PreconditionResult.FromError("User is in cooldown"));
+            }
+        }
 
+        public static async Task<bool> UserRateLimit(ulong userID, SocketCommandContext context = null)
+        {
             var now = DateTime.UtcNow;
-            var key = _applyPerGuild ? (context.User.Id, context.Guild?.Id) : (context.User.Id, null);
+            var key = userID;
 
-            var timeout = (_invokeTracker.TryGetValue(key, out var t)
-                && ((now - t.FirstInvoke) < _invokeLimitPeriod))
-                    ? t : new CommandTimeout(now);
+            CommandTimeout timeout;
+            if (_invokeTracker.TryGetValue(key, out var t))
+            {
+                //Kep the commandtimeout if it has not expired
+                if (now - t.FirstInvoke < _invokeLimitPeriod)
+                {
+                    timeout = t;
+                }
+                //Reset counter if user has passed timeout
+                else
+                {
+                    timeout = new CommandTimeout(now);
+                }
+            }
+            //If commandtimeout for user does not exist, create one
+            else
+            {
+                timeout = new CommandTimeout(now);
+            }
 
+            //Increment invoke amount
             timeout.TimesInvoked++;
 
-            var client = _services.GetRequiredService<DiscordSocketClient>();
-
-            // Get the ID of the bot's owner
-            var appInfo = await client.GetApplicationInfoAsync().ConfigureAwait(false);
-            var ownerId = appInfo.Owner.Id;
-
-            //Allow bypass for whitelisted users
-            // Get whitelisted users
-            List<ulong> whitelistedUsers = new List<ulong>
-            {
-                ownerId
-            };
+            //Set the invoke limit
+            timeout.InvokeLimit = _invokeLimit;
+            timeout.InvokeLimitPeriod = _invokeLimitPeriod;
 
             //Timeout messages
             if (timeout.TimesInvoked <= _invokeLimit)
             {
                 _invokeTracker[key] = timeout;
-                return await Task.FromResult(PreconditionResult.FromSuccess());
+
+                //Set limit reached to true after reaching invoke limit
+                if (timeout.TimesInvoked >= _invokeLimit) _invokeTracker[key].InvokeLimitReached = true;
+
+                return false;
             }
             else
             {
@@ -132,11 +129,11 @@ namespace UncrateGo.Modules.Commands.Preconditions
                     _invokeTracker[key].ReceivedError = true;
 
                     //Stores the warning message to delete later on
-                    SendWarningMessageAsync(context);
+                    if (context != null) SendWarningMessageAsync(context);
 
                 }
 
-                return await Task.FromResult(PreconditionResult.FromError("User is in cooldown"));
+                return true;
             }
         }
 
@@ -151,40 +148,19 @@ namespace UncrateGo.Modules.Commands.Preconditions
     /// <summary> Sets the scale of the period parameter. </summary>
     public enum Measure
     {
-        /// <summary> Period is measured in days. </summary>
         Days,
-
-        /// <summary> Period is measured in hours. </summary>
         Hours,
-
-        /// <summary> Period is measured in minutes. </summary>
         Minutes,
-
-        /// <summary> Period is measured in minutes. </summary>
         Seconds
-    }
-
-    /// <summary> Used to set behavior of the ratelimit </summary>
-    [Flags]
-    public enum RatelimitFlags
-    {
-        /// <summary> Set none of the flags. </summary>
-        None = 0,
-
-        /// <summary> Set whether or not there is no limit to the command in DMs. </summary>
-        NoLimitInDMs = 1 << 0,
-
-        /// <summary> Set whether or not there is no limit to the command for guild admins. </summary>
-        NoLimitForAdmins = 1 << 1,
-
-        /// <summary> Set whether or not to apply a limit per guild. </summary>
-        ApplyPerGuild = 1 << 2
     }
 
     internal sealed class CommandTimeout
     {
         public uint TimesInvoked { get; set; }
         public DateTime FirstInvoke { get; }
+        public TimeSpan InvokeLimitPeriod { get; set; }
+        public long InvokeLimit { get; set; }
+        public bool InvokeLimitReached { get; set; }
         public bool ReceivedError { get; set; }
 
         public CommandTimeout(DateTime timeStarted)
