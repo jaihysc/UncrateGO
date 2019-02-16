@@ -33,7 +33,7 @@ namespace UncrateGo.Modules.Commands.Preconditions
         {
             //Ratelimit Config
             uint times = 2;
-            double period = 9;
+            double period = 8;
             Measure measure = Measure.Seconds;
 
             //-Config
@@ -106,17 +106,10 @@ namespace UncrateGo.Modules.Commands.Preconditions
             //Increment invoke amount
             timeout.TimesInvoked++;
 
-            //Set the invoke limit
-            timeout.InvokeLimit = _invokeLimit;
-            timeout.InvokeLimitPeriod = _invokeLimitPeriod;
-
             //Timeout messages
             if (timeout.TimesInvoked <= _invokeLimit)
             {
                 _invokeTracker[key] = timeout;
-
-                //Set limit reached to true after reaching invoke limit
-                if (timeout.TimesInvoked >= _invokeLimit) _invokeTracker[key].InvokeLimitReached = true;
 
                 return false;
             }
@@ -158,9 +151,6 @@ namespace UncrateGo.Modules.Commands.Preconditions
     {
         public uint TimesInvoked { get; set; }
         public DateTime FirstInvoke { get; }
-        public TimeSpan InvokeLimitPeriod { get; set; }
-        public long InvokeLimit { get; set; }
-        public bool InvokeLimitReached { get; set; }
         public bool ReceivedError { get; set; }
 
         public CommandTimeout(DateTime timeStarted)

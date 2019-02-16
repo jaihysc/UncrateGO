@@ -72,7 +72,7 @@ namespace UncrateGo.Modules.Csgo
             while (true)
             {
                 //Delay goes in front to delay after initial program start
-                await Task.Delay(18000000);
+                await Task.Delay(57600000); //Update every 16 hours
                 UpdateRootWeaponSkin();        
             }       
         }
@@ -160,6 +160,7 @@ namespace UncrateGo.Modules.Csgo
                                 comparisonItems.Add("\u2605 StatTrak\u2122 " + skinCaseItem.SkinName + " (Battle-Scarred)");
                             }
 
+                            //Souvenir non sticker
                             else if (skinCase.IsSouvenir && !skinCase.IsSticker)
                             {
                                 comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Factory New)");
@@ -169,11 +170,20 @@ namespace UncrateGo.Modules.Csgo
                                 comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Battle-Scarred)");
                             }
 
-                            else if (skinCase.IsSticker)
+                            //not a tournment sticker
+                            else if (skinCase.IsSticker && !skinCase.IsTournmentSticker)
                             {
                                 comparisonItems.Add("Sticker | " + skinCaseItem.SkinName);
                                 comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Foil)");
                                 comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Holo)");
+                            }
+
+                            //is tournment sticker
+                            else if (skinCase.IsSticker && skinCase.IsTournmentSticker)
+                            {
+                                comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " | " + skinCase.CollectionName);
+                                comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Foil)" + " | " + skinCase.CollectionName);
+                                comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Holo)" + " | " + skinCase.CollectionName);
                             }
 
                             //Check for possible matches, matching CASE skin name
