@@ -27,7 +27,7 @@ namespace UncrateGo
         {
             try
             {
-                DisableConsoleQuickEdit.Go();
+                DisableConsoleQuickEdit.Go(); //Disable console features
 
                 //Injection
                 stopwatch.Start();
@@ -51,6 +51,9 @@ namespace UncrateGo
                 //Exception handling
                 AppDomain currentDomain = AppDomain.CurrentDomain;
                 currentDomain.UnhandledException += new UnhandledExceptionEventHandler(ExceptionHandler);
+
+                //Program exit handling
+                currentDomain.ProcessExit += CurrentDomain_ProcessExit;
 
                 //Main
                 new MainProgram().MainAsync().GetAwaiter().GetResult();
@@ -280,6 +283,12 @@ namespace UncrateGo
             GuildCommandPrefixManager.FlushGuildCommandDictionary();
 
             EventLogger.LogMessage("Flushing data to file - DONE!", ConsoleColor.Yellow);
+        }
+
+        //Program exit handling
+        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        {
+            FlushAllData(); //Flush any remaining data
         }
 
         /// <summary>
