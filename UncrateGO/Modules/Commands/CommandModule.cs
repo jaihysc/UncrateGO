@@ -12,22 +12,40 @@ using Discord;
 
 namespace UncrateGo.Modules.Commands
 {
-    [Ratelimit()]
     [UserStorageCheckerPrecondition]
     public class CommandModule : InteractiveBase<SocketCommandContext>
     {
         [RequireOwner]
-        [Command("setInfo")]
-        public async Task SetInfoAsync([Remainder]string input)
+        [Group("mana")]
+        class OwnerModule : InteractiveBase<SocketCommandContext>
         {
-            await Context.Client.SetGameAsync(input);
-        }
+            [RequireOwner]
+            [Command("setInfo")]
+            public async Task SetInfoAsync([Remainder]string input = null)
+            {
+                await Context.Client.SetGameAsync(input);
+            }
 
-        [RequireOwner]
-        [Command("flush")]
-        public async Task FlushDataAsync()
-        {
-            MainProgram.FlushAllData();
+            [RequireOwner]
+            [Command("reload")]
+            public async Task ReloadDataAsync()
+            {
+                EventLogger.LogMessage("Reloading data from file...", ConsoleColor.Yellow);
+
+                CsgoDataHandler.GetRootWeaponSkin();
+                UserDataManager.GetUserStorage();
+                CsgoDataHandler.GetUserSkinStorage();
+                GuildCommandPrefixManager.PopulateGuildCommandPrefix();
+
+                EventLogger.LogMessage("Reloading data from file...DONE!", ConsoleColor.Yellow);
+            }
+
+            [RequireOwner]
+            [Command("flush")]
+            public async Task FlushDataAsync()
+            {
+                MainProgram.FlushAllData();
+            }
         }
 
         [Command("help")]
@@ -86,12 +104,21 @@ namespace UncrateGo.Modules.Commands
 
         //Cases
         [Command("open", RunMode = RunMode.Async)]
-        public async Task OpenCaseAsync()
+        public async Task OpenCaseAsync(int caseSelection = -1)
         {
-            //See if user has opened a case before, if not, send a help tip
-            if (!CsgoCaseSelectionHandler.GetHasUserSelectedCase(Context)) await ReplyAndDeleteAsync($"Tip: Use `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}select` to select different cases to open", timeout: TimeSpan.FromSeconds(30));
+            //Allow for case selection within the open command
+            if (caseSelection != -1)
+            {
+                await CsgoCaseSelectionHandler.SelectOpenCase(Context, caseSelection.ToString(), null);
+                await CsgoUnboxingHandler.OpenCase(Context);
+            }
+            else
+            {
+                //See if user has opened a case before, if not, send a help tip
+                if (!CsgoCaseSelectionHandler.GetHasUserSelectedCase(Context)) await ReplyAndDeleteAsync($"Tip: Use `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}select` to select different cases to open", timeout: TimeSpan.FromSeconds(30));
 
-            await CsgoUnboxingHandler.OpenCase(Context);
+                await CsgoUnboxingHandler.OpenCase(Context);
+            }
         }
 
         [Command("reset", RunMode = RunMode.Async)]
@@ -126,11 +153,21 @@ namespace UncrateGo.Modules.Commands
 
 
         [Command("select", RunMode = RunMode.Async)]
-        public async Task SelectOpenCaseAsync(string inputNumber = null)
+        public async Task SelectOpenCaseAsync([Remainder]string input = null)
         {
-            if (inputNumber == null)
+            //Show list if input is null or provided input is not a number
+            if (input == null || !int.TryParse(input, out var o))
             {
-                var pager = CsgoCaseSelectionHandler.ShowPossibleCases(Context);
+                PaginatedMessage pager;
+                if (input == null)
+                {
+                    pager = CsgoCaseSelectionHandler.ShowPossibleCases(Context);
+                }
+                else //Add filter if input is a string and not a number string
+                {
+                    pager = CsgoCaseSelectionHandler.ShowPossibleCases(Context, input);
+                }
+                
 
                 //Send paginated message
                 IUserMessage sentMessage = await PagedReplyAsync(pager, new ReactionList
@@ -149,7 +186,7 @@ namespace UncrateGo.Modules.Commands
             }
             else
             {
-                await CsgoCaseSelectionHandler.SelectOpenCase(Context, inputNumber.ToString(), null);
+                await CsgoCaseSelectionHandler.SelectOpenCase(Context, input, null);
             }          
 
         }

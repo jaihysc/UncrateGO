@@ -149,7 +149,7 @@ namespace UncrateGo.Modules.Csgo
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public static PaginatedMessage ShowPossibleCases(SocketCommandContext context)
+        public static PaginatedMessage ShowPossibleCases(SocketCommandContext context, string filter = null)
         {
             string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
 
@@ -159,11 +159,27 @@ namespace UncrateGo.Modules.Csgo
 
             //Find containers whose name is not null
             filteredContainers = CsgoUnboxingHandler.GetCsgoContainers().Containers.Where(c => c.Name != null).Select(c => c.Name).ToList();
+
             //Create a list of ascending numbers to reference each container
             for (int i = 0; i < filteredContainers.Count(); i++)
             {
                 leftCounter.Add(i.ToString());
             }
+
+            //Filter pagerDesc if filter is set
+            if (filter != null)
+            {
+                int loopAmount = filteredContainers.Count() - 1;
+                for (int i = loopAmount; i >= 0; i--)
+                {
+                    if (!filteredContainers[i].ToLower().Contains(filter.ToLower()))
+                    {
+                        filteredContainers.Remove(filteredContainers[i]);
+                        leftCounter.Remove(leftCounter[i]);
+                    }
+                }
+            }
+
 
             //Generate pagination
             PaginationConfig paginationConfig = new PaginationConfig
@@ -171,7 +187,7 @@ namespace UncrateGo.Modules.Csgo
                 AuthorName = "CS:GO Containers",
                 AuthorURL = "https://csgostash.com/img/containers/c259.png",
 
-                Description = $"Select a container by typing the appropriate number on the left. No additional text. E.G `13`\nThen use `{botCommandPrefix}open` to open cases",
+                Description = $"Select a container by typing appropriate number on left. No additional text. E.G `13`\nUse `{botCommandPrefix}open` to open cases\nFilter cases with `{botCommandPrefix}select [filter]`",
 
                 Field1Header = "Number",
                 Field2Header = "Case",

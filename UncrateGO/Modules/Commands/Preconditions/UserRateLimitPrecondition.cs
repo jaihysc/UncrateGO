@@ -16,8 +16,7 @@ namespace UncrateGo.Modules.Commands.Preconditions
     /// or any command in this module. </summary>
     /// <remarks>This is backed by an in-memory collection
     /// and will not persist with restarts.</remarks>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public sealed class RatelimitAttribute : PreconditionAttribute
+    public static class RatelimitPrecondtion
     {
         private static readonly uint _invokeLimit;
         private static readonly TimeSpan _invokeLimitPeriod;
@@ -29,7 +28,7 @@ namespace UncrateGo.Modules.Commands.Preconditions
         /// <param name="period">The amount of time since first invoke a user has until the limit is lifted.</param>
         /// <param name="measure">The scale in which the <paramref name="period"/> parameter should be measured.</param>
         /// <param name="flags">Flags to set behavior of the ratelimit.</param>
-        static RatelimitAttribute()
+        static RatelimitPrecondtion()
         {
             //Ratelimit Config
             uint times = 2;
@@ -57,28 +56,12 @@ namespace UncrateGo.Modules.Commands.Preconditions
         }
 
         /// <summary>
-        /// Handels actual user ratelimit
+        /// Gets if specified user is in cooldown
         /// </summary>
+        /// <param name="userID"></param>
         /// <param name="context"></param>
-        /// <param name="command"></param>
-        /// <param name="_services"></param>
-        /// <returns></returns>
-        public async override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider _services)
-        {
-            bool UserRatelimited = await UserRateLimit(context.Message.Author.Id, context as SocketCommandContext);
-
-            //Timeout messages
-            if (!UserRatelimited)
-            {
-                return await Task.FromResult(PreconditionResult.FromSuccess());
-            }
-            else
-            {
-                return await Task.FromResult(PreconditionResult.FromError("User is in cooldown"));
-            }
-        }
-
-        public static async Task<bool> UserRateLimit(ulong userID, SocketCommandContext context = null)
+        /// <returns>True if in cooldown</returns>
+        public static async Task<bool> UserRateLimited(ulong userID, SocketCommandContext context = null)
         {
             var now = DateTime.UtcNow;
             var key = userID;
@@ -132,7 +115,7 @@ namespace UncrateGo.Modules.Commands.Preconditions
 
         private static async Task SendWarningMessageAsync(ICommandContext context)
         {
-            var d = await context.Channel.SendMessageAsync(context.Message.Author.Mention + " Chill, calm down. Take a drink, have a walk, come back **(You are in cooldown)**");
+            var d = await context.Channel.SendMessageAsync(context.Message.Author.Mention + " Please slow down. **(You are in cooldown)**");
             await Task.Delay(5000);
             await d.DeleteAsync();
         }

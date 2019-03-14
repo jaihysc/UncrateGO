@@ -133,31 +133,33 @@ namespace UncrateGo.Modules.Csgo
             List<string> filteredRootWeaponSkin = new List<string>();
             List<string> filteredRootWeaponSkinPrice = new List<string>();
 
-
-            //Filter rootWeaponSkin to those with a price found in rootWeaponSkinPrice
-            foreach (var skin in rootWeaponSkin.ItemsList.Values)
+            //Only show if they specified a filter
+            if (!string.IsNullOrWhiteSpace(filterString))
             {
-                //If filter string is not null, filter market results by user filter string
-                if ((!string.IsNullOrEmpty(filterString) && skin.Name.ToLower().Contains(filterString.ToLower())) || (string.IsNullOrEmpty(filterString)))
+                //flter rootWeaponSkin to those with a price found in rootWeaponSkinPrice
+                foreach (var skin in rootWeaponSkin.ItemsList.Values)
                 {
-                    string skinQualityEmote = GetEmoteBySkinRarity(skin.Rarity, skin.WeaponType);
+                    //If filter string is not null, filter market results by user filter string
+                    if ((!string.IsNullOrEmpty(filterString) && skin.Name.ToLower().Contains(filterString.ToLower())) || (string.IsNullOrEmpty(filterString)))
+                    {
+                        string skinQualityEmote = GetEmoteBySkinRarity(skin.Rarity, skin.WeaponType);
 
-                    //Add skin entry
+                        //Add skin entry
 
-                    Emote emote = Emote.Parse(skinQualityEmote);
+                        Emote emote = Emote.Parse(skinQualityEmote);
 
-                    //Add weapon skin
-                    filteredRootWeaponSkin.Add(emote + " " + skin.Name);
+                        //Add weapon skin
+                        filteredRootWeaponSkin.Add(emote + " " + skin.Name);
 
-                    //Get item value
-                    long weaponSkinValue = Convert.ToInt64(skin.Price.AllTime.Average);
+                        //Get item value
+                        long weaponSkinValue = Convert.ToInt64(skin.Price.AllTime.Average);
 
-                    //Add weapon skin price
-                    filteredRootWeaponSkinPrice.Add(emote + " " + weaponSkinValue.ToString());
+                        //Add weapon skin price
+                        filteredRootWeaponSkinPrice.Add(emote + " " + weaponSkinValue.ToString());
 
+                    }
                 }
             }
-
             //Configurate paginated message
             var paginationConfig = new PaginationConfig
             {

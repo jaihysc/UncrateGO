@@ -146,24 +146,27 @@ namespace UncrateGo
             //If message is in a DM, return
             var chnl = messageParam.Channel as SocketGuildChannel;
             if (chnl == null) return;
+            
+            var context = new SocketCommandContext(_client, message);
+
+            //Ignore commands that are not using the prefix or mentioning the bot
+            string commandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+
+            if (!message.HasStringPrefix(commandPrefix, ref argPos) && !(message.Content == ("<@" + context.Client.CurrentUser.Id.ToString() + ">") || message.Content == ("<@!" + context.Client.CurrentUser.Id.ToString() + ">")) ||
+                message.Author.IsBot)
+                return;
+
+            //Only process command if user is not in cooldown
+            if (await RatelimitPrecondtion.UserRateLimited(context.Message.Author.Id, context)) return;
 
             //Show prefix help if user mentions bot
-            var context = new SocketCommandContext(_client, message);
             if (message.Content == ("<@" + context.Client.CurrentUser.Id.ToString() + ">") || message.Content == ("<@!" + context.Client.CurrentUser.Id.ToString() + ">"))
             {
                 await context.Channel.SendMessageAsync($"Current guild prefix: `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}` | Get help with `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help`");
                 return;
             }
 
-            //Ignore commands that are not using the prefix
-            string commandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
-
-            if (!(message.HasStringPrefix(commandPrefix, ref argPos) ||
-                message.Author.IsBot))
-                return;
-
             var result = await _commands.ExecuteAsync(context: context, argPos: argPos, services: _services);
-
 
             //COMMAND LOGGING
             // Inform the user if the command fails
@@ -171,27 +174,21 @@ namespace UncrateGo
             {
                 if (result.Error == CommandError.UnknownCommand)
                 {
-                    //Only send help if user is not in cooldown
-                    bool sendHelp = !await RatelimitAttribute.UserRateLimit(context.Message.Author.Id);
+                    //Find similar commands
+                    var commandHelpDefinitionStorage = UserHelpHandler.GetHelpMenuCommands();
+                    string similarItemsString = UserHelpHandler.FindSimilarCommands(
+                        commandHelpDefinitionStorage.CommandHelpEntry.Select(i => i.CommandName).ToList(),
+                        message.ToString().Substring(GuildCommandPrefixManager.GetGuildCommandPrefix(context).Length + 1));
 
-                    if (sendHelp)
+                    //If no similar matches are found, send nothing
+                    if (string.IsNullOrEmpty(similarItemsString))
                     {
-                        //Find similar commands
-                        var commandHelpDefinitionStorage = UserHelpHandler.GetHelpMenuCommands();
-                        string similarItemsString = UserHelpHandler.FindSimilarCommands(
-                            commandHelpDefinitionStorage.CommandHelpEntry.Select(i => i.CommandName).ToList(),
-                            message.ToString().Substring(GuildCommandPrefixManager.GetGuildCommandPrefix(context).Length + 1));
-
-                        //If no similar matches are found, send nothing
-                        if (string.IsNullOrEmpty(similarItemsString))
-                        {
-                            await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands");
-                        }
-                        //If similar matches are found, send suggestions
-                        else
-                        {
-                            await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands. Did you mean: \n {similarItemsString}");
-                        }
+                        await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands");
+                    }
+                    //If similar matches are found, send suggestions
+                    else
+                    {
+                        await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands. Did you mean: \n {similarItemsString}");
                     }
                     
                 }
