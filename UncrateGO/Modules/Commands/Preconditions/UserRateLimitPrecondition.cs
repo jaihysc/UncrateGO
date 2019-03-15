@@ -31,8 +31,8 @@ namespace UncrateGo.Modules.Commands.Preconditions
         static RatelimitPrecondtion()
         {
             //Ratelimit Config
-            uint times = 2;
-            double period = 8;
+            uint times = 3;
+            double period = 10;
             Measure measure = Measure.Seconds;
 
             //-Config

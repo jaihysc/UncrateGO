@@ -155,7 +155,7 @@ namespace UncrateGo.Modules
             var userStorage = UserDataManager.GetUserStorage();
 
             //Check if user has sufficient credits
-            if (GetUserCredits(context) + addAmount > 0)
+            if (GetUserCredits(context) + addAmount >= 0)
             {
                 //Calculate new credits
                 long userCreditsNew = 0;

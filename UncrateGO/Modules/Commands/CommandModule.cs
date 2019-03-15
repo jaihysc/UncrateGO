@@ -20,14 +20,14 @@ namespace UncrateGo.Modules.Commands
         class OwnerModule : InteractiveBase<SocketCommandContext>
         {
             [RequireOwner]
-            [Command("setInfo")]
+            [Command("setInfo", RunMode = RunMode.Async)]
             public async Task SetInfoAsync([Remainder]string input = null)
             {
                 await Context.Client.SetGameAsync(input);
             }
 
             [RequireOwner]
-            [Command("reload")]
+            [Command("reload", RunMode = RunMode.Async)]
             public async Task ReloadDataAsync()
             {
                 EventLogger.LogMessage("Reloading data from file...", ConsoleColor.Yellow);
@@ -37,18 +37,19 @@ namespace UncrateGo.Modules.Commands
                 CsgoDataHandler.GetUserSkinStorage();
                 GuildCommandPrefixManager.PopulateGuildCommandPrefix();
 
+                CsgoDataHandler.UpdateRootWeaponSkin();
                 EventLogger.LogMessage("Reloading data from file...DONE!", ConsoleColor.Yellow);
             }
 
             [RequireOwner]
-            [Command("flush")]
+            [Command("flush", RunMode = RunMode.Async)]
             public async Task FlushDataAsync()
             {
                 MainProgram.FlushAllData();
             }
         }
 
-        [Command("help")]
+        [Command("help", RunMode = RunMode.Async)]
         public async Task HelpAsync([Remainder]string inputCommand = null)
         {
             if (!string.IsNullOrEmpty(inputCommand))
@@ -62,7 +63,7 @@ namespace UncrateGo.Modules.Commands
         }
 
         //Settings
-        [Command("prefix")]
+        [Command("prefix", RunMode = RunMode.Async)]
         public async Task ChangeGuildCommandPrefixAsync([Remainder]string input)
         {
             //Find guild id
@@ -81,7 +82,7 @@ namespace UncrateGo.Modules.Commands
             }
         }
 
-        [Command("info")]
+        [Command("info", RunMode = RunMode.Async)]
         public async Task InfoAsync()
         {
             await Context.Channel.SendMessageAsync("Invite: https://discordapp.com/oauth2/authorize?client_id=523282498265022479&permissions=337984&scope=bot \nBy <@285266023475838976> | Framework: Discord.NET V1.0.2 | Github: github.com/jaihysc/Discord-UncrateGO");
