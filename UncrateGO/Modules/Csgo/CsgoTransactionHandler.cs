@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Addons.Interactive;
 
 namespace UncrateGo.Modules.Csgo
 {
@@ -24,7 +25,7 @@ namespace UncrateGo.Modules.Csgo
 
 
             //Make sure skin exists in market
-            var marketSkin = rootWeaponSkins.ItemsList.Values.Where(s => s.Name.ToLower().Contains(itemMarketHash.ToLower())).ToList().FirstOrDefault();
+            var marketSkin = rootWeaponSkins.ItemsList.Values.Where(s => s.Name.ToLower() == itemMarketHash.ToLower()).ToList().FirstOrDefault();
 
             //If searching by direct result cannot be found, search by anything that contains the input
             if (marketSkin == null)
@@ -222,6 +223,7 @@ namespace UncrateGo.Modules.Csgo
             }
         }
 
+        //Helper
         private static long GetItemValue(List<UserSkinEntry> userSkins, RootSkinData rootSkinData)
         {
             long weaponSkinValue = 0;
@@ -305,6 +307,76 @@ namespace UncrateGo.Modules.Csgo
 
         }
 
+        //Market
+        public static PaginatedMessage GetCsgoMarketInventory(SocketCommandContext context, string filterString)
+        {
+            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+
+            //Get skin data
+            var rootWeaponSkin = CsgoDataHandler.GetRootWeaponSkin();
+
+            List<string> filteredRootWeaponSkin = new List<string>();
+            List<string> filteredRootWeaponSkinPrice = new List<string>();
+
+            //Only show if they specified a filter
+            if (!string.IsNullOrWhiteSpace(filterString))
+            {
+                //flter rootWeaponSkin to those with a price found in rootWeaponSkinPrice
+                List<SkinDataItem> filteredItems = rootWeaponSkin.ItemsList.Values.Where(sk => sk.Name.ToLower().Contains(filterString.ToLower())).ToList();
+
+                //If searching by direct result cannot be found, search by anything that contains the input
+                if (filteredItems == null || filteredItems.Count == 0)
+                {
+                    filteredItems = rootWeaponSkin.ItemsList.Values.Where(s => s.Name.ToLower().Contains(filterString.ToLower())).ToList();
+                }
+                //If it still cannot be found, search by whole words
+                if (filteredItems == null || filteredItems.Count == 0)
+                {
+                    filteredItems = FindSimilarItemsByWords(rootWeaponSkin, context, filterString).ToList();
+                }
+
+                foreach (var skin in filteredItems)
+                {
+                    string skinQualityEmote = CsgoInventoryManager.GetEmoteBySkinRarity(skin.Rarity, skin.WeaponType);
+
+                    //Add skin entry
+
+                    Emote emote = Emote.Parse(skinQualityEmote);
+
+                    //Add weapon skin
+                    filteredRootWeaponSkin.Add(emote + " " + skin.Name);
+
+                    //Get item value
+                    long weaponSkinValue = Convert.ToInt64(skin.Price.AllTime.Average);
+
+                    //Add weapon skin price
+                    filteredRootWeaponSkinPrice.Add(emote + " " + weaponSkinValue.ToString());
+                }
+            }
+            //Configurate paginated message
+            var paginationConfig = new PaginationConfig
+            {
+                AuthorName = "CS:GO Market",
+                AuthorURL = "https://i.redd.it/1s0j5e4fhws01.png",
+
+                Description = $"Buy item: `{botCommandPrefix}buy [name]`\nFilter market items by name: `{botCommandPrefix}market [name]`\nView item: `{botCommandPrefix}view [name]`",
+
+                DefaultFieldHeader = "Unable to find specified item!",
+                DefaultFieldDescription = $"Broaden your search parameters and try again",
+
+                Field1Header = "Name",
+                Field2Header = "Price",
+
+                Color = new Color(0, 204, 0)
+            };
+
+            var paginationManager = new PaginationManager();
+
+            //Generate paginated message
+            var pager = paginationManager.GeneratePaginatedMessage(filteredRootWeaponSkin, filteredRootWeaponSkinPrice, paginationConfig);
+
+            return pager;
+        }
 
         //Filtering
         private static List<UserSkinEntry> FindSimilarItemsByWords(List<UserSkinEntry> userSkinEntry, SocketCommandContext context, string inputString)

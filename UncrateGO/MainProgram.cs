@@ -3,7 +3,6 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using UncrateGo.Core;
-using UncrateGo.Models;
 using UncrateGo.Modules.Csgo;
 using Microsoft.Extensions.DependencyInjection;
 using System;

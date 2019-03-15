@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
-using UncrateGo.Core;
-using UncrateGo.Models;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace UncrateGo.Modules.Commands.Preconditions
 {

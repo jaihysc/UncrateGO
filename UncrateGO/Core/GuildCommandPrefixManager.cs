@@ -1,6 +1,5 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
-using UncrateGo.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;

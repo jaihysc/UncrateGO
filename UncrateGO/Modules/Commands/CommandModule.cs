@@ -205,7 +205,7 @@ namespace UncrateGo.Modules.Commands
         public async Task DisplayInventoryAsync()
         {
             //Get paginated message
-            var pager = CsgoInventoryHandler.DisplayUserCsgoInventory(Context);
+            var pager = CsgoInventoryManager.DisplayUserCsgoInventory(Context);
 
             //Send paginated message
             var sentMessage = await PagedReplyAsync(pager, new ReactionList
@@ -260,7 +260,7 @@ namespace UncrateGo.Modules.Commands
         [Command("market", RunMode = RunMode.Async)]
         public async Task ShowItemMarketAsync([Remainder]string filterString = null)
         {
-            var pager = CsgoInventoryHandler.GetCsgoMarketInventory(Context, filterString);
+            var pager = CsgoTransactionHandler.GetCsgoMarketInventory(Context, filterString);
 
             //Send paginated message
             var sentMessage = await PagedReplyAsync(pager, new ReactionList
