@@ -28,7 +28,7 @@ namespace UncrateGo.Modules
             var chnl = socketGuild.TextChannels.FirstOrDefault();
 
             //Send initial join message
-            await chnl.SendMessageAsync("**Thank you for adding me! :white_check_mark:**\n`-`My default prefix here is `~`\n`-`View list of commands with `~help`\n`-`You can change my command prefix with `~prefix`");
+            await chnl.SendMessageAsync("**Thank you for adding me! :white_check_mark:**\n`-`My default prefix here is `~`\n`-`View list of commands with `~help`\n`-`You can change my command prefix with `~prefix`\n\n`-`For help with issues or problems: discordapp.com/invite/VNDS9sW");
         }
     }
 
