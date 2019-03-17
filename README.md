@@ -33,8 +33,14 @@ Discord bot using Discord.NET, simulates the CS:GO unboxing experience
 
 # Setup
 
-After inviting the bot to your server with the link [here](https://discordapp.com/api/oauth2/authorize?client_id=523282498265022479&permissions=337984&scope=bot), **Use `~help` for initial help**. 
+After inviting the bot to your server with the link [here](https://discordapp.com/api/oauth2/authorize?client_id=523282498265022479&permissions=339008&scope=bot), **Use `~help` for initial help**. 
 
 Should you have questions on how to use a command, use `~help [command]`. Otherwise, the bot will automatically display help for the command in the event you incorrectly used a command.
 
 Note that the default prefix `~` can be changed by the guild owner. If the default bot prefix does not work @mention the bot and it will reply with the prefix for the guild you are in.
+
+# FAQ
+
+### The bot does not respond to commands / only certain commands
+
+Ensure the bot has sufficient permissions for the channel you wish to use the bot in. Try giving the bot **administrator** permissions.
