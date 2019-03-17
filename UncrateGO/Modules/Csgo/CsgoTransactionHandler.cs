@@ -3,6 +3,7 @@ using UncrateGo.Core;
 using UncrateGo.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -111,7 +112,14 @@ namespace UncrateGo.Modules.Csgo
             else
             {
                 //Get item price
-                long weaponSkinValue = Convert.ToInt64(rootWeaponSkin.ItemsList.Values.Where(s => s.Name == selectedSkinToSell.MarketName).FirstOrDefault().Price.AllTime.Average);
+                var itemData = rootWeaponSkin.ItemsList.Values.Where(s => s.Name == selectedSkinToSell.MarketName).FirstOrDefault();
+
+                long weaponSkinValue = 0;
+                if (itemData != null)
+                {
+                    weaponSkinValue += Convert.ToInt64(itemData.Price.AllTime.Average);
+                }
+                
 
                 //Give user credits
                 BankingHandler.AddCredits(context, weaponSkinValue);
@@ -229,7 +237,21 @@ namespace UncrateGo.Modules.Csgo
             long weaponSkinValue = 0;
             foreach (var item in userSkins)
             {
-                weaponSkinValue += Convert.ToInt64(rootSkinData.ItemsList.Values.Where(s => s.Name == item.MarketName).FirstOrDefault().Price.AllTime.Average);
+                try
+                {
+                    var itemData = rootSkinData.ItemsList.Values.Where(s => s.Name == item.MarketName).FirstOrDefault();
+
+                    if (itemData != null)
+                    {
+                        weaponSkinValue += Convert.ToInt64(itemData.Price.AllTime.Average);
+                    }
+                    
+                }
+                catch (Exception)
+                {
+                    EventLogger.LogMessage("Error trying to get item value at item | " + item, ConsoleColor.Red);
+                }
+                
             }
 
             return weaponSkinValue;

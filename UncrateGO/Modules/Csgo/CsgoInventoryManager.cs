@@ -90,6 +90,12 @@ namespace UncrateGo.Modules.Csgo
                     }
                 }
 
+                //Trace down the source of this null?
+                if (skinDataItem == null)
+                {
+                    skinDataItem = new SkinDataItem();
+                }
+
                 //Add
                 string skinQualityEmote = GetEmoteBySkinRarity(skinDataItem.Rarity, skinDataItem.WeaponType);
 
