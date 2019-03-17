@@ -43,4 +43,4 @@ Note that the default prefix `~` can be changed by the guild owner. If the defau
 
 ### The bot does not respond to commands / only certain commands
 
-Ensure the bot has sufficient permissions for the channel you with to use the bot in. Try giving the bot administrator.
+Ensure the bot has sufficient permissions for the channel you with to use the bot in. Try giving the bot **administrator** permissions.
