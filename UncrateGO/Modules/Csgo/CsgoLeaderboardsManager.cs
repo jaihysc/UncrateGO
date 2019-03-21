@@ -192,7 +192,15 @@ namespace UncrateGo.Modules.Csgo
             while (true)
             {
                 await Task.Delay(60000);
-                GetStatisticsLeader();
+                try
+                {
+                    GetStatisticsLeader();
+                }
+                catch (Exception)
+                {
+                    EventLogger.LogMessage("Unable to update statistics", ConsoleColor.Red);
+                }
+                
             }
         }
 

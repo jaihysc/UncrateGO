@@ -71,7 +71,14 @@ namespace UncrateGo.Modules.Csgo
             {
                 //Delay goes in front to delay after initial program start
                 await Task.Delay(57600000); //Update every 16 hours
-                UpdateRootWeaponSkin();        
+                try
+                {
+                    UpdateRootWeaponSkin();
+                }
+                catch (Exception)
+                {
+                    EventLogger.LogMessage("Unable to update rootSkinData", ConsoleColor.Red);
+                }
             }       
         }
 
@@ -82,14 +89,18 @@ namespace UncrateGo.Modules.Csgo
         {
             var skinData = await GetRootSkinDataOnline();
 
-            var processedSkinData = ProcessRawRootSkinData(skinData);
+            if (skinData != null)
+            {
+                var processedSkinData = ProcessRawRootSkinData(skinData);
 
-            //Replace current one in memory
-            rootWeaponSkin = processedSkinData;
+                //Replace current one in memory
+                rootWeaponSkin = processedSkinData;
 
-            //This will not write to memory, maybe do that?
-            string jsonToWrite = JsonConvert.SerializeObject(processedSkinData);
-            FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("skinData.json"));
+                ////This will not write to memory, maybe do that?
+                //string jsonToWrite = JsonConvert.SerializeObject(processedSkinData);
+                //FileAccessManager.WriteStringToFile(jsonToWrite, true,
+                //FileAccessManager.GetFileLocation("skinData.json"));
+            }
         }
 
         private static RootSkinData ProcessRawRootSkinData(RootSkinData rootWeaponSkinInput)
