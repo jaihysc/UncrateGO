@@ -46,6 +46,7 @@ namespace UncrateGo
                 UserDataManager.GetUserStorage();
                 CsgoDataHandler.GetUserSkinStorage();
                 GuildCommandPrefixManager.PopulateGuildCommandPrefix();
+                CsgoUnboxingHandler.GetUserSelectedCase();
 
                 //Exception handling
                 AppDomain currentDomain = AppDomain.CurrentDomain;
@@ -277,6 +278,7 @@ namespace UncrateGo
             UserDataManager.FlushUserStorage();
             CsgoDataHandler.FlushUserSkinStorage();
             GuildCommandPrefixManager.FlushGuildCommandDictionary();
+            CsgoUnboxingHandler.FlushUserSelectedCase();
 
             EventLogger.LogMessage("Flushing data to file - DONE!", ConsoleColor.Yellow);
         }

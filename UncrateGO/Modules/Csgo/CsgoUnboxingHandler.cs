@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace UncrateGo.Modules.Csgo
 {
@@ -14,6 +15,38 @@ namespace UncrateGo.Modules.Csgo
     {
         public static Dictionary<ulong, string> userSelectedCase = new Dictionary<ulong, string>();
         private static CsgoContainers csgoContainers;
+
+        /// <summary>
+        /// Gets the selected cases for all users from storage
+        /// </summary>
+        public static void GetUserSelectedCase()
+        {
+            string readCaseDataFromFile =
+                FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("selectedCases.json"));
+
+            if (!string.IsNullOrWhiteSpace(readCaseDataFromFile))
+            {
+                var userSelectedCaseData = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(readCaseDataFromFile);
+                if (userSelectedCaseData != null)
+                {
+                    userSelectedCase = userSelectedCaseData;
+                }
+            }
+        }
+
+        public static void FlushUserSelectedCase()
+        {
+            try
+            {
+                //Create a copy to write so that we don't get an error if it was modified mid write
+                var tempUserSelectedCaseData = userSelectedCase;
+                string jsonToWrite = JsonConvert.SerializeObject(tempUserSelectedCaseData);
+                FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("selectedCases.json"));
+            }
+            catch (Exception)
+            {
+            }
+        }
 
         public static CsgoContainers GetCsgoContainers()
         {
