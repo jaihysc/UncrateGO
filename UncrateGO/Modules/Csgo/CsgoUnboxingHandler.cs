@@ -272,8 +272,13 @@ namespace UncrateGo.Modules.Csgo
             }
             else
             {
-                //If user does exist, only set
-                CsgoUnboxingHandler.userSelectedCase[context.Message.Author.Id] = userSelectedContainer.Name;
+                //Don't set if the user has already selected the same case
+                if (CsgoUnboxingHandler.userSelectedCase[context.Message.Author.Id] != userSelectedContainer.Name)
+                {
+                    //If user does exist, only set
+                    CsgoUnboxingHandler.userSelectedCase[context.Message.Author.Id] = userSelectedContainer.Name;
+                }
+                else return;
             }
 
             await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you set your case to open to **{userSelectedContainer.Name}**");
