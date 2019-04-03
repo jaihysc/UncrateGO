@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
@@ -439,14 +440,14 @@ namespace UncrateGo.Modules.Csgo
 
             bool match = false;
 
-            string[] tokens = inputString.ToLower().Split(' ');
+            string[] tokens = RemoveSpecialCharacters(inputString).ToLower().Split(' ');
 
             //Search through userSkinEntry for words that have the specified input string seperated with spaces
             foreach (var item in userSkinEntry.ItemsList.Values)
             {
                 for (int i = 0; i < tokens.Length; i++)
                 {
-                    if (!item.Name.ToLower().Contains(tokens[i]))
+                    if (!RemoveSpecialCharacters(item.Name).ToLower().Contains(tokens[i]))
                     {
                         match = false;
                         break;
@@ -460,6 +461,22 @@ namespace UncrateGo.Modules.Csgo
             }
 
             return userSkinEntries;
+        }
+
+        private static string RemoveSpecialCharacters(string str)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < str.Length; i++)
+            {
+                if ((str[i] >= '0' && str[i] <= '9')
+                    || (str[i] >= 'A' && str[i] <= 'z'
+                        || (str[i] == '.' || str[i] == '_')))
+                {
+                    sb.Append(str[i]);
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }
