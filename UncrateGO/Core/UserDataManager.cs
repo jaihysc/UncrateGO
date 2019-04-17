@@ -9,11 +9,11 @@ namespace UncrateGo.Core
 {
     public class UserDataManager
     {
-        private static UserStorage userStorage;
+        private static UserStorage _userStorage;
 
         public static void CreateNewUserEntry(SocketCommandContext context)
         {
-            userStorage.UserInfo.Add(context.Message.Author.Id, new UserInfo
+            _userStorage.UserInfo.Add(context.Message.Author.Id, new UserInfo
             {
                 UserId = context.Message.Author.Id,
                 UserBankingStorage = new UserBankingStorage { Credit = 0},
@@ -22,7 +22,7 @@ namespace UncrateGo.Core
 
         public static void CreateNewUserEntry(SocketGuildUser user)
         {
-            userStorage.UserInfo.Add(user.Id, new UserInfo
+            _userStorage.UserInfo.Add(user.Id, new UserInfo
             {
                 UserId = user.Id,
                 UserBankingStorage = new UserBankingStorage { Credit = 0},
@@ -35,7 +35,7 @@ namespace UncrateGo.Core
         /// <returns></returns>
         public static UserStorage GetUserStorage()
         {
-            if (userStorage == null)
+            if (_userStorage == null)
             {
                 var json = FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("UserStorage.json"));
                 var deserializedUserStorage = JsonConvert.DeserializeObject<UserStorage>(json);
@@ -49,10 +49,10 @@ namespace UncrateGo.Core
                     };
                 }
 
-                userStorage = deserializedUserStorage;
+                _userStorage = deserializedUserStorage;
             }
 
-            return userStorage;
+            return _userStorage;
         }
 
         /// <summary>
@@ -61,23 +61,24 @@ namespace UncrateGo.Core
         /// <param name="input"></param>
         public static void SetUserStorage(UserStorage input)
         {
-            userStorage = input;
+            _userStorage = input;
         }
 
         /// <summary>
-        /// Writes current userStorge to file
+        /// Writes current userStorage to file
         /// </summary>
         public static void FlushUserStorage()
         {
             try
             {
                 //Create a copy to write so that we don't get an error if it was modified mid write
-                var tempUserStorage = userStorage;
+                var tempUserStorage = _userStorage;
                 string jsonToWrite = JsonConvert.SerializeObject(tempUserStorage);
                 FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("UserStorage.json"));
             }
             catch (Exception)
             {
+                EventLogger.LogMessage("Unable to flush user storage", ConsoleColor.Red);
             }
         }
     }

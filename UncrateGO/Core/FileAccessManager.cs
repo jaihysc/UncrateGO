@@ -9,23 +9,31 @@ namespace UncrateGo.Core
     public class FileAccessManager
     {
         //This must be set prior to using the methods in this class
-        internal static string rootLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        private static readonly string RootLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
         
         public static string ReadFromFile(string filePath)
         {
-            //Create file if it does not exist
-            if (!File.Exists(filePath))
+            try
             {
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(filePath, true))
+                //Create file if it does not exist
+                if (!File.Exists(filePath))
                 {
-                    file.WriteLine("");
+                    using (StreamWriter file = new StreamWriter(filePath, true))
+                    {
+                        file.WriteLine("");
+                    }
+                }
+
+                using (StreamReader r = new StreamReader(filePath))
+                {
+                    return r.ReadToEnd();
                 }
             }
-
-            using (StreamReader r = new StreamReader(filePath))
+            catch
             {
-                return r.ReadToEnd();
+                EventLogger.LogMessage("Unable to read from file", ConsoleColor.Red);
+                return "";
             }
         }
         
@@ -36,13 +44,13 @@ namespace UncrateGo.Core
             try
             {
                 //Overwrite existing contents if true
-                if (overwriteExistingContent == true)
+                if (overwriteExistingContent)
                 {
                     File.WriteAllText(filePath, "");
                 }
 
                 //Write string
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(filePath, true, Encoding.UTF8))
+                using (StreamWriter file = new StreamWriter(filePath, true, Encoding.UTF8))
                 {
                     file.WriteLine(stringToWrite);
                 }
@@ -50,6 +58,7 @@ namespace UncrateGo.Core
             }
             catch (Exception)
             {
+                EventLogger.LogMessage("Unable to write string to file", ConsoleColor.Red);
             }
 
         }
@@ -62,7 +71,7 @@ namespace UncrateGo.Core
             try
             {
                 //Read root path file
-                var fileLocations = File.ReadAllLines(rootLocation + @"\Paths.txt");
+                string[] fileLocations = File.ReadAllLines(RootLocation + @"\Paths.txt");
 
                 //Check path file for specified name of txt file
                 //E.G "UserCredits.txt"
@@ -70,6 +79,7 @@ namespace UncrateGo.Core
             }
             catch (Exception)
             {
+                EventLogger.LogMessage("Unable to get file location " + fileName, ConsoleColor.Red);
             }
 
             return returnFileLocation;

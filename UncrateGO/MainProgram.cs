@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using UncrateGo.Modules;
 using System.Threading;
 using System.Runtime.InteropServices;
-using UncrateGo.Modules.Commands.Preconditions;
+using UncrateGo.Modules.Commands;
 
 namespace UncrateGo
 {
@@ -38,6 +38,7 @@ namespace UncrateGo
                 CsgoDataHandler.GenerateSouvenirCollections();
 
                 //Timers - do not await these
+                //TODO, use a better approach to these timers rather than not awaiting a method
                 CsgoDataHandler.UpdateRootWeaponSkinTimer();
                 CsgoLeaderboardsManager.GetStatisticsLeaderTimer();
 
@@ -66,16 +67,16 @@ namespace UncrateGo
 
         }
 
-        public DiscordSocketClient _client;
-        public CommandService _commands;
-        public IServiceProvider _services;
+        private DiscordSocketClient _client;
+        private CommandService _commands;
+        private IServiceProvider _services;
 
         //Main
         public async Task MainAsync()
         {
-            var _config = new DiscordSocketConfig { MessageCacheSize = 500 };
+            var config = new DiscordSocketConfig { MessageCacheSize = 500 };
 
-            _client = new DiscordSocketClient(_config);
+            _client = new DiscordSocketClient(config);
             _commands = new CommandService();
             _services = new ServiceCollection()
                 .AddSingleton(_client)
@@ -157,7 +158,7 @@ namespace UncrateGo
                 return;
 
             //Only process command if user is not in cooldown
-            if (await RatelimitPrecondtion.UserRateLimited(context.Message.Author.Id, context)) return;
+            if (await Ratelimit.UserRateLimited(context.Message.Author.Id, context)) return;
 
             //Show prefix help if user mentions bot
             if (message.Content == ("<@" + context.Client.CurrentUser.Id.ToString() + ">") || message.Content == ("<@!" + context.Client.CurrentUser.Id.ToString() + ">"))
@@ -258,7 +259,7 @@ namespace UncrateGo
             }
         }
 
-        private static void FlushDataTimer()
+        private static void FlushDataTimer() //TODO better timer?
         {
             while (true)
             {
@@ -310,10 +311,10 @@ namespace UncrateGo
         //https://stackoverflow.com/questions/13656846/how-to-programmatic-disable-c-sharp-console-applications-quick-edit-mode
         static class DisableConsoleQuickEdit
         {
-            const uint ENABLE_QUICK_EDIT = 0x0040;
+            const uint EnableQuickEdit = 0x0040;
 
             // STD_INPUT_HANDLE (DWORD): -10 is the standard input device.
-            const int STD_INPUT_HANDLE = -10;
+            const int StdInputHandle = -10;
 
             [DllImport("kernel32.dll", SetLastError = true)]
             static extern IntPtr GetStdHandle(int nStdHandle);
@@ -324,30 +325,27 @@ namespace UncrateGo
             [DllImport("kernel32.dll")]
             static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
 
-            internal static bool Go()
+            internal static void Go()
             {
 
-                IntPtr consoleHandle = GetStdHandle(STD_INPUT_HANDLE);
+                IntPtr consoleHandle = GetStdHandle(StdInputHandle);
 
                 // get current console mode
-                uint consoleMode;
-                if (!GetConsoleMode(consoleHandle, out consoleMode))
+                if (!GetConsoleMode(consoleHandle, out var consoleMode))
                 {
                     // ERROR: Unable to get console mode.
-                    return false;
+                    return;
                 }
 
                 // Clear the quick edit bit in the mode flags
-                consoleMode &= ~ENABLE_QUICK_EDIT;
+                consoleMode &= ~EnableQuickEdit;
 
                 // set the new mode
                 if (!SetConsoleMode(consoleHandle, consoleMode))
                 {
                     // ERROR: Unable to set console mode
-                    return false;
+                    return;
                 }
-
-                return true;
             }
         }
     }

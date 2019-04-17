@@ -10,40 +10,40 @@ namespace UncrateGo.Modules.Csgo
 {
     public static class CsgoInventoryManager
     {
-        private static List<string> embedFieldsMaster = new List<string>();
-        private static List<string> embedPriceFieldsMaster = new List<string>();
+        private static List<string> _embedFieldsMaster = new List<string>();
+        private static List<string> _embedPriceFieldsMaster = new List<string>();
 
         public static PaginatedMessage DisplayUserCsgoInventory(SocketCommandContext context)
         {
             string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
 
             //Reset fields
-            embedFieldsMaster = new List<string>();
-            embedPriceFieldsMaster = new List<string>();
+            _embedFieldsMaster = new List<string>();
+            _embedPriceFieldsMaster = new List<string>();
 
             //Get user skins from json
             var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
-            List<UserSkinEntry> foundUserSkins = new List<UserSkinEntry>();
+            var foundUserSkins = new List<UserSkinEntry>();
 
             //Filter userSkinEntries xml file down to skins belonging to sender
             foreach (var userSkinEntry in userSkin.UserSkinEntries)
             {
                 //Filter skin search to those owned by user
-                if (userSkinEntry.OwnerID == context.Message.Author.Id)
+                if (userSkinEntry.OwnerId == context.Message.Author.Id)
                 {
-                    foundUserSkins.Add(new UserSkinEntry { OwnerID = context.Message.Author.Id, ClassId = userSkinEntry.ClassId, UnboxDate = userSkinEntry.UnboxDate, MarketName = userSkinEntry.MarketName });
+                    foundUserSkins.Add(new UserSkinEntry { OwnerId = context.Message.Author.Id, ClassId = userSkinEntry.ClassId, UnboxDate = userSkinEntry.UnboxDate, MarketName = userSkinEntry.MarketName });
                 }
             }
 
             //Generate fields
             AddSkinFieldEntry(foundUserSkins);
 
-            //Configurate paginated message
+            //Configure paginated message
             var paginationConfig = new PaginationConfig
             {
                 AuthorName = context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5) + " Inventory",
-                AuthorURL = context.Message.Author.GetAvatarUrl(),
+                AuthorUrl = context.Message.Author.GetAvatarUrl(),
 
                 Description = $"Sell items: `{botCommandPrefix}sell [name]` \n Sell all items matching filter: `{botCommandPrefix}sellall [name]`",
 
@@ -59,7 +59,7 @@ namespace UncrateGo.Modules.Csgo
             var paginationManager = new PaginationManager();
 
             //Generate paginated message
-            var pager = paginationManager.GeneratePaginatedMessage(embedFieldsMaster, embedPriceFieldsMaster, paginationConfig);
+            var pager = paginationManager.GeneratePaginatedMessage(_embedFieldsMaster, _embedPriceFieldsMaster, paginationConfig);
 
             return pager;
         }
@@ -82,7 +82,7 @@ namespace UncrateGo.Modules.Csgo
                     foreach (var storageSkinEntry in rootWeaponSkin.ItemsList.Values)
                     {
                         //Filter by market hash name
-                        //LESSON LEARNED: Decode unicode before processing them to avoid them not being recognised!!!!!!!111!!
+                        //LESSON LEARNED: Decode unicode before processing them to avoid them not being recognized
                         if (UnicodeLiteralConverter.DecodeToNonAsciiCharacters(storageSkinEntry.Classid) == UnicodeLiteralConverter.DecodeToNonAsciiCharacters(item.ClassId))
                         {
                             skinDataItem = storageSkinEntry;
@@ -105,14 +105,15 @@ namespace UncrateGo.Modules.Csgo
                     Emote emote = Emote.Parse(skinQualityEmote);
 
                     //Add skin entry to list
-                    embedFieldsMaster.Add(emote + " " + skinDataItem.Name);
+                    _embedFieldsMaster.Add(emote + " " + skinDataItem.Name);
 
 
                     //Filter and Add skin price entry to list
-                    embedPriceFieldsMaster.Add(emote + " " + skinDataItem.Price.AllTime.Average);
+                    _embedPriceFieldsMaster.Add(emote + " " + skinDataItem.Price.AllTime.Average);
                 }
                 catch (Exception)
                 {
+                    EventLogger.LogMessage("Unable to add emotes", ConsoleColor.Red);
                 }
 
             }

@@ -11,12 +11,14 @@ namespace UncrateGo.Modules.Csgo
 {
     public class CsgoLeaderboardsManager
     {
-        private static List<string> LeaderboardsLeaders = new List<string>();
+        private static List<string> _leaderboardsLeaders = new List<string>();
 
         /// <summary>
         /// Increments the user stat tracker
         /// </summary>
+        /// <param name="context"></param>
         /// <param name="itemListType"></param>
+        /// <param name="itemCategory"></param>
         public static void IncrementStatTracker(SocketCommandContext context, ItemListType itemListType, ItemCategory itemCategory)
         {
             var userCaseStats = GetUserCsgoStatsStorage(context);
@@ -129,7 +131,7 @@ namespace UncrateGo.Modules.Csgo
 
             //Add stats to string list
             List<string> statFieldVal = new List<string>();
-            List<string> statFieldLeadVal = LeaderboardsLeaders;
+            List<string> statFieldLeadVal = _leaderboardsLeaders;
 
             if (userCaseStats != null)
             {
@@ -158,9 +160,9 @@ namespace UncrateGo.Modules.Csgo
             }
 
             //If there are no leaders, leader stats list will print N/A
-            if (statFieldLeadVal == null || statFieldLeadVal.Count() == 0)
+            if (statFieldLeadVal == null || !statFieldLeadVal.Any())
             {
-                statFieldLeadVal.Add("N/A");
+                statFieldLeadVal = new List<string> {"N/A"};
             }
 
             //Send embed
@@ -187,7 +189,7 @@ namespace UncrateGo.Modules.Csgo
             await context.Message.Channel.SendMessageAsync(" ", embed: embed).ConfigureAwait(false);
         }
 
-        public static async Task GetStatisticsLeaderTimer()
+        public static async Task GetStatisticsLeaderTimer() //TODO, have a better way of updating this
         {
             while (true)
             {
@@ -236,13 +238,13 @@ namespace UncrateGo.Modules.Csgo
             }
 
             //Generate the string to return
-            List<string> returnString = new List<string>();
-            returnString.Add(casesOpened.Value + " <@" + casesOpened.UserID + ">");
-            returnString.Add(souvenirsOpened.Value + " <@" + souvenirsOpened.UserID + ">");
-            returnString.Add(dropsOpened.Value + " <@" + dropsOpened.UserID + ">");
-            returnString.Add(sticksOpened.Value + " <@" + sticksOpened.UserID + ">");
+            var returnString = new List<string>();
+            returnString.Add(casesOpened.Value + " <@" + casesOpened.UserId + ">");
+            returnString.Add(souvenirsOpened.Value + " <@" + souvenirsOpened.UserId + ">");
+            returnString.Add(dropsOpened.Value + " <@" + dropsOpened.UserId + ">");
+            returnString.Add(sticksOpened.Value + " <@" + sticksOpened.UserId + ">");
 
-            LeaderboardsLeaders = returnString;
+            _leaderboardsLeaders = returnString;
         }
 
         /// <summary>
@@ -254,17 +256,10 @@ namespace UncrateGo.Modules.Csgo
         /// <returns></returns>
         private static LeaderboardData FindEntryLeader(UserInfo user, long comparisonInputNew, LeaderboardData comparisonInputOriginal)
         {
-            try
+            if (comparisonInputNew > comparisonInputOriginal.Value)
             {
-                if (comparisonInputNew > comparisonInputOriginal.Value)
-                {
-                    comparisonInputOriginal.Value = comparisonInputNew;
-                    comparisonInputOriginal.UserID = user.UserId;
-                }
-
-            }
-            catch (Exception)
-            {
+                comparisonInputOriginal.Value = comparisonInputNew;
+                comparisonInputOriginal.UserId = user.UserId;
             }
 
             return comparisonInputOriginal;
@@ -273,7 +268,7 @@ namespace UncrateGo.Modules.Csgo
         private class LeaderboardData
         {
             public long Value { get; set; }
-            public ulong UserID { get; set; }
+            public ulong UserId { get; set; }
         }
 
         public enum CaseCategory { Case, Drop, Souvenir, Sticker};

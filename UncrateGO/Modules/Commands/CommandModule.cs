@@ -1,7 +1,6 @@
 ﻿using Discord.Addons.Interactive;
 using Discord.Commands;
 using UncrateGo.Core;
-using UncrateGo.Modules.Commands.Preconditions;
 using UncrateGo.Modules.Csgo;
 using System;
 using System.Threading.Tasks;
@@ -139,7 +138,7 @@ namespace UncrateGo.Modules.Commands
 
                 //Reset inventory
                 var userSkinStorage = CsgoDataHandler.GetUserSkinStorage();
-                var userSkinStorageNew = userSkinStorage.UserSkinEntries.Where(i => i.OwnerID != Context.Message.Author.Id).ToList();
+                var userSkinStorageNew = userSkinStorage.UserSkinEntries.Where(i => i.OwnerId != Context.Message.Author.Id).ToList();
 
                 CsgoDataHandler.SetUserSkinStorage(new UserSkinStorage { UserSkinEntries = userSkinStorageNew });
 

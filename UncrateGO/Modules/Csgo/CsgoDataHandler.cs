@@ -12,10 +12,10 @@ using System.Net.Http;
 
 namespace UncrateGo.Modules.Csgo
 {
-    public class CsgoDataHandler
+    public static class CsgoDataHandler
     {
-        public static RootSkinData rootWeaponSkin;
-        private static UserSkinStorage userSkinStorage;
+        public static RootSkinData RootWeaponSkin;
+        private static UserSkinStorage _userSkinStorage;
 
         /// <summary>
         /// Gathers weapon skin data, if it has not been processed, it will process it
@@ -23,14 +23,14 @@ namespace UncrateGo.Modules.Csgo
         /// <returns></returns>
         public static RootSkinData GetRootWeaponSkin()
         {
-            if (rootWeaponSkin == null)
+            if (RootWeaponSkin == null)
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
                 EventLogger.LogMessage("Gathering CS:GO skin data, this may take a while");
 
 
-                RootSkinData rootWeaponSkinTemp = new RootSkinData();
+                RootSkinData rootWeaponSkinTemp;
                 //Read skin data from local json file
                 using (StreamReader r = new StreamReader(FileAccessManager.GetFileLocation("skinData.json")))
                 {
@@ -51,14 +51,14 @@ namespace UncrateGo.Modules.Csgo
                     FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("skinData.json"));
                 }
 
-                rootWeaponSkin = rootWeaponSkinTemp;
+                RootWeaponSkin = rootWeaponSkinTemp;
 
                 stopwatch.Stop();
                 EventLogger.LogMessage($"Gathering CS:GO skin data, this may take a while --- Done! - Took {stopwatch.Elapsed.TotalMilliseconds} milliseconds");
             }
 
 
-            return rootWeaponSkin;
+            return RootWeaponSkin;
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace UncrateGo.Modules.Csgo
                 var processedSkinData = ProcessRawRootSkinData(skinData);
 
                 //Replace current one in memory
-                rootWeaponSkin = processedSkinData;
+                RootWeaponSkin = processedSkinData;
 
                 ////This will not write to memory, maybe do that?
                 //string jsonToWrite = JsonConvert.SerializeObject(processedSkinData);
@@ -122,17 +122,17 @@ namespace UncrateGo.Modules.Csgo
                         rootWeaponSkinInput.ItemsList = rootWeaponSkinInput.ItemsList.Where(s => s.Key != skin.Name).ToDictionary(x => x.Key, y => y.Value);
                     }
 
-                    //Sort each skin into corropsonding cases
+                    //Sort each skin into corresponding cases
                     //Read from case data config
                     var skinCases = CsgoUnboxingHandler.GetCsgoContainers();
 
                     //Find the container for each skin
-                    foreach (var skinCase in skinCases.Containers)
+                    foreach (var skinCase in skinCases.Containers) //TODO, make this process way more efficient
                     {
                         //Check for each skin in each container
                         foreach (var skinCaseItem in skinCase.ContainerEntries)
                         {
-                            List<string> comparisonItems = new List<string>();
+                            var comparisonItems = new List<string>();
 
                             //if FN, MW, ETC, it will find all skin conditions + stattrak
 
@@ -179,16 +179,16 @@ namespace UncrateGo.Modules.Csgo
                                 comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Battle-Scarred)");
                             }
 
-                            //not a tournment sticker
-                            else if (skinCase.IsSticker && !skinCase.IsTournmentSticker)
+                            //not a tournament sticker
+                            else if (skinCase.IsSticker && !skinCase.IsTournamentSticker)
                             {
                                 comparisonItems.Add("Sticker | " + skinCaseItem.SkinName);
                                 comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Foil)");
                                 comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Holo)");
                             }
 
-                            //is tournment sticker
-                            else if (skinCase.IsSticker && skinCase.IsTournmentSticker)
+                            //is tournament sticker
+                            else if (skinCase.IsSticker && skinCase.IsTournamentSticker)
                             {
                                 comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " | " + skinCase.CollectionName);
                                 comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Foil)" + " | " + skinCase.CollectionName);
@@ -198,7 +198,7 @@ namespace UncrateGo.Modules.Csgo
                             //Check for possible matches, matching CASE skin name
                             foreach (var comparisonItem in comparisonItems)
                             {
-                                //Use UnicodeLiteralConverter.DecodeToNonAsciiCharacters() before comparason to decode unicode
+                                //Use UnicodeLiteralConverter.DecodeToNonAsciiCharacters() before comparison to decode unicode
                                 if (UnicodeLiteralConverter.DecodeToNonAsciiCharacters(skin.Name) == UnicodeLiteralConverter.DecodeToNonAsciiCharacters(comparisonItem))
                                 {
                                     //If skin.Cases is null, create a new list
@@ -234,7 +234,7 @@ namespace UncrateGo.Modules.Csgo
             try
             {
                 //The API we request info from
-                var requestURL = "http://csgobackpack.net/api/GetItemsList/v2/";
+                const string requestUrl = "http://csgobackpack.net/api/GetItemsList/v2/";
 
                 using (HttpClient client = new HttpClient())
                 {
@@ -242,8 +242,8 @@ namespace UncrateGo.Modules.Csgo
                     client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
                     //For IP-API
-                    client.BaseAddress = new Uri(requestURL);
-                    HttpResponseMessage response = client.GetAsync(requestURL).GetAwaiter().GetResult();
+                    client.BaseAddress = new Uri(requestUrl);
+                    HttpResponseMessage response = client.GetAsync(requestUrl).GetAwaiter().GetResult();
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -255,7 +255,6 @@ namespace UncrateGo.Modules.Csgo
 
                     return null;
                 }
-
             }
             catch (Exception ex)
             {
@@ -270,7 +269,7 @@ namespace UncrateGo.Modules.Csgo
         /// </summary>
         public static void GenerateSouvenirCollections()
         {
-            //Create a tempory csgoContainers to work with while main one is in a foreach loop
+            //Create a temporary csgoContainers to work with while main one is in a foreach loop
             var csgoContainersTemp = CsgoUnboxingHandler.GetCsgoContainers();
             foreach (var container in CsgoUnboxingHandler.GetCsgoContainers().Containers.ToList())
             {
@@ -283,7 +282,7 @@ namespace UncrateGo.Modules.Csgo
                         SouvenirAvailable = false,
                         Name = container.CollectionName + " Souvenir",
                         CollectionName = container.CollectionName + " Souvenir",
-                        IconURL = container.IconURL,
+                        IconUrl = container.IconUrl,
                         ContainerEntries = container.ContainerEntries
                     };
 
@@ -303,7 +302,7 @@ namespace UncrateGo.Modules.Csgo
         public static UserSkinStorage GetUserSkinStorage()
         {
             //Read from file if this is null
-            if (userSkinStorage == null)
+            if (_userSkinStorage == null)
             {
                 var userSkin = JsonConvert.DeserializeObject<UserSkinStorage>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("UserSkinStorage.json")));
 
@@ -316,10 +315,10 @@ namespace UncrateGo.Modules.Csgo
 
                 }
 
-                userSkinStorage = userSkin;
+                _userSkinStorage = userSkin;
             }
 
-            return userSkinStorage;
+            return _userSkinStorage;
         }
 
         /// <summary>
@@ -329,11 +328,11 @@ namespace UncrateGo.Modules.Csgo
         /// <param name="skinItem"></param>
         public static void AddItemToUserInventory(SocketCommandContext context, SkinDataItem skinItem)
         {
-            var userSkin = CsgoDataHandler.GetUserSkinStorage();
+            var userSkin = GetUserSkinStorage();
             userSkin.UserSkinEntries.Add(new UserSkinEntry
             {
                 ClassId = skinItem.Classid,
-                OwnerID = context.Message.Author.Id,
+                OwnerId = context.Message.Author.Id,
                 UnboxDate = DateTime.UtcNow, MarketName = skinItem.Name
             });
         }
@@ -344,23 +343,23 @@ namespace UncrateGo.Modules.Csgo
         /// <param name="input"></param>
         public static void SetUserSkinStorage(UserSkinStorage input)
         {
-            userSkinStorage = input;
+            _userSkinStorage = input;
         }
 
         /// <summary>
         /// Writes to the user skin storage
         /// </summary>
-        /// <param name="userSkin"></param>
         public static void FlushUserSkinStorage()
         {
             try
             {
-                var tempUserSkinStorage = userSkinStorage;
+                var tempUserSkinStorage = _userSkinStorage;
                 var json = JsonConvert.SerializeObject(tempUserSkinStorage);
                 FileAccessManager.WriteStringToFile(json, true, FileAccessManager.GetFileLocation("UserSkinStorage.json"));
             }
             catch (Exception)
             {
+                EventLogger.LogMessage("Unable to flush user skin storage", ConsoleColor.Red);
             }
 
         }

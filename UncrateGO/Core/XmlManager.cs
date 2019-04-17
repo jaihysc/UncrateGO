@@ -6,10 +6,9 @@ using System.Xml.Serialization;
 
 namespace UncrateGo.Core
 {
-    public class XmlManager
+    public static class XmlManager
     {
-        
-        public static bool NewLineOnAttributes { get; set; }
+        private static bool NewLineOnAttributes { get; set; }
         /// <summary>
         /// Serializes an object to an XML string, using the specified namespaces.
         /// </summary>
@@ -90,9 +89,9 @@ namespace UncrateGo.Core
                 var result = FromXml<T>(sr.ReadToEnd());
                 return result;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine("There was an error attempting to read the file " + filePath + "\n\n" + e.InnerException.Message);
+                Console.WriteLine("There was an error attempting to read the file " + filePath);
                 return default(T);
             }
             finally

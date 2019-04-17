@@ -145,8 +145,8 @@
     <Compile Include="Models\CsgoItemData.cs" />
     <Compile Include="Models\HelpMenuCommands.cs" />
     <Compile Include="Models\UserData.cs" />
-    <Compile Include="Modules\Commands\Preconditions\UserRateLimitPrecondition.cs" />
-    <Compile Include="Modules\Commands\Preconditions\UserStorageCheckerPrecondition.cs" />
+    <Compile Include="Modules\Commands\UserRateLimit.cs" />
+    <Compile Include="Modules\Commands\UserStorageCheckerPrecondition.cs" />
     <Compile Include="Core\EventLogger.cs" />
     <Compile Include="Core\SetupManager.cs" />
     <Compile Include="Modules\Commands\CommandModule.cs" />

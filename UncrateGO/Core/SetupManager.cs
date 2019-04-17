@@ -21,8 +21,7 @@ namespace UncrateGo.Core
         private static void GenerateConfigFile()
         {
             //Get user input and generate config file
-            Console.WriteLine("It appears this is your first startup of UncrateGo");
-            Console.WriteLine(@"Configure the bot by entering the paths file where all data will be stored, include a \ at the end of the file");
+            Console.WriteLine(@"Path to stored data folder, include a \ at the end of the file");
             Console.WriteLine();
             string path = Console.ReadLine();
 

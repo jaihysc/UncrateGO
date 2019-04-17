@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace UncrateGo.Core
 {
-    public class FuzzySearchManager
+    public static class FuzzySearchManager
     {
         /// <summary>
         /// Compute the distance between two strings

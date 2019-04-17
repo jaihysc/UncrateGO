@@ -10,7 +10,7 @@ namespace UncrateGo.Modules
 {
     public class UserHelpHandler : ModuleBase<SocketCommandContext>
     {
-        private static HelpMenuCommands helpMenuCommands;
+        private static HelpMenuCommands _helpMenuCommands;
 
         public static async Task DisplayHelpMenu(SocketCommandContext context)
         {
@@ -115,7 +115,7 @@ namespace UncrateGo.Modules
         public static HelpMenuCommands GetHelpMenuCommands()
         {
             //Read from file if unassigned
-            if (helpMenuCommands == null)
+            if (_helpMenuCommands == null)
             {
                 var tempHelpMenuCommands = XmlManager.FromXmlFile<HelpMenuCommands>(FileAccessManager.GetFileLocation("CommandHelpDescription.xml"));
 
@@ -128,10 +128,10 @@ namespace UncrateGo.Modules
                     };
                 }
 
-                helpMenuCommands = tempHelpMenuCommands;
+                _helpMenuCommands = tempHelpMenuCommands;
             }
 
-            return helpMenuCommands;
+            return _helpMenuCommands;
         }
 
         /// <summary>
@@ -139,6 +139,7 @@ namespace UncrateGo.Modules
         /// </summary>
         /// <param name="storedCommands">String list of stored strings</param>
         /// <param name="inputCommand">Input string to check</param>
+        /// <param name="fuzzyIndex"></param>
         /// <returns></returns>
         public static string FindSimilarCommands(List<string> storedCommands, string inputCommand, int fuzzyIndex=3)
         {

@@ -7,22 +7,22 @@ using UncrateGo.Core;
 
 namespace UncrateGo.Modules
 {
-    public class DiscordBotsListUpdater
+    public static class DiscordBotsListUpdater
     {
-        public static async void UpdateDiscordBotsListInfo(DiscordSocketClient _client)
+        public static async void UpdateDiscordBotsListInfo(DiscordSocketClient client)
         {
-            while (true)
+            while (true) //TODO, don't use a infinite loop?
             {
                 try
                 {
-                    if (_client.CurrentUser != null)
+                    if (client.CurrentUser != null)
                     {
-                        AuthDiscordBotListApi DblApi = new AuthDiscordBotListApi(_client.CurrentUser.Id, FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("DiscordBotListToken.txt")));
+                        AuthDiscordBotListApi DblApi = new AuthDiscordBotListApi(client.CurrentUser.Id, FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("DiscordBotListToken.txt")));
 
                         var me = await DblApi.GetMeAsync();
 
                         // Update stats           guildCount
-                        await me.UpdateStatsAsync(_client.Guilds.Count());
+                        await me.UpdateStatsAsync(client.Guilds.Count());
                     }
                     
                 }

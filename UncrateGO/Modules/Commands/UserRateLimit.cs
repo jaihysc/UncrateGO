@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.Commands;
 
-namespace UncrateGo.Modules.Commands.Preconditions
+namespace UncrateGo.Modules.Commands
 {
     //Credit to https://github.com/Joe4evr/Discord.Addons/tree/master/src/Discord.Addons.Preconditions for the precondition
 
@@ -11,19 +11,15 @@ namespace UncrateGo.Modules.Commands.Preconditions
     /// or any command in this module. </summary>
     /// <remarks>This is backed by an in-memory collection
     /// and will not persist with restarts.</remarks>
-    public static class RatelimitPrecondtion
+    public static class Ratelimit
     {
-        private static readonly uint _invokeLimit;
-        private static readonly TimeSpan _invokeLimitPeriod;
+        private static readonly uint InvokeLimit;
+        private static readonly TimeSpan InvokeLimitPeriod;
         //Ulong is userId, commandTimeout is class storing timeout info
-        private static readonly Dictionary<ulong, CommandTimeout> _invokeTracker = new Dictionary<ulong, CommandTimeout>();
+        private static readonly Dictionary<ulong, CommandTimeout> InvokeTracker = new Dictionary<ulong, CommandTimeout>();
 
         /// <summary> Sets how often a user is allowed to use this command. </summary>
-        /// <param name="times">The number of times a user may use the command within a certain period.</param>
-        /// <param name="period">The amount of time since first invoke a user has until the limit is lifted.</param>
-        /// <param name="measure">The scale in which the <paramref name="period"/> parameter should be measured.</param>
-        /// <param name="flags">Flags to set behavior of the ratelimit.</param>
-        static RatelimitPrecondtion()
+        static Ratelimit()
         {
             //Ratelimit Config
             uint times = 3;
@@ -31,21 +27,21 @@ namespace UncrateGo.Modules.Commands.Preconditions
             Measure measure = Measure.Seconds;
 
             //-Config
-            _invokeLimit = times;
+            InvokeLimit = times;
 
             switch (measure)
             {
                 case Measure.Days:
-                    _invokeLimitPeriod = TimeSpan.FromDays(period);
+                    InvokeLimitPeriod = TimeSpan.FromDays(period);
                     break;
                 case Measure.Hours:
-                    _invokeLimitPeriod = TimeSpan.FromHours(period);
+                    InvokeLimitPeriod = TimeSpan.FromHours(period);
                     break;
                 case Measure.Minutes:
-                    _invokeLimitPeriod = TimeSpan.FromMinutes(period);
+                    InvokeLimitPeriod = TimeSpan.FromMinutes(period);
                     break;
                 case Measure.Seconds:
-                    _invokeLimitPeriod = TimeSpan.FromSeconds(period);
+                    InvokeLimitPeriod = TimeSpan.FromSeconds(period);
                     break;
             }
         }
@@ -53,19 +49,19 @@ namespace UncrateGo.Modules.Commands.Preconditions
         /// <summary>
         /// Gets if specified user is in cooldown
         /// </summary>
-        /// <param name="userID"></param>
+        /// <param name="userId"></param>
         /// <param name="context"></param>
         /// <returns>True if in cooldown</returns>
-        public static async Task<bool> UserRateLimited(ulong userID, SocketCommandContext context = null)
+        public static async Task<bool> UserRateLimited(ulong userId, SocketCommandContext context = null)
         {
             var now = DateTime.UtcNow;
-            var key = userID;
+            var key = userId;
 
             CommandTimeout timeout;
-            if (_invokeTracker.TryGetValue(key, out var t))
+            if (InvokeTracker.TryGetValue(key, out var t))
             {
                 //Kep the commandtimeout if it has not expired
-                if (now - t.FirstInvoke < _invokeLimitPeriod)
+                if (now - t.FirstInvoke < InvokeLimitPeriod)
                 {
                     timeout = t;
                 }
@@ -85,9 +81,9 @@ namespace UncrateGo.Modules.Commands.Preconditions
             timeout.TimesInvoked++;
 
             //Timeout messages
-            if (timeout.TimesInvoked <= _invokeLimit)
+            if (timeout.TimesInvoked <= InvokeLimit)
             {
-                _invokeTracker[key] = timeout;
+                InvokeTracker[key] = timeout;
 
                 return false;
             }
@@ -97,7 +93,7 @@ namespace UncrateGo.Modules.Commands.Preconditions
                 if (timeout.ReceivedError == false)
                 {
                     //Only send this message once
-                    _invokeTracker[key].ReceivedError = true;
+                    InvokeTracker[key].ReceivedError = true;
 
                     //Stores the warning message to delete later on
                     if (context != null) SendWarningMessageAsync(context);

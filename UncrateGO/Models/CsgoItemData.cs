@@ -18,7 +18,7 @@ namespace UncrateGo.Models
     }
     public class UserSkinEntry
     {
-        public ulong OwnerID { get; set; }
+        public ulong OwnerId { get; set; }
         public string ClassId { get; set; }
         public DateTime UnboxDate { get; set; }
         public string MarketName { get; set; }

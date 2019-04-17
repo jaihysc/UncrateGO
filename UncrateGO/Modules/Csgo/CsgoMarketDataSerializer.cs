@@ -24,7 +24,7 @@ namespace UncrateGo.Modules.Csgo
         public Dictionary<string, SkinDataItem> ItemsList { get; set; }
     }
 
-    public partial class SkinDataItem
+    public class SkinDataItem
     {
         [JsonProperty("name")]
         public string Name { get; set; }
@@ -88,13 +88,13 @@ namespace UncrateGo.Modules.Csgo
         public KnifeType? KnifeType { get; set; }
     }
 
-    public partial class Case
+    public class Case
     {
         public string CaseName { get; set; }
         public string CaseCollection { get; set; }
     }
 
-    public partial class Price
+    public class Price
     {
         [JsonProperty("24_hours", NullValueHandling = NullValueHandling.Ignore)]
         public The24__Hours The24_Hours { get; set; }
@@ -144,12 +144,12 @@ namespace UncrateGo.Modules.Csgo
 
     public partial class RootSkinData
     {
-        public static RootSkinData FromJson(string json) => JsonConvert.DeserializeObject<RootSkinData>(json, UncrateGo.Modules.Csgo.Converter.Settings);
+        public static RootSkinData FromJson(string json) => JsonConvert.DeserializeObject<RootSkinData>(json, Converter.Settings);
     }
 
     public static class Serialize
     {
-        public static string ToJson(this RootSkinData self) => JsonConvert.SerializeObject(self, UncrateGo.Modules.Csgo.Converter.Settings);
+        public static string ToJson(this RootSkinData self) => JsonConvert.SerializeObject(self, Converter.Settings);
     }
 
     internal static class Converter

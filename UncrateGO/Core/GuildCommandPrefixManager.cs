@@ -7,10 +7,10 @@ using System;
 
 namespace UncrateGo.Core
 {
-    public class GuildCommandPrefixManager
+    public static class GuildCommandPrefixManager
     {
         private static readonly string DefaultCommandPrefix = "~";
-        private static CommandPrefix GuildPrefixDictionary = new CommandPrefix();
+        private static CommandPrefix _guildPrefixDictionary = new CommandPrefix();
 
         /// <summary>
         /// Returns the command prefix for the current guild message is sent in
@@ -20,44 +20,48 @@ namespace UncrateGo.Core
         public static string GetGuildCommandPrefix(SocketCommandContext context)
         {
             //Find guild id
-            var chnl = context.Channel as SocketGuildChannel;
-            var guildId = chnl.Guild.Id;
-
-            //Just in case the file is null, it will use default
-            if (GuildPrefixDictionary == null || GuildPrefixDictionary.GuildPrefixes == null)
+            if (context.Channel is SocketGuildChannel chnl)
             {
-                GuildPrefixDictionary = JsonConvert.DeserializeObject<CommandPrefix>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("GuildCommandPrefix.json")));
+                var guildId = chnl.Guild.Id;
 
-                if (GuildPrefixDictionary == null || GuildPrefixDictionary.GuildPrefixes == null)
+                //Just in case the file is null, it will use default
+                if (_guildPrefixDictionary == null || _guildPrefixDictionary.GuildPrefixes == null)
                 {
-                    GuildPrefixDictionary = new CommandPrefix { GuildPrefixes = new Dictionary<ulong, string>() };
-                    GuildPrefixDictionary.GuildPrefixes.Add(guildId, DefaultCommandPrefix);
+                    _guildPrefixDictionary = JsonConvert.DeserializeObject<CommandPrefix>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("GuildCommandPrefix.json")));
 
-                    //Create dictionary to file
-                    string newJson = JsonConvert.SerializeObject(GuildPrefixDictionary);
-                    FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
-                }              
+                    if (_guildPrefixDictionary == null || _guildPrefixDictionary.GuildPrefixes == null)
+                    {
+                        _guildPrefixDictionary = new CommandPrefix { GuildPrefixes = new Dictionary<ulong, string>() };
+                        _guildPrefixDictionary.GuildPrefixes.Add(guildId, DefaultCommandPrefix);
+
+                        //Create dictionary to file
+                        string newJson = JsonConvert.SerializeObject(_guildPrefixDictionary);
+                        FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
+                    }              
+                }
+
+                //Look for guild prefix, in event guild does not have one
+                if (!_guildPrefixDictionary.GuildPrefixes.TryGetValue(guildId, out _))
+                {
+                    _guildPrefixDictionary.GuildPrefixes.Add(guildId, DefaultCommandPrefix);
+                }
+
+                return _guildPrefixDictionary.GuildPrefixes[guildId];
             }
 
-            //Look for guild prefix, in event guild does not have one
-            if (!GuildPrefixDictionary.GuildPrefixes.TryGetValue(guildId, out var i))
-            {
-                GuildPrefixDictionary.GuildPrefixes.Add(guildId, DefaultCommandPrefix);
-            }
-
-            return GuildPrefixDictionary.GuildPrefixes[guildId];
+            return "~"; //Return the default prefix if it cannot get the guild prefix
         }
 
         public static void PopulateGuildCommandPrefix()
         {
-            GuildPrefixDictionary = JsonConvert.DeserializeObject<CommandPrefix>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("GuildCommandPrefix.json")));
+            _guildPrefixDictionary = JsonConvert.DeserializeObject<CommandPrefix>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("GuildCommandPrefix.json")));
 
-            if (GuildPrefixDictionary == null || GuildPrefixDictionary.GuildPrefixes == null)
+            if (_guildPrefixDictionary == null || _guildPrefixDictionary.GuildPrefixes == null)
             {
-                GuildPrefixDictionary = new CommandPrefix { GuildPrefixes = new Dictionary<ulong, string>() };
+                _guildPrefixDictionary = new CommandPrefix { GuildPrefixes = new Dictionary<ulong, string>() };
 
                 //Create dictionary to file
-                string newJson = JsonConvert.SerializeObject(GuildPrefixDictionary);
+                string newJson = JsonConvert.SerializeObject(_guildPrefixDictionary);
                 FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
             }
         }
@@ -71,21 +75,24 @@ namespace UncrateGo.Core
         {
             //Find guild id
             var chnl = context.Channel as SocketGuildChannel;
-            var guildId = chnl.Guild.Id;
+            if (chnl != null)
+            {
+                var guildId = chnl.Guild.Id;
 
-            //Change prefix
-            GuildPrefixDictionary.GuildPrefixes[guildId] = newPrefix;
+                //Change prefix
+                _guildPrefixDictionary.GuildPrefixes[guildId] = newPrefix;
+            }
         }
 
         /// <summary>
-        /// Removes the prefix for the specfified guild
+        /// Removes the prefix for the specified guild
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
         public static Task DeleteGuildCommandPrefix(SocketGuild arg)
         {
             //Remove guild command on leave
-            GuildPrefixDictionary.GuildPrefixes.Remove(arg.Id);
+            _guildPrefixDictionary.GuildPrefixes.Remove(arg.Id);
             return Task.CompletedTask;
         }
 
@@ -94,12 +101,13 @@ namespace UncrateGo.Core
             try
             {
                 //Write new dictionary to file
-                var tempGuildPrefixDictionary = GuildPrefixDictionary;
+                var tempGuildPrefixDictionary = _guildPrefixDictionary;
                 string json = JsonConvert.SerializeObject(tempGuildPrefixDictionary);
                 FileAccessManager.WriteStringToFile(json, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
             }
             catch (Exception)
             {
+                EventLogger.LogMessage("Unable to flush guild command dictionary", ConsoleColor.Red);
             }
 
         }

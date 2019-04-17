@@ -9,11 +9,11 @@ namespace UncrateGo.Modules
 {
     public class BankingHandler
     {
-        public static void CheckIfUserCreditProfileExists(SocketGuildUser user)
+        private static void CheckIfUserCreditProfileExists(SocketGuildUser user)
         {
             var userStorage = UserDataManager.GetUserStorage();
             //Create txt user credit entry if user does not exist
-            if (!userStorage.UserInfo.TryGetValue(user.Id, out var i))
+            if (!userStorage.UserInfo.TryGetValue(user.Id, out _))
             {
                 //Create user profile
                 UserDataManager.CreateNewUserEntry(user);
@@ -47,14 +47,14 @@ namespace UncrateGo.Modules
             }
             else if (GetUserCredits(context) - amount < 0)
             {
-                await context.Message.Author.SendMessageAsync(UserInteraction.BoldUserName(context) + ", you do not have enough money to send || **" + BankingHandler.CreditCurrencyFormatter(GetUserCredits(context)) + " Credits**");
+                await context.Message.Author.SendMessageAsync(UserInteraction.BoldUserName(context) + ", you do not have enough money to send || **" + CreditCurrencyFormatter(GetUserCredits(context)) + " Credits**");
             }
             else
             {
                 var recipient = context.Guild.GetUser(MentionUtils.ParseUser(targetUser));
 
                 //Check if recipient has a profile
-                BankingHandler.CheckIfUserCreditProfileExists(recipient);
+                CheckIfUserCreditProfileExists(recipient);
 
                 //Subtract money from sender
                 AddCredits(context, -amount);
@@ -78,11 +78,11 @@ namespace UncrateGo.Modules
                     })
                     .AddInlineField("Sender", context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5))
                     .AddInlineField("Id", context.Message.Author.Id)
-                    .AddInlineField("Total Amount", $"-{BankingHandler.CreditCurrencyFormatter(amount)}")
+                    .AddInlineField("Total Amount", $"-{CreditCurrencyFormatter(amount)}")
 
                     .AddInlineField("Recipient", recipient.ToString().Substring(0, recipient.ToString().Length - 5))
                     .AddInlineField("​", recipient.Id)
-                    .AddInlineField("​", BankingHandler.CreditCurrencyFormatter(amount))
+                    .AddInlineField("​", CreditCurrencyFormatter(amount))
 
                     .AddInlineField("​", "​")
                     .AddInlineField("​", "​");
@@ -94,7 +94,6 @@ namespace UncrateGo.Modules
             }
         }
 
-        //READ
         /// <summary>
         /// Returns the credits the specified user has
         /// </summary>
@@ -107,7 +106,6 @@ namespace UncrateGo.Modules
             return userStorage.UserInfo[context.Message.Author.Id].UserBankingStorage.Credit;
         }
 
-        //READ + WRITE
         /// <summary>
         /// Adds input amount to user balance
         /// </summary>
@@ -123,8 +121,7 @@ namespace UncrateGo.Modules
             if (GetUserCredits(context) + addAmount >= 0)
             {
                 //Calculate new credits
-                long userCreditsNew = 0;
-                userCreditsNew = userStorage.UserInfo[context.Message.Author.Id].UserBankingStorage.Credit + addAmount;
+                long userCreditsNew = userStorage.UserInfo[context.Message.Author.Id].UserBankingStorage.Credit + addAmount;
 
 
                 userStorage.UserInfo[context.Message.Author.Id].UserBankingStorage.Credit = userCreditsNew;
@@ -134,11 +131,9 @@ namespace UncrateGo.Modules
 
                 return true;
             }
-            else
-            {
-                //False to indicate that user does not have enough credits to be deducted
-                return false;
-            }
+
+            //False to indicate that user does not have enough credits to be deducted
+            return false;
         }
 
         /// <summary>
@@ -169,10 +164,8 @@ namespace UncrateGo.Modules
 
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
     }
 }
