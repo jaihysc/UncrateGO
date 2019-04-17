@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UncrateGo.Core
 {
-    class EventLogger : ModuleBase<SocketCommandContext>
+    internal class EventLogger : ModuleBase<SocketCommandContext>
     {
         
         public static Task LogAsync(LogMessage message)

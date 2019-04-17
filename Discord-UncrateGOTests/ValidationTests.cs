@@ -1,22 +1,15 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UncrateGo;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UncrateGo.Core;
 using UncrateGo.Modules;
 using UncrateGo.Modules.Csgo;
 
-namespace UncrateGo.Tests
+namespace Discord_UncrateGoTests
 {
     //!! Make sure a paths.txt exists in the execution directory, or else tests requiring stored data will fail
     [TestClass()]
-    public class BankingValidationTests //TODO, write some automated tests to make my life easier
+    public class BankingValidationTests
     {
-        private ulong TestUserId = TestUser.TestUserId;
+        private readonly ulong _testUserId = TestUser.TestUserId;
 
         [TestMethod()]
         public void ShouldFormatCurrencyWithSpaces()
@@ -46,7 +39,7 @@ namespace UncrateGo.Tests
         [TestMethod()]
         public void ShouldAddCreditsToTestUser()
         {
-            if (!BankingHandler.AddCredits(TestUserId, 12))
+            if (!BankingHandler.AddCredits(_testUserId, 12))
             {
                 Assert.Fail();
             }
@@ -55,7 +48,7 @@ namespace UncrateGo.Tests
         [TestMethod()]
         public void ShouldNotAddCreditsToTestUser()
         {
-            if (BankingHandler.AddCredits(TestUserId, -9999999999999))
+            if (BankingHandler.AddCredits(_testUserId, -9999999999999))
             {
                 Assert.Fail();
             }
@@ -64,7 +57,7 @@ namespace UncrateGo.Tests
         [TestMethod()]
         public void ShouldGetTestUserCredits()
         {
-            if (UserDataManager.GetUserCredit(TestUserId) < 0)
+            if (UserDataManager.GetUserCredit(_testUserId) < 0)
             {
                 Assert.Fail();
             }
@@ -95,11 +88,11 @@ namespace UncrateGo.Tests
             }
         }
 
-        //[TestMethod()]
-        //public void ShouldUpdateCsgoCosmeticData()
-        //{
-        //    CsgoDataHandler.UpdateRootWeaponSkin(null);
-        //}
+        [TestMethod()]
+        public void ShouldUpdateCsgoCosmeticData()
+        {
+            CsgoDataHandler.UpdateRootWeaponSkin(null);
+        }
     }
 
     public class TestUser

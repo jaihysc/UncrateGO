@@ -20,7 +20,7 @@ namespace UncrateGo
 {
     public class MainProgram
     {
-        private static Stopwatch stopwatch = new Stopwatch();
+        private static readonly Stopwatch Stopwatch = new Stopwatch();
 
         public static void Main(string[] args)
         {
@@ -29,7 +29,7 @@ namespace UncrateGo
                 DisableConsoleQuickEdit.Go(); //Disable console features
 
                 //Injection
-                stopwatch.Start();
+                Stopwatch.Start();
                 EventLogger.LogMessage("Hello World! - Beginning startup");
 
                 //Runs setup if path file is not present
@@ -39,7 +39,7 @@ namespace UncrateGo
 
                 //Timers
                 new Timer(CsgoDataHandler.UpdateRootWeaponSkin, null, 57600000, 57600000);
-                new Timer(CsgoLeaderboardsManager.GetStatisticsLeader, null, 60000, 60000);
+                new Timer(CsgoLeaderboardManager.GetStatisticsLeader, null, 60000, 60000);
                 new Timer(FlushAllData, null, 300000, 300000);
 
                 //Setup
@@ -104,8 +104,8 @@ namespace UncrateGo
 
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
 
-            stopwatch.Stop();
-            EventLogger.LogMessage($"Ready! - Took {stopwatch.ElapsedMilliseconds} milliseconds");
+            Stopwatch.Stop();
+            EventLogger.LogMessage($"Ready! - Took {Stopwatch.ElapsedMilliseconds} milliseconds");
 
             //Set help text
             //await _client.SetGameAsync("Mention me in server for command prefix");
@@ -123,14 +123,14 @@ namespace UncrateGo
             _client.MessageReceived += HandleCommandAsync;
 
             //Discord bots list updater
-            new Timer(CsgoLeaderboardsManager.GetStatisticsLeader, _client, 0, 60000);
+            new Timer(CsgoLeaderboardManager.GetStatisticsLeader, _client, 0, 60000);
 
             //All commands before this
             await Task.Delay(-1);
         }
 
         //Command Handler
-        public async Task HandleCommandAsync(SocketMessage messageParam)
+        private async Task HandleCommandAsync(SocketMessage messageParam)
         {
             // Don't process the command if it was a system message, if sender is bot
             if (!(messageParam is SocketUserMessage message)) return;
@@ -201,7 +201,7 @@ namespace UncrateGo
 
                     string[] tokens = str.Split(' ');
 
-                    //Extract the command from the user (minus prefix and any invalid arguements)
+                    //Extract the command from the user (minus prefix and any invalid arguments)
                     for (int i = 1; i < 10; i++)
                     {
                         bool resultFound = false;

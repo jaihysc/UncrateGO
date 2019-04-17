@@ -149,7 +149,7 @@ namespace UncrateGo.Modules.Csgo
             var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
             //Find ALL user selected items, make sure it is owned by user
-            var selectedSkinToSell = userSkin.UserSkinEntries
+            List<UserSkinEntry> selectedSkinToSell = userSkin.UserSkinEntries
                 .Where(s => s.MarketName.ToLower().Contains(itemMarketHash.ToLower()))
                 .Where(s => s.OwnerId == context.Message.Author.Id).ToList();
 
@@ -166,7 +166,7 @@ namespace UncrateGo.Modules.Csgo
             BankingHandler.AddCredits(context.Message.Author.Id, weaponSkinValue);
 
             //Remove skin from inventory
-            List<string> filterUserSkinNames = new List<string>();
+            var filterUserSkinNames = new List<string>();
             foreach (var item in selectedSkinToSell)
             {
                 //Remove items that were selected to be sold
@@ -205,7 +205,7 @@ namespace UncrateGo.Modules.Csgo
             var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
             //If player has items in inventory, sell!
-            if (userSkin.UserSkinEntries.Where(s => s.OwnerId == context.Message.Author.Id).Count() > 0)
+            if (userSkin.UserSkinEntries.Any(s => s.OwnerId == context.Message.Author.Id))
             {
                 long weaponSkinValue = GetItemValue(userSkin.UserSkinEntries.Where(s => s.OwnerId == context.Message.Author.Id).ToList(), rootSkinData);
 
@@ -387,7 +387,7 @@ namespace UncrateGo.Modules.Csgo
                 Description = $"Buy item: `{botCommandPrefix}buy [name]`\nFilter market items by name: `{botCommandPrefix}market [name]`\nView item: `{botCommandPrefix}view [name]`",
 
                 DefaultFieldHeader = "Unable to find specified item!",
-                DefaultFieldDescription = $"Broaden your search parameters and try again",
+                DefaultFieldDescription = "Broaden your search parameters and try again",
 
                 Field1Header = "Name",
                 Field2Header = "Price",
@@ -406,7 +406,7 @@ namespace UncrateGo.Modules.Csgo
         //Filtering
         private static List<UserSkinEntry> FindSimilarItemsByWords(List<UserSkinEntry> userSkinEntry, SocketCommandContext context, string inputString)
         {
-            List<UserSkinEntry> userSkinEntries = new List<UserSkinEntry>();
+            var userSkinEntries = new List<UserSkinEntry>();
 
             bool match = false;
 

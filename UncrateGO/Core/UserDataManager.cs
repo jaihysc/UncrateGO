@@ -58,7 +58,6 @@ namespace UncrateGo.Core
         /// Get user credits
         /// </summary>
         /// <param name="userId"></param>
-        /// <param name="userStorageVal"></param>
         /// <returns></returns>
         public static long GetUserCredit(ulong userId)
         {

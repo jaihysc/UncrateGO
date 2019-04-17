@@ -22,7 +22,7 @@ namespace UncrateGo.Modules
                 .WithFooter(footer =>
                 {
                     footer
-                        .WithText($"Sent by " + context.Message.Author.ToString())
+                        .WithText("Sent by " + context.Message.Author.ToString())
                         .WithIconUrl(context.Message.Author.GetAvatarUrl());
                 })
                 .WithAuthor(author =>

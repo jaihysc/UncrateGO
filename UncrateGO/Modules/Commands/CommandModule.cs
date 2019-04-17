@@ -69,7 +69,7 @@ namespace UncrateGo.Modules.Commands
             var chnl = Context.Channel as SocketGuildChannel;
 
             //Make sure invoker is owner of guild
-            if (chnl.Guild.OwnerId == Context.Message.Author.Id)
+            if (chnl != null && chnl.Guild.OwnerId == Context.Message.Author.Id)
             {
                 GuildCommandPrefixManager.ChangeGuildCommandPrefix(Context, input);
                 await Context.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + $", server prefix has successfully been changed to `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}`");
@@ -175,7 +175,7 @@ namespace UncrateGo.Modules.Commands
                 });
 
                 //Auto delete message after 1 minute
-                DeleteMessage(sentMessage, TimeSpan.FromMinutes(1));
+                await DeleteMessage(sentMessage, TimeSpan.FromMinutes(1));
 
                 //Get user response
                 var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(1));
@@ -214,7 +214,7 @@ namespace UncrateGo.Modules.Commands
             });
 
             //Auto delete message after 5 minutes
-            DeleteMessage(sentMessage, TimeSpan.FromMinutes(5));
+            await DeleteMessage(sentMessage, TimeSpan.FromMinutes(5));
         }
 
 
@@ -269,7 +269,7 @@ namespace UncrateGo.Modules.Commands
             });
 
             //Auto delete message after 5 minutes
-            DeleteMessage(sentMessage, TimeSpan.FromMinutes(5));
+            await DeleteMessage(sentMessage, TimeSpan.FromMinutes(5));
         }
 
 
@@ -282,7 +282,7 @@ namespace UncrateGo.Modules.Commands
         [Command("statistics", RunMode = RunMode.Async)]
         public async Task ShowUserStatisticsAsync([Remainder]string filterString = null)
         {
-            await CsgoLeaderboardsManager.DisplayUserStatsAsync(Context);
+            await CsgoLeaderboardManager.DisplayUserStatsAsync(Context);
         }
 
         /// <summary>

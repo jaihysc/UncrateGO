@@ -6,7 +6,7 @@ using System.Text;
 
 namespace UncrateGo.Core
 {
-    public class FileAccessManager
+    public static class FileAccessManager
     {
         //This must be set prior to using the methods in this class
         private static readonly string RootLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);

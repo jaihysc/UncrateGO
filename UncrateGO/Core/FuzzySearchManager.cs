@@ -14,7 +14,7 @@ namespace UncrateGo.Core
         {
             int n = string1.Length;
             int m = string2.Length;
-            int[,] d = new int[n + 1, m + 1];
+            var d = new int[n + 1, m + 1];
 
             // Step 1
             if (n == 0)

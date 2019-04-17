@@ -1,11 +1,10 @@
-﻿using Discord.Commands;
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 
 namespace UncrateGo.Core
 {
-    public class SetupManager : ModuleBase<SocketCommandContext>
+    public static class SetupManager
     {
         /// <summary>
         /// Checks to see if a Paths.txt is present at the execution folder, otherwise it will prompt the user to create one

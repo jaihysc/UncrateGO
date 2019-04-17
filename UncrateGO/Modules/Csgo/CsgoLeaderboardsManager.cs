@@ -1,24 +1,41 @@
-﻿using Discord;
-using Discord.Commands;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
 using UncrateGo.Core;
 
 namespace UncrateGo.Modules.Csgo
 {
-    public class CsgoLeaderboardsManager
+    public static class CsgoLeaderboardManager
     {
-        private static List<string> _leaderboardsLeaders = new List<string>();
+        public enum CaseCategory
+        {
+            Case,
+            Drop,
+            Souvenir,
+            Sticker
+        }
+
+        public enum ItemCategory
+        {
+            Default,
+            Special,
+            Sticker,
+            Other
+        }
+
+        private static List<string> _leaderboardLeaders = new List<string>();
 
         /// <summary>
-        /// Increments the user stat tracker
+        ///     Increments the user stat tracker
         /// </summary>
         /// <param name="context"></param>
         /// <param name="itemListType"></param>
         /// <param name="itemCategory"></param>
-        public static void IncrementStatTracker(SocketCommandContext context, ItemListType itemListType, ItemCategory itemCategory)
+        public static void IncrementStatTracker(SocketCommandContext context, ItemListType itemListType,
+            ItemCategory itemCategory)
         {
             var userCaseStats = UserDataManager.GetUserCsgoStatsStorage(context.Message.Author.Id);
 
@@ -45,8 +62,10 @@ namespace UncrateGo.Modules.Csgo
                 }
 
                 //Increment knife or covert counter
-                if (itemListType.Rarity == Rarity.Covert && itemListType.BlackListWeaponType == WeaponType.Knife) userCaseStats.Covert++;
-                else if (itemListType.Rarity == Rarity.Covert && itemListType.WeaponType == WeaponType.Knife) userCaseStats.Special++;
+                if (itemListType.Rarity == Rarity.Covert && itemListType.BlackListWeaponType == WeaponType.Knife)
+                    userCaseStats.Covert++;
+                else if (itemListType.Rarity == Rarity.Covert && itemListType.WeaponType == WeaponType.Knife)
+                    userCaseStats.Special++;
             }
             //If not
             else
@@ -62,8 +81,7 @@ namespace UncrateGo.Modules.Csgo
                     case ItemCategory.Other:
                         userCaseStats.Other++;
                         break;
-                }    
-
+                }
             }
 
             //Set stats back to master list
@@ -94,7 +112,7 @@ namespace UncrateGo.Modules.Csgo
         }
 
         /// <summary>
-        /// Displays the current user statistics
+        ///     Displays the current user statistics
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
@@ -103,11 +121,16 @@ namespace UncrateGo.Modules.Csgo
             //Get case stats
             var userCaseStats = UserDataManager.GetUserCsgoStatsStorage(context.Message.Author.Id);
 
-            string[] statFields = { "**Item Drops**", "**Cases Opened**", "**Souvenirs Opened**", "**Sticker Capsules Opened**", "Consumer Grade", "Industrial Grade", "MilSpec Grade", "Restricted", "Classified", "Covert", "Special", "Stickers", "Other" };
+            string[] statFields =
+            {
+                "**Item Drops**", "**Cases Opened**", "**Souvenirs Opened**", "**Sticker Capsules Opened**",
+                "Consumer Grade", "Industrial Grade", "MilSpec Grade", "Restricted", "Classified", "Covert", "Special",
+                "Stickers", "Other"
+            };
 
             //Add stats to string list
             var statFieldVal = new List<string>();
-            List<string> statFieldLeadVal = _leaderboardsLeaders;
+            List<string> statFieldLeadVal = _leaderboardLeaders;
 
             if (userCaseStats != null)
             {
@@ -128,18 +151,11 @@ namespace UncrateGo.Modules.Csgo
             }
             else
             {
-                for (int i = 0; i < statFields.Count(); i++)
-                {
-                    statFieldVal.Add("0");
-                }
-                
+                for (var i = 0; i < statFields.Count(); i++) statFieldVal.Add("0");
             }
 
             //If there are no leaders, leader stats list will print N/A
-            if (statFieldLeadVal == null || !statFieldLeadVal.Any())
-            {
-                statFieldLeadVal = new List<string> {"N/A"};
-            }
+            if (statFieldLeadVal == null || !statFieldLeadVal.Any()) statFieldLeadVal = new List<string> {"N/A"};
 
             //Send embed
             var embedBuilder = new EmbedBuilder()
@@ -147,7 +163,7 @@ namespace UncrateGo.Modules.Csgo
                 .WithFooter(footer =>
                 {
                     footer
-                        .WithText($"Sent by " + context.Message.Author.ToString())
+                        .WithText("Sent by " + context.Message.Author.ToString())
                         .WithIconUrl(context.Message.Author.GetAvatarUrl());
                 })
                 .WithAuthor(author =>
@@ -167,7 +183,7 @@ namespace UncrateGo.Modules.Csgo
 
 
         /// <summary>
-        /// Finds the leaderboard leaders, returns a list of strings ready to be displayed in embed
+        ///     Finds the leaderboard leaders, returns a list of strings ready to be displayed in embed
         /// </summary>
         public static void GetStatisticsLeader(object state)
         {
@@ -178,14 +194,13 @@ namespace UncrateGo.Modules.Csgo
                 var userData = UserDataManager.GetUserStorage();
 
                 //Variables to store the leaders and their values
-                LeaderboardData casesOpened = new LeaderboardData();
-                LeaderboardData souvenirsOpened = new LeaderboardData();
-                LeaderboardData dropsOpened = new LeaderboardData();
-                LeaderboardData sticksOpened = new LeaderboardData();
+                var casesOpened = new LeaderboardData();
+                var souvenirsOpened = new LeaderboardData();
+                var dropsOpened = new LeaderboardData();
+                var sticksOpened = new LeaderboardData();
 
                 //Find the leaders
                 foreach (var user in userData.UserInfo.Values)
-                {
                     if (user.UserCsgoStatsStorage != null)
                     {
                         //Cases opened
@@ -197,7 +212,6 @@ namespace UncrateGo.Modules.Csgo
                         //StickersOpened
                         FindEntryLeader(user, user.UserCsgoStatsStorage.StickersOpened, sticksOpened);
                     }
-                }
 
                 //Generate the string to return
                 var returnString = new List<string>
@@ -208,17 +222,16 @@ namespace UncrateGo.Modules.Csgo
                     sticksOpened.Value + " <@" + sticksOpened.UserId + ">"
                 };
 
-                _leaderboardsLeaders = returnString;
+                _leaderboardLeaders = returnString;
             }
             catch
             {
                 EventLogger.LogMessage("Unable to update statistics", ConsoleColor.Red);
             }
-
         }
 
         /// <summary>
-        /// Helper method to find the leaders for each category
+        ///     Helper method to find the leaders for each category
         /// </summary>
         /// <param name="user"></param>
         /// <param name="comparisonInputNew"></param>
@@ -239,9 +252,5 @@ namespace UncrateGo.Modules.Csgo
             public long Value { get; set; }
             public ulong UserId { get; set; }
         }
-
-        public enum CaseCategory { Case, Drop, Souvenir, Sticker};
-
-        public enum ItemCategory { Default, Special, Sticker, Other};
     }
 }

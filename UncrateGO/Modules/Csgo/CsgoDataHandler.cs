@@ -107,7 +107,7 @@ namespace UncrateGo.Modules.Csgo
                     var skinCases = CsgoUnboxingHandler.GetCsgoContainers();
 
                     //Find the container for each skin
-                    foreach (var skinCase in skinCases.Containers) //TODO, make this process way more efficient
+                    foreach (var skinCase in skinCases.Containers)
                     {
                         //Check for each skin in each container
                         foreach (var skinCaseItem in skinCase.ContainerEntries)
@@ -176,10 +176,25 @@ namespace UncrateGo.Modules.Csgo
                             }
 
                             //Check for possible matches, matching CASE skin name
-                            foreach (var comparisonItem in comparisonItems)
+                            foreach (var skinComparisonItem in comparisonItems)
                             {
-                                //Use UnicodeLiteralConverter.DecodeToNonAsciiCharacters() before comparison to decode unicode
-                                if (UnicodeLiteralConverter.DecodeToNonAsciiCharacters(skin.Name) == UnicodeLiteralConverter.DecodeToNonAsciiCharacters(comparisonItem))
+                                string skinName = skin.Name;
+                                string skinComparisonItemName = skinComparisonItem;
+
+                                //If names have unicode, decode them first
+                                if (UnicodeManager.ContainsUnicodeCharacter(skinName))
+                                {
+                                    skinName = UnicodeManager.DecodeToNonAsciiCharacters(skinName);
+                                }
+
+                                if (UnicodeManager.ContainsUnicodeCharacter(skinComparisonItemName))
+                                {
+                                    skinComparisonItemName =
+                                        UnicodeManager.DecodeToNonAsciiCharacters(skinComparisonItemName);
+                                }
+
+
+                                if (skinName == skinComparisonItemName)
                                 {
                                     //If skin.Cases is null, create a new list
                                     if (skin.Cases == null) skin.Cases = new List<Case>();

@@ -82,7 +82,7 @@ namespace UncrateGo.Modules.Csgo
                     {
                         //Filter by market hash name
                         //LESSON LEARNED: Decode unicode before processing them to avoid them not being recognized
-                        if (UnicodeLiteralConverter.DecodeToNonAsciiCharacters(storageSkinEntry.Classid) == UnicodeLiteralConverter.DecodeToNonAsciiCharacters(item.ClassId))
+                        if (UnicodeManager.DecodeToNonAsciiCharacters(storageSkinEntry.Classid) == UnicodeManager.DecodeToNonAsciiCharacters(item.ClassId))
                         {
                             skinDataItem = storageSkinEntry;
                         }

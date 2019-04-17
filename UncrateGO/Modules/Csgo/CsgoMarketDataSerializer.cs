@@ -109,7 +109,7 @@ namespace UncrateGo.Modules.Csgo
         public The24__Hours AllTime { get; set; }
     }
 
-    public partial class The24__Hours
+    public class The24__Hours
     {
         [JsonProperty("average")]
         public double Average { get; set; }
@@ -274,7 +274,6 @@ namespace UncrateGo.Modules.Csgo
             }
             var value = (long)untypedValue;
             serializer.Serialize(writer, value.ToString());
-            return;
         }
 
         public static readonly ParseStringConverter Singleton = new ParseStringConverter();

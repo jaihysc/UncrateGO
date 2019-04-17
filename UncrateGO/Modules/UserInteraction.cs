@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Discord.Commands;
 using Discord.WebSocket;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace UncrateGo.Modules
             try
             {
                 //Get first text channel
-                var chnlList = socketGuild.TextChannels.ToList();
+                List<SocketTextChannel> chnlList = socketGuild.TextChannels.ToList();
 
                 SocketTextChannel messageChannel = null;
                 foreach (var channel in chnlList) //Iterate through the channels to find one where the bot has permissions to message
