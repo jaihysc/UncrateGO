@@ -20,7 +20,7 @@ namespace UncrateGo.Modules
 
                     var me = await DblApi.GetMeAsync();
 
-                    // Update stats           guildCount
+                    // Update stats guildCount
                     await me.UpdateStatsAsync(client.Guilds.Count());
                 }
                 

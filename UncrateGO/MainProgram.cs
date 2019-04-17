@@ -43,7 +43,7 @@ namespace UncrateGo
                 new Timer(FlushAllData, null, 300000, 300000);
 
                 //Setup
-                CsgoDataHandler.GetRootWeaponSkin();
+                CsgoDataHandler.GetCsgoCosmeticData();
                 UserDataManager.GetUserStorage();
                 CsgoDataHandler.GetUserSkinStorage();
                 GuildCommandPrefixManager.PopulateGuildCommandPrefix();
@@ -154,7 +154,7 @@ namespace UncrateGo
                 return;
 
             //Only process command if user is not in cooldown
-            if (await Ratelimit.UserRateLimited(context.Message.Author.Id, context)) return;
+            if (Ratelimit.UserRateLimited(context.Message.Author.Id, context)) return;
 
             //Show prefix help if user mentions bot
             if (message.Content == ("<@" + context.Client.CurrentUser.Id.ToString() + ">") || message.Content == ("<@!" + context.Client.CurrentUser.Id.ToString() + ">"))

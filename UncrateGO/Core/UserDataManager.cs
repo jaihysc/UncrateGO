@@ -6,7 +6,7 @@ using System;
 
 namespace UncrateGo.Core
 {
-    public class UserDataManager
+    public static class UserDataManager
     {
         private static UserStorage _userStorage;
 
@@ -15,7 +15,7 @@ namespace UncrateGo.Core
             _userStorage.UserInfo.Add(context.Message.Author.Id, new UserInfo
             {
                 UserId = context.Message.Author.Id,
-                UserBankingStorage = new UserBankingStorage { Credit = 0},
+                UserCredit = 0,
             });
         }
 
@@ -24,7 +24,7 @@ namespace UncrateGo.Core
             _userStorage.UserInfo.Add(user.Id, new UserInfo
             {
                 UserId = user.Id,
-                UserBankingStorage = new UserBankingStorage { Credit = 0},
+                UserCredit = 0,
             });
         }
 
@@ -55,12 +55,78 @@ namespace UncrateGo.Core
         }
 
         /// <summary>
+        /// Get user credits
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="userStorageVal"></param>
+        /// <returns></returns>
+        public static long GetUserCredit(ulong userId)
+        {
+            var userStorage = GetUserStorage();
+
+            if (userStorage.UserInfo.TryGetValue(userId, out var userVal))
+            {
+                return userVal.UserCredit;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Get user credits
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public static UserCsgoStatsStorage GetUserCsgoStatsStorage(ulong userId)
+        {
+            var userStorage = GetUserStorage();
+
+            if (userStorage.UserInfo.TryGetValue(userId, out var userVal))
+            {
+                return userVal.UserCsgoStatsStorage;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Sets the current userStorage to the input
         /// </summary>
         /// <param name="input"></param>
         public static void SetUserStorage(UserStorage input)
         {
             _userStorage = input;
+        }
+
+        /// <summary>
+        /// Sets specified user credits to input
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="userCredit"></param>
+        public static void SetUserCredit(ulong userId, long userCredit)
+        {
+            var userStorage = GetUserStorage();
+
+            if (userStorage.UserInfo.TryGetValue(userId, out var user))
+            {
+                user.UserCredit = userCredit;
+
+                //Set new credits amount 
+                SetUserStorage(userStorage);
+            }
+        }
+
+        public static void SetUserCsgoStatsStorage(ulong userId, UserCsgoStatsStorage userCsgoStatsStorage)
+        {
+            var userStorage = GetUserStorage();
+
+            if (userStorage.UserInfo.TryGetValue(userId, out var user))
+            {
+                user.UserCsgoStatsStorage = userCsgoStatsStorage;
+
+                //Set new credits amount 
+                SetUserStorage(userStorage);
+            }
         }
 
         /// <summary>
@@ -89,12 +155,8 @@ namespace UncrateGo.Core
     public class UserInfo
     {
         public ulong UserId { get; set; }
-        public UserBankingStorage UserBankingStorage { get; set; }
+        public long UserCredit { get; set; }
         public UserCsgoStatsStorage UserCsgoStatsStorage { get; set; }
-    }
-    public class UserBankingStorage
-    {
-        public long Credit { get; set; }
     }
     public class UserCsgoStatsStorage
     {

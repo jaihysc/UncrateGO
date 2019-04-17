@@ -20,7 +20,7 @@ namespace UncrateGo.Modules.Csgo
         /// <param name="itemCategory"></param>
         public static void IncrementStatTracker(SocketCommandContext context, ItemListType itemListType, ItemCategory itemCategory)
         {
-            var userCaseStats = GetUserCsgoStatsStorage(context);
+            var userCaseStats = UserDataManager.GetUserCsgoStatsStorage(context.Message.Author.Id);
 
             //If using default category
             if (itemCategory == ItemCategory.Default)
@@ -67,12 +67,12 @@ namespace UncrateGo.Modules.Csgo
             }
 
             //Set stats back to master list
-            SetUserCsgoStatsStorage(userCaseStats, context);
+            UserDataManager.SetUserCsgoStatsStorage(context.Message.Author.Id, userCaseStats);
         }
 
         public static void IncrementCaseStatTracker(SocketCommandContext context, CaseCategory caseCategory)
         {
-            var userCaseStats = GetUserCsgoStatsStorage(context);
+            var userCaseStats = UserDataManager.GetUserCsgoStatsStorage(context.Message.Author.Id);
 
             switch (caseCategory)
             {
@@ -90,28 +90,7 @@ namespace UncrateGo.Modules.Csgo
                     break;
             }
 
-            SetUserCsgoStatsStorage(userCaseStats, context);
-        }
-
-        private static UserCsgoStatsStorage GetUserCsgoStatsStorage(SocketCommandContext context)
-        {
-            var userStorage = UserDataManager.GetUserStorage();
-
-            //Get case stats
-            var userCaseStats = userStorage.UserInfo[context.Message.Author.Id].UserCsgoStatsStorage;
-
-            if (userCaseStats == null) userCaseStats = new UserCsgoStatsStorage();
-
-            return userCaseStats;
-        }
-
-        private static void SetUserCsgoStatsStorage(UserCsgoStatsStorage input, SocketCommandContext context)
-        {
-            var userStorage = UserDataManager.GetUserStorage();
-
-            userStorage.UserInfo[context.Message.Author.Id].UserCsgoStatsStorage = input;
-
-            UserDataManager.SetUserStorage(userStorage);
+            UserDataManager.SetUserCsgoStatsStorage(context.Message.Author.Id, userCaseStats);
         }
 
         /// <summary>
@@ -121,15 +100,13 @@ namespace UncrateGo.Modules.Csgo
         /// <returns></returns>
         public static async Task DisplayUserStatsAsync(SocketCommandContext context)
         {
-            var userStorage = UserDataManager.GetUserStorage();
-
             //Get case stats
-            var userCaseStats = userStorage.UserInfo[context.Message.Author.Id].UserCsgoStatsStorage;
+            var userCaseStats = UserDataManager.GetUserCsgoStatsStorage(context.Message.Author.Id);
 
             string[] statFields = { "**Item Drops**", "**Cases Opened**", "**Souvenirs Opened**", "**Sticker Capsules Opened**", "Consumer Grade", "Industrial Grade", "MilSpec Grade", "Restricted", "Classified", "Covert", "Special", "Stickers", "Other" };
 
             //Add stats to string list
-            List<string> statFieldVal = new List<string>();
+            var statFieldVal = new List<string>();
             List<string> statFieldLeadVal = _leaderboardsLeaders;
 
             if (userCaseStats != null)

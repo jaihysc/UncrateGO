@@ -16,7 +16,7 @@ namespace UncrateGo.Modules.Csgo
         public static async Task BuyItemFromMarketAsync(SocketCommandContext context, string itemMarketHash)
         {
             //Get skin data
-            var rootWeaponSkins = CsgoDataHandler.GetRootWeaponSkin();
+            var rootWeaponSkins = CsgoDataHandler.GetCsgoCosmeticData();
 
             SkinDataItem selectedMarketSkin = new SkinDataItem();
 
@@ -30,50 +30,52 @@ namespace UncrateGo.Modules.Csgo
             if (marketSkin == null)
             {
                 marketSkin = rootWeaponSkins.ItemsList.Values.Where(s => s.Name.ToLower().Contains(itemMarketHash.ToLower())).ToList().FirstOrDefault();
-            }       
-            //If it still cannot be found, search by whole words
-            if (marketSkin == null)
-            {
-                marketSkin = FindSimilarItemsByWords(rootWeaponSkins, itemMarketHash).FirstOrDefault();
-            }
-
-            //Send error if skin does not exist
-            if (marketSkin == null)
-            {
-                await context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", `{itemMarketHash}` does not exist in the current skin market");
-                return;
-            }
-            else
-            {
-                //If skin does exist, get info on it
-                SkinDataItem weaponSkin = rootWeaponSkins.ItemsList.Values.FirstOrDefault(s => s.Name == marketSkin.Name);
-                if (weaponSkin != null)
+                //If it still cannot be found, search by whole words
+                if (marketSkin == null)
                 {
-                    weaponSkinValue = Convert.ToInt64(weaponSkin.Price.AllTime.Average);
-                    selectedMarketSkin.Classid = marketSkin.Classid;
-                    selectedMarketSkin.Name = marketSkin.Name;
+                    marketSkin = FindSimilarItemsByWords(rootWeaponSkins, itemMarketHash).FirstOrDefault();
+                    //Send error if skin does not exist
+                    if (marketSkin == null)
+                    {
+                        await context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", `{itemMarketHash}` does not exist in the current skin market");
+                        return;
+                    }
                 }
             }
 
-            //Make sure user has enough credits to buy skin
-            if (BankingHandler.GetUserCredits(context) < weaponSkinValue)
+            ulong userId = context.Message.Author.Id;
+
+            //If skin does exist, get info on it
+            SkinDataItem weaponSkin = rootWeaponSkins.ItemsList.Values.FirstOrDefault(s => s.Name == marketSkin.Name);
+            if (weaponSkin != null)
             {
-                await context.Message.Channel.SendMessageAsync($"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**, you do not have enough credits to buy `{selectedMarketSkin.Name}` | **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)}** - **{BankingHandler.CreditCurrencyFormatter(BankingHandler.GetUserCredits(context))}** ");
+                weaponSkinValue = Convert.ToInt64(weaponSkin.Price.AllTime.Average);
+                selectedMarketSkin.Classid = marketSkin.Classid;
+                selectedMarketSkin.Name = marketSkin.Name;
+            }
+
+            long userCredits = UserDataManager.GetUserCredit(userId);
+            //Make sure user has enough credits to buy skin
+            if (userCredits < weaponSkinValue)
+            {
+                await context.Message.Channel.SendMessageAsync(
+                    $"{UserInteraction.BoldUserName(context)}, you do not have enough credits to buy `{selectedMarketSkin.Name}` | **{BankingHandler.CurrencyFormatter(weaponSkinValue)}** - **{BankingHandler.CurrencyFormatter(userCredits)}** ");
             }
             else
             {
                 //Checks are true, now give user skin and remove credits
 
                 //Remove user credits
-                BankingHandler.AddCredits(context, -weaponSkinValue);
+                if (BankingHandler.AddCredits(userId, -weaponSkinValue))
+                {
+                    //Add skin to inventory
+                    CsgoDataHandler.AddItemToUserInventory(context, selectedMarketSkin);
 
-                //Add skin to inventory
-                CsgoDataHandler.AddItemToUserInventory(context, selectedMarketSkin);
-
-                //Send receipt
-                await context.Channel.SendMessageAsync(
-                    UserInteraction.BoldUserName(context) + $", you bought `{selectedMarketSkin.Name}`" +
-                    $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
+                    //Send receipt
+                    await context.Channel.SendMessageAsync(
+                        UserInteraction.BoldUserName(context) + $", you bought `{selectedMarketSkin.Name}`" +
+                        $" for **{BankingHandler.CurrencyFormatter(weaponSkinValue)} Credits**");
+                }
             }
         }
 
@@ -81,7 +83,7 @@ namespace UncrateGo.Modules.Csgo
         public static async Task SellInventoryItemAsync(SocketCommandContext context, string itemMarketHash)
         {
             //Get skin data
-            var rootWeaponSkin = CsgoDataHandler.GetRootWeaponSkin();
+            var rootWeaponSkin = CsgoDataHandler.GetCsgoCosmeticData();
             var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
             //Find user selected item, make sure it is owned by user
@@ -123,7 +125,7 @@ namespace UncrateGo.Modules.Csgo
                 
 
                 //Give user credits
-                BankingHandler.AddCredits(context, weaponSkinValue);
+                BankingHandler.AddCredits(context.Message.Author.Id, weaponSkinValue);
 
 
                 //Remove items that were selected to be sold
@@ -135,7 +137,7 @@ namespace UncrateGo.Modules.Csgo
                 //Send receipt
                 await context.Channel.SendMessageAsync(
                     UserInteraction.BoldUserName(context) + $", you sold your `{selectedSkinToSell.MarketName}`" +
-                    $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
+                    $" for **{BankingHandler.CurrencyFormatter(weaponSkinValue)} Credits**");
             }
 
         }
@@ -143,7 +145,7 @@ namespace UncrateGo.Modules.Csgo
         public static async Task SellAllSelectedInventoryItemAsync(SocketCommandContext context, string itemMarketHash)
         {
             //Get skin data
-            var rootSkinData = CsgoDataHandler.GetRootWeaponSkin();
+            var rootSkinData = CsgoDataHandler.GetCsgoCosmeticData();
             var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
             //Find ALL user selected items, make sure it is owned by user
@@ -161,7 +163,7 @@ namespace UncrateGo.Modules.Csgo
             long weaponSkinValue = GetItemValue(selectedSkinToSell, rootSkinData);
 
             //Give user credits
-            BankingHandler.AddCredits(context, weaponSkinValue);
+            BankingHandler.AddCredits(context.Message.Author.Id, weaponSkinValue);
 
             //Remove skin from inventory
             List<string> filterUserSkinNames = new List<string>();
@@ -186,7 +188,7 @@ namespace UncrateGo.Modules.Csgo
                 //Send receipt
                 await context.Channel.SendMessageAsync(
                     UserInteraction.BoldUserName(context) + $", you sold your \n`{soldWeaponsString}`" +
-                    $" for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
+                    $" for **{BankingHandler.CurrencyFormatter(weaponSkinValue)} Credits**");
             }
             else
             {
@@ -199,7 +201,7 @@ namespace UncrateGo.Modules.Csgo
         public static async Task SellAllInventoryItemAsync(SocketCommandContext context)
         {
             //Get price data
-            var rootSkinData = CsgoDataHandler.GetRootWeaponSkin();
+            var rootSkinData = CsgoDataHandler.GetCsgoCosmeticData();
             var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
             //If player has items in inventory, sell!
@@ -208,10 +210,10 @@ namespace UncrateGo.Modules.Csgo
                 long weaponSkinValue = GetItemValue(userSkin.UserSkinEntries.Where(s => s.OwnerId == context.Message.Author.Id).ToList(), rootSkinData);
 
                 //Give user credits
-                BankingHandler.AddCredits(context, weaponSkinValue);
+                BankingHandler.AddCredits(context.Message.Author.Id, weaponSkinValue);
 
                 //Remove user skins from inventory
-                var filteredUserSkinEntries = userSkin.UserSkinEntries.Where(s => s.OwnerId != context.Message.Author.Id).ToList();
+                List<UserSkinEntry> filteredUserSkinEntries = userSkin.UserSkinEntries.Where(s => s.OwnerId != context.Message.Author.Id).ToList();
 
                 //Write to file
                 var newUserSkinStorageRoot = new UserSkinStorage
@@ -223,7 +225,7 @@ namespace UncrateGo.Modules.Csgo
                 CsgoDataHandler.SetUserSkinStorage(newUserSkinStorageRoot);
 
                 //Send receipt
-                await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you sold your inventory for **{BankingHandler.CreditCurrencyFormatter(weaponSkinValue)} Credits**");
+                await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you sold your inventory for **{BankingHandler.CurrencyFormatter(weaponSkinValue)} Credits**");
             }
             else
             {
@@ -233,14 +235,14 @@ namespace UncrateGo.Modules.Csgo
         }
 
         //Helper
-        private static long GetItemValue(List<UserSkinEntry> userSkins, RootSkinData rootSkinData)
+        private static long GetItemValue(List<UserSkinEntry> userSkins, CsgoCosmeticData csgoCosmeticData)
         {
             long weaponSkinValue = 0;
             foreach (var item in userSkins)
             {
                 try
                 {
-                    var itemData = rootSkinData.ItemsList.Values.Where(s => s.Name == item.MarketName).FirstOrDefault();
+                    var itemData = csgoCosmeticData.ItemsList.Values.FirstOrDefault(s => s.Name == item.MarketName);
 
                     if (itemData != null)
                     {
@@ -261,9 +263,9 @@ namespace UncrateGo.Modules.Csgo
         public static async Task DisplayCsgoItemStatistics(SocketCommandContext context, string filterString)
         {
             //Search by exact, then contain, then whole words
-            var skinItem = CsgoDataHandler.RootWeaponSkin.ItemsList.Values.Where(c => c.Name.ToLower() == filterString.ToLower()).FirstOrDefault();
-            if (skinItem == null) skinItem = CsgoDataHandler.RootWeaponSkin.ItemsList.Values.Where(c => c.Name.ToLower().Contains(filterString.ToLower())).FirstOrDefault();
-            if (skinItem == null) skinItem = FindSimilarItemsByWords(CsgoDataHandler.RootWeaponSkin, filterString).FirstOrDefault();
+            var skinItem = CsgoDataHandler.CsgoWeaponCosmetic.ItemsList.Values.Where(c => c.Name.ToLower() == filterString.ToLower()).FirstOrDefault();
+            if (skinItem == null) skinItem = CsgoDataHandler.CsgoWeaponCosmetic.ItemsList.Values.Where(c => c.Name.ToLower().Contains(filterString.ToLower())).FirstOrDefault();
+            if (skinItem == null) skinItem = FindSimilarItemsByWords(CsgoDataHandler.CsgoWeaponCosmetic, filterString).FirstOrDefault();
 
             //Check if the skin exists
             if (skinItem != null)
@@ -336,15 +338,15 @@ namespace UncrateGo.Modules.Csgo
             string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
 
             //Get skin data
-            var rootWeaponSkin = CsgoDataHandler.GetRootWeaponSkin();
+            var rootWeaponSkin = CsgoDataHandler.GetCsgoCosmeticData();
 
-            List<string> filteredRootWeaponSkin = new List<string>();
-            List<string> filteredRootWeaponSkinPrice = new List<string>();
+            var filteredRootWeaponSkin = new List<string>();
+            var filteredRootWeaponSkinPrice = new List<string>();
 
             //Only show if they specified a filter
             if (!string.IsNullOrWhiteSpace(filterString))
             {
-                //flter rootWeaponSkin to those with a price found in rootWeaponSkinPrice
+                //filter rootWeaponSkin to those with a price found in rootWeaponSkinPrice
                 List<SkinDataItem> filteredItems = rootWeaponSkin.ItemsList.Values.Where(sk => sk.Name.ToLower().Contains(filterString.ToLower())).ToList();
 
                 //If searching by direct result cannot be found, search by anything that contains the input
@@ -376,7 +378,7 @@ namespace UncrateGo.Modules.Csgo
                     filteredRootWeaponSkinPrice.Add(emote + " " + weaponSkinValue.ToString());
                 }
             }
-            //Configurate paginated message
+            //Configure paginated message
             var paginationConfig = new PaginationConfig
             {
                 AuthorName = "CS:GO Market",
@@ -413,7 +415,7 @@ namespace UncrateGo.Modules.Csgo
             //Filter out items not owned by user
             userSkinEntry = userSkinEntry.Where(s => s.OwnerId == context.Message.Author.Id).ToList();
 
-            //Search through userSkinEntry for words that have the specified input string seperated with spaces
+            //Search through userCosmeticEntry for words that have the specified input string seperated with spaces
             foreach (var item in userSkinEntry)
             {
                 for (int i = 0; i < tokens.Length; i++)
@@ -434,7 +436,7 @@ namespace UncrateGo.Modules.Csgo
             return userSkinEntries;
         }
 
-        private static List<SkinDataItem> FindSimilarItemsByWords(RootSkinData userSkinEntry, string inputString)
+        private static List<SkinDataItem> FindSimilarItemsByWords(CsgoCosmeticData userCosmeticEntry, string inputString)
         {
             var userSkinEntries = new List<SkinDataItem>();
 
@@ -442,8 +444,8 @@ namespace UncrateGo.Modules.Csgo
 
             string[] tokens = RemoveSpecialCharacters(inputString).ToLower().Split(' ');
 
-            //Search through userSkinEntry for words that have the specified input string seperated with spaces
-            foreach (var item in userSkinEntry.ItemsList.Values)
+            //Search through userCosmeticEntry for words that have the specified input string separated with spaces
+            foreach (var item in userCosmeticEntry.ItemsList.Values)
             {
                 for (int i = 0; i < tokens.Length; i++)
                 {

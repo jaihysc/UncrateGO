@@ -6,7 +6,7 @@ using Newtonsoft.Json.Converters;
 
 namespace UncrateGo.Modules.Csgo
 {
-    public partial class RootSkinData
+    public partial class CsgoCosmeticData
     {
         [JsonProperty("success")]
         public bool Success { get; set; }
@@ -142,14 +142,14 @@ namespace UncrateGo.Modules.Csgo
 
     public enum WeaponType { Knife, Machinegun, Pistol, Rifle, Shotgun, Smg, SniperRifle };
 
-    public partial class RootSkinData
+    public partial class CsgoCosmeticData
     {
-        public static RootSkinData FromJson(string json) => JsonConvert.DeserializeObject<RootSkinData>(json, Converter.Settings);
+        public static CsgoCosmeticData FromJson(string json) => JsonConvert.DeserializeObject<CsgoCosmeticData>(json, Converter.Settings);
     }
 
     public static class Serialize
     {
-        public static string ToJson(this RootSkinData self) => JsonConvert.SerializeObject(self, Converter.Settings);
+        public static string ToJson(this CsgoCosmeticData self) => JsonConvert.SerializeObject(self, Converter.Settings);
     }
 
     internal static class Converter

@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.Commands;
+using Discord.Rest;
 
 namespace UncrateGo.Modules.Commands
 {
-    //Credit to https://github.com/Joe4evr/Discord.Addons/tree/master/src/Discord.Addons.Preconditions for the precondition
-
     /// <summary> Sets how often a user is allowed to use this command
     /// or any command in this module. </summary>
     /// <remarks>This is backed by an in-memory collection
@@ -50,9 +49,9 @@ namespace UncrateGo.Modules.Commands
         /// Gets if specified user is in cooldown
         /// </summary>
         /// <param name="userId"></param>
-        /// <param name="context"></param>
+        /// <param name="context">To send warning, pass in context</param>
         /// <returns>True if in cooldown</returns>
-        public static async Task<bool> UserRateLimited(ulong userId, SocketCommandContext context = null)
+        public static bool UserRateLimited(ulong userId, SocketCommandContext context = null)
         {
             var now = DateTime.UtcNow;
             var key = userId;
@@ -60,7 +59,7 @@ namespace UncrateGo.Modules.Commands
             CommandTimeout timeout;
             if (InvokeTracker.TryGetValue(key, out var t))
             {
-                //Kep the commandtimeout if it has not expired
+                //Keep the commandtimeout if it has not expired
                 if (now - t.FirstInvoke < InvokeLimitPeriod)
                 {
                     timeout = t;
@@ -96,19 +95,20 @@ namespace UncrateGo.Modules.Commands
                     InvokeTracker[key].ReceivedError = true;
 
                     //Stores the warning message to delete later on
-                    if (context != null) SendWarningMessageAsync(context);
+                    if (context != null)
+                    {
+                        Task.Run(async () =>
+                        {
+                            RestUserMessage msg = await context.Channel.SendMessageAsync(context.Message.Author.Mention + " Please slow down. **(You are in cooldown)**");
+                            await Task.Delay(5000);
+                            await msg.DeleteAsync();
+                        });
+                    }
 
                 }
 
                 return true;
             }
-        }
-
-        private static async Task SendWarningMessageAsync(ICommandContext context)
-        {
-            var d = await context.Channel.SendMessageAsync(context.Message.Author.Mention + " Please slow down. **(You are in cooldown)**");
-            await Task.Delay(5000);
-            await d.DeleteAsync();
         }
     }
 

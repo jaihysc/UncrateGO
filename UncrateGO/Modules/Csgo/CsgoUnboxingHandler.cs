@@ -88,7 +88,7 @@ namespace UncrateGo.Modules.Csgo
             var result = ItemDropProcessing.CalculateItemCaseRarity();
 
             //Get item
-            var skinItem = ItemDropProcessing.GetItem(result, CsgoDataHandler.RootWeaponSkin, context, false);
+            var skinItem = ItemDropProcessing.GetItem(result, CsgoDataHandler.CsgoWeaponCosmetic, context, false);
 
             //Add item to user file inventory
             CsgoDataHandler.AddItemToUserInventory(context, skinItem);
@@ -108,7 +108,7 @@ namespace UncrateGo.Modules.Csgo
             var rarity = ItemDropProcessing.CalculateItemDropRarity();
 
             //Get item
-            var skinItem = ItemDropProcessing.GetItem(rarity, CsgoDataHandler.RootWeaponSkin, context, true);
+            var skinItem = ItemDropProcessing.GetItem(rarity, CsgoDataHandler.CsgoWeaponCosmetic, context, true);
 
             //Add item to user file inventory
             CsgoDataHandler.AddItemToUserInventory(context, skinItem);
@@ -331,11 +331,11 @@ namespace UncrateGo.Modules.Csgo
         /// Fetches and randomly retrieves a skin item of specified type
         /// </summary>
         /// <param name="itemListType">Type file</param>
-        /// <param name="skinData">Skin data to look through</param>
+        /// <param name="cosmeticData">Skin data to look through</param>
         /// <param name="context"></param>
         /// <param name="byPassCaseFilter"></param>
         /// <returns></returns>
-        public static SkinDataItem GetItem(ItemListType itemListType, RootSkinData skinData, SocketCommandContext context, bool byPassCaseFilter)
+        public static SkinDataItem GetItem(ItemListType itemListType, CsgoCosmeticData cosmeticData, SocketCommandContext context, bool byPassCaseFilter)
         {
             var sortedResult = new List<KeyValuePair<string, SkinDataItem>>();
 
@@ -353,7 +353,7 @@ namespace UncrateGo.Modules.Csgo
             if (byPassCaseFilter == false)
             {
                 //Find items matching filter case criteria, add to sortedResult ...!!!!Store this in the future to make this process more efficient
-                foreach (var item in skinData.ItemsList)
+                foreach (var item in cosmeticData.ItemsList)
                 {
                     if (item.Value.Cases != null)
                     {
@@ -369,11 +369,11 @@ namespace UncrateGo.Modules.Csgo
             }
             else
             {
-                //If bypass is true, sorted result is just root skinData
-                //sortedResult = skinData.ItemsList.ToDictionary(x => x.Key, y => y.Value).ToList();
+                //If bypass is true, sorted result is just root cosmeticData
+                //sortedResult = cosmeticData.ItemsList.ToDictionary(x => x.Key, y => y.Value).ToList();
 
                 //Add collection items, E.g Mirage collection, Nuke collection for drop, which has null for casesName
-                foreach (var item in skinData.ItemsList)
+                foreach (var item in cosmeticData.ItemsList)
                 {
                     if (item.Value.Cases != null)
                     {
@@ -443,7 +443,7 @@ namespace UncrateGo.Modules.Csgo
                 //Give stattrak
                 if (giveStatTrak == true)
                 {
-                    var selectedStatTrakItem = skinData.ItemsList
+                    var selectedStatTrakItem = cosmeticData.ItemsList
                         .Where(s => s.Value.Name.ToLower().Contains(selectedSkin.Value.Name.ToLower()))
                         .Where(s => s.Value.Name.ToLower().Contains("stattrak")).FirstOrDefault();
 
@@ -489,7 +489,7 @@ namespace UncrateGo.Modules.Csgo
             }
             else //Randomly pick a skin out of everything if it was unable to find one
             {
-                var sortedResult2 = skinData.ItemsList.Where(s => s.Value.Rarity == Rarity.MilSpecGrade).ToList();
+                var sortedResult2 = cosmeticData.ItemsList.Where(s => s.Value.Rarity == Rarity.MilSpecGrade).ToList();
                 var selectedSkin = sortedResult2[rand.Next(sortedResult2.Count())];
 
                 return selectedSkin.Value;

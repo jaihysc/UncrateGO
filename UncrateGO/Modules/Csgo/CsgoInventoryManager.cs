@@ -65,7 +65,7 @@ namespace UncrateGo.Modules.Csgo
 
         private static void AddSkinFieldEntry(List<UserSkinEntry> foundUserSkins)
         {
-            var rootWeaponSkin = CsgoDataHandler.GetRootWeaponSkin();
+            var rootWeaponSkin = CsgoDataHandler.GetCsgoCosmeticData();
 
             //For every item belonging to sender
             foreach (var item in foundUserSkins)

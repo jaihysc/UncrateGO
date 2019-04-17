@@ -13,51 +13,51 @@ namespace UncrateGo.Modules.Csgo
 {
     public static class CsgoDataHandler
     {
-        public static RootSkinData RootWeaponSkin;
+        public static CsgoCosmeticData CsgoWeaponCosmetic;
         private static UserSkinStorage _userSkinStorage;
 
         /// <summary>
         /// Gathers weapon skin data, if it has not been processed, it will process it
         /// </summary>
         /// <returns></returns>
-        public static RootSkinData GetRootWeaponSkin()
+        public static CsgoCosmeticData GetCsgoCosmeticData()
         {
-            if (RootWeaponSkin == null)
+            if (CsgoWeaponCosmetic == null)
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                EventLogger.LogMessage("Gathering CS:GO skin data, this may take a while");
+                EventLogger.LogMessage("Gathering CS:GO cosmetic data, this may take a while");
 
 
-                RootSkinData rootWeaponSkinTemp;
+                CsgoCosmeticData csgoWeaponCosmeticTemp;
                 //Read skin data from local json file
                 using (StreamReader r = new StreamReader(FileAccessManager.GetFileLocation("skinData.json")))
                 {
                     string json = r.ReadToEnd();
-                    var rootWeaponSkin = RootSkinData.FromJson(json);
+                    var rootWeaponSkin = CsgoCosmeticData.FromJson(json);
 
-                    rootWeaponSkinTemp = rootWeaponSkin;
+                    csgoWeaponCosmeticTemp = rootWeaponSkin;
                 }
 
                 //It json has not been formatted yet for use, format it
-                if (!rootWeaponSkinTemp.Processed)
+                if (!csgoWeaponCosmeticTemp.Processed)
                 {
                     //Format it
-                    rootWeaponSkinTemp = ProcessRawRootSkinData(rootWeaponSkinTemp);
+                    csgoWeaponCosmeticTemp = ProcessRawRootSkinData(csgoWeaponCosmeticTemp);
 
                     //Write results to skin data file
-                    string jsonToWrite = JsonConvert.SerializeObject(rootWeaponSkinTemp);
+                    string jsonToWrite = JsonConvert.SerializeObject(csgoWeaponCosmeticTemp);
                     FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("skinData.json"));
                 }
 
-                RootWeaponSkin = rootWeaponSkinTemp;
+                CsgoWeaponCosmetic = csgoWeaponCosmeticTemp;
 
                 stopwatch.Stop();
                 EventLogger.LogMessage($"Gathering CS:GO skin data, this may take a while --- Done! - Took {stopwatch.Elapsed.TotalMilliseconds} milliseconds");
             }
 
 
-            return RootWeaponSkin;
+            return CsgoWeaponCosmetic;
         }
 
         /// <summary>
@@ -67,39 +67,39 @@ namespace UncrateGo.Modules.Csgo
         {
             try
             {
-                var skinData = await GetRootSkinDataOnline();
+                var skinData = await GetCsgoCosmeticDataOnline();
 
                 if (skinData != null)
                 {
                     var processedSkinData = ProcessRawRootSkinData(skinData);
 
                     //Replace current one in memory
-                    RootWeaponSkin = processedSkinData;
+                    CsgoWeaponCosmetic = processedSkinData;
                 }
             }
             catch
             {
-                EventLogger.LogMessage("Unable to update rootSkinData", ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to update csgoCosmeticData", ConsoleColor.Red);
             }
         }
 
-        private static RootSkinData ProcessRawRootSkinData(RootSkinData rootWeaponSkinInput)
+        private static CsgoCosmeticData ProcessRawRootSkinData(CsgoCosmeticData csgoWeaponCosmeticInput)
         {
-            if (!rootWeaponSkinInput.Processed)
+            if (!csgoWeaponCosmeticInput.Processed)
             {
                 EventLogger.LogMessage("Formatting CS:GO skin data...");
 
                 //Sort items
-                foreach (var skin in rootWeaponSkinInput.ItemsList.Values)
+                foreach (var skin in csgoWeaponCosmeticInput.ItemsList.Values)
                 {
                     //Multiply all prices by 100 to remove decimals on price
                     if (skin.Price != null)
                     {
-                        rootWeaponSkinInput.ItemsList[skin.Name].Price.AllTime.Average = skin.Price.AllTime.Average * 100;
+                        csgoWeaponCosmeticInput.ItemsList[skin.Name].Price.AllTime.Average = skin.Price.AllTime.Average * 100;
                     }
                     else
                     {
-                        rootWeaponSkinInput.ItemsList = rootWeaponSkinInput.ItemsList.Where(s => s.Key != skin.Name).ToDictionary(x => x.Key, y => y.Value);
+                        csgoWeaponCosmeticInput.ItemsList = csgoWeaponCosmeticInput.ItemsList.Where(s => s.Key != skin.Name).ToDictionary(x => x.Key, y => y.Value);
                     }
 
                     //Sort each skin into corresponding cases
@@ -197,19 +197,19 @@ namespace UncrateGo.Modules.Csgo
 
                     }
                 }
-                rootWeaponSkinInput.Processed = true;
+                csgoWeaponCosmeticInput.Processed = true;
 
                 EventLogger.LogMessage("Formatting CS:GO skin data...DONE!");
 
                 //Return processed input
-                return rootWeaponSkinInput;
+                return csgoWeaponCosmeticInput;
             }
 
             //If already processed, just return the original input
-            return rootWeaponSkinInput;
+            return csgoWeaponCosmeticInput;
         }
 
-        private static async Task<RootSkinData> GetRootSkinDataOnline()
+        private static async Task<CsgoCosmeticData> GetCsgoCosmeticDataOnline()
         {
             try
             {
@@ -228,20 +228,19 @@ namespace UncrateGo.Modules.Csgo
                     if (response.IsSuccessStatusCode)
                     {
                         string result = await response.Content.ReadAsStringAsync();
-                        var rootSkinData = RootSkinData.FromJson(result);
+                        var rootSkinData = CsgoCosmeticData.FromJson(result);
 
                         return rootSkinData;
                     }
-
-                    return null;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Unable to retrieve CS:GO item info" + ex.Message);
-
-                return null;
             }
+
+            return null;
+
         }
 
         /// <summary>

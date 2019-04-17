@@ -3,6 +3,7 @@ using Discord.Commands;
 using UncrateGo.Core;
 using UncrateGo.Modules.Csgo;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace UncrateGo.Modules.Commands
             {
                 EventLogger.LogMessage("Reloading data from file...", ConsoleColor.Yellow);
 
-                CsgoDataHandler.GetRootWeaponSkin();
+                CsgoDataHandler.GetCsgoCosmeticData();
                 UserDataManager.GetUserStorage();
                 CsgoDataHandler.GetUserSkinStorage();
                 GuildCommandPrefixManager.PopulateGuildCommandPrefix();
@@ -88,11 +89,11 @@ namespace UncrateGo.Modules.Commands
 
         //Finance
         [Command("balance", RunMode = RunMode.Async)]
-        public async Task SlotBalanceAsync()
+        public async Task BalanceAsync()
         {
-            long userCredits = BankingHandler.GetUserCredits(Context);
+            long userCredits = UserDataManager.GetUserCredit(Context.Message.Author.Id);
 
-            await Context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + $", you have **{BankingHandler.CreditCurrencyFormatter(userCredits)} Credits**");
+            await Context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + $", you have **{BankingHandler.CurrencyFormatter(userCredits)} Credits**");
         }
 
         [Command("moneyTransfer", RunMode = RunMode.Async)]
@@ -131,13 +132,11 @@ namespace UncrateGo.Modules.Commands
             if (userInput.Content.ToLower() == "y")
             {
                 //Reset user's credits
-                var userStorage = UserDataManager.GetUserStorage();
-
-                userStorage.UserInfo[Context.Message.Author.Id].UserBankingStorage.Credit = 0;
+                UserDataManager.SetUserCredit(Context.Message.Author.Id,0);
 
                 //Reset inventory
                 var userSkinStorage = CsgoDataHandler.GetUserSkinStorage();
-                var userSkinStorageNew = userSkinStorage.UserSkinEntries.Where(i => i.OwnerId != Context.Message.Author.Id).ToList();
+                List<UserSkinEntry> userSkinStorageNew = userSkinStorage.UserSkinEntries.Where(i => i.OwnerId != Context.Message.Author.Id).ToList();
 
                 CsgoDataHandler.SetUserSkinStorage(new UserSkinStorage { UserSkinEntries = userSkinStorageNew });
 
