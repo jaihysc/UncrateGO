@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using UncrateGo.Core;
-using UncrateGo.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -160,6 +159,19 @@ namespace UncrateGo.Modules
 
             return similarItemsString;
         }
+    }
+
+    public class HelpMenuCommands
+    {
+        public List<HelpMenuCommandEntry> CommandHelpEntry { get; set; }
+    }
+    public class HelpMenuCommandEntry
+    {
+        public string CommandName { get; set; }
+        public string CommandDescription { get; set; }
+        public string CommandRequiredPermissions { get; set; }
+        public string CommandUsage { get; set; }
+        public string CommandUsageDefinition { get; set; }
     }
 }
 

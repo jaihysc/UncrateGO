@@ -37,10 +37,10 @@ namespace UncrateGo
 
                 CsgoDataHandler.GenerateSouvenirCollections();
 
-                //Timers - do not await these
-                //TODO, use a better approach to these timers rather than not awaiting a method
-                CsgoDataHandler.UpdateRootWeaponSkinTimer();
-                CsgoLeaderboardsManager.GetStatisticsLeaderTimer();
+                //Timers
+                new Timer(CsgoDataHandler.UpdateRootWeaponSkin, null, 57600000, 57600000);
+                new Timer(CsgoLeaderboardsManager.GetStatisticsLeader, null, 60000, 60000);
+                new Timer(FlushAllData, null, 300000, 300000);
 
                 //Setup
                 CsgoDataHandler.GetRootWeaponSkin();
@@ -51,7 +51,7 @@ namespace UncrateGo
 
                 //Exception handling
                 AppDomain currentDomain = AppDomain.CurrentDomain;
-                currentDomain.UnhandledException += new UnhandledExceptionEventHandler(ExceptionHandler);
+                currentDomain.UnhandledException += ExceptionHandler;
 
                 //Program exit handling
                 currentDomain.ProcessExit += CurrentDomain_ProcessExit;
@@ -122,12 +122,8 @@ namespace UncrateGo
             //Handles command on message received event
             _client.MessageReceived += HandleCommandAsync;
 
-            //Threads
-            Thread discordBotsListUpdater = new Thread(() => DiscordBotsListUpdater.UpdateDiscordBotsListInfo(_client));
-            discordBotsListUpdater.Start();
-
-            Thread fileAutoFlush = new Thread(() => FlushDataTimer());
-            fileAutoFlush.Start();
+            //Discord bots list updater
+            new Timer(CsgoLeaderboardsManager.GetStatisticsLeader, _client, 0, 60000);
 
             //All commands before this
             await Task.Delay(-1);
@@ -259,20 +255,10 @@ namespace UncrateGo
             }
         }
 
-        private static void FlushDataTimer() //TODO better timer?
-        {
-            while (true)
-            {
-                //Delay the initial flush since startup
-                Thread.Sleep(300000);
-                FlushAllData();
-            }
-        }
-
         /// <summary>
         /// Flushes all data stored to file
         /// </summary>
-        public static void FlushAllData()
+        public static void FlushAllData(object state)
         {
             EventLogger.LogMessage("Flushing data to file...", ConsoleColor.Yellow);
 
@@ -287,7 +273,7 @@ namespace UncrateGo
         //Program exit handling
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            FlushAllData(); //Flush any remaining data
+            FlushAllData(null); //Flush any remaining data
         }
 
         /// <summary>
@@ -295,14 +281,14 @@ namespace UncrateGo
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        static void ExceptionHandler(object sender, UnhandledExceptionEventArgs args)
+        private static void ExceptionHandler(object sender, UnhandledExceptionEventArgs args)
         {
             Exception e = (Exception)args.ExceptionObject;
             Console.WriteLine("Caught: " + e.Message);
             Console.WriteLine("Runtime terminating: {0}", args.IsTerminating);
             Console.WriteLine(e.StackTrace);
 
-            FlushAllData();
+            FlushAllData(null);
 
             //Write a crashlog to file
             FileAccessManager.WriteStringToFile(e.Message + e.StackTrace, false, FileAccessManager.GetFileLocation("crashlog.txt"));
@@ -344,7 +330,6 @@ namespace UncrateGo
                 if (!SetConsoleMode(consoleHandle, consoleMode))
                 {
                     // ERROR: Unable to set console mode
-                    return;
                 }
             }
         }

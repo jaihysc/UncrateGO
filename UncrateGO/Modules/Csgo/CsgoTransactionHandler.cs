@@ -1,6 +1,5 @@
 ﻿using Discord.Commands;
 using UncrateGo.Core;
-using UncrateGo.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

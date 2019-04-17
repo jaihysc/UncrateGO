@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UncrateGo.Core;
-using UncrateGo.Models;
 
 namespace UncrateGo.Modules.Csgo
 {
@@ -189,62 +188,56 @@ namespace UncrateGo.Modules.Csgo
             await context.Message.Channel.SendMessageAsync(" ", embed: embed).ConfigureAwait(false);
         }
 
-        public static async Task GetStatisticsLeaderTimer() //TODO, have a better way of updating this
-        {
-            while (true)
-            {
-                await Task.Delay(60000);
-                try
-                {
-                    GetStatisticsLeader();
-                }
-                catch (Exception)
-                {
-                    EventLogger.LogMessage("Unable to update statistics", ConsoleColor.Red);
-                }
-                
-            }
-        }
 
         /// <summary>
         /// Finds the leaderboard leaders, returns a list of strings ready to be displayed in embed
         /// </summary>
-        private static void GetStatisticsLeader()
+        public static void GetStatisticsLeader(object state)
         {
-            //!!! Possibly rewrite this later to be more effective with a dictionary instead
-
-            var userData = UserDataManager.GetUserStorage();
-
-            //Variables to store the leaders and their values
-            LeaderboardData casesOpened = new LeaderboardData();
-            LeaderboardData souvenirsOpened = new LeaderboardData();
-            LeaderboardData dropsOpened = new LeaderboardData();
-            LeaderboardData sticksOpened = new LeaderboardData();
-
-            //Find the leaders
-            foreach (var user in userData.UserInfo.Values)
+            try
             {
-                if (user.UserCsgoStatsStorage != null)
+                //Todo Possibly rewrite this later to be more effective with a dictionary instead
+
+                var userData = UserDataManager.GetUserStorage();
+
+                //Variables to store the leaders and their values
+                LeaderboardData casesOpened = new LeaderboardData();
+                LeaderboardData souvenirsOpened = new LeaderboardData();
+                LeaderboardData dropsOpened = new LeaderboardData();
+                LeaderboardData sticksOpened = new LeaderboardData();
+
+                //Find the leaders
+                foreach (var user in userData.UserInfo.Values)
                 {
-                    //Cases opened
-                    FindEntryLeader(user, user.UserCsgoStatsStorage.CasesOpened, casesOpened);
-                    //Souvenirs opened
-                    FindEntryLeader(user, user.UserCsgoStatsStorage.SouvenirsOpened, souvenirsOpened);
-                    //Drops opened
-                    FindEntryLeader(user, user.UserCsgoStatsStorage.DropsOpened, dropsOpened);
-                    //StickersOpened
-                    FindEntryLeader(user, user.UserCsgoStatsStorage.StickersOpened, sticksOpened);
+                    if (user.UserCsgoStatsStorage != null)
+                    {
+                        //Cases opened
+                        FindEntryLeader(user, user.UserCsgoStatsStorage.CasesOpened, casesOpened);
+                        //Souvenirs opened
+                        FindEntryLeader(user, user.UserCsgoStatsStorage.SouvenirsOpened, souvenirsOpened);
+                        //Drops opened
+                        FindEntryLeader(user, user.UserCsgoStatsStorage.DropsOpened, dropsOpened);
+                        //StickersOpened
+                        FindEntryLeader(user, user.UserCsgoStatsStorage.StickersOpened, sticksOpened);
+                    }
                 }
+
+                //Generate the string to return
+                var returnString = new List<string>
+                {
+                    casesOpened.Value + " <@" + casesOpened.UserId + ">",
+                    souvenirsOpened.Value + " <@" + souvenirsOpened.UserId + ">",
+                    dropsOpened.Value + " <@" + dropsOpened.UserId + ">",
+                    sticksOpened.Value + " <@" + sticksOpened.UserId + ">"
+                };
+
+                _leaderboardsLeaders = returnString;
+            }
+            catch
+            {
+                EventLogger.LogMessage("Unable to update statistics", ConsoleColor.Red);
             }
 
-            //Generate the string to return
-            var returnString = new List<string>();
-            returnString.Add(casesOpened.Value + " <@" + casesOpened.UserId + ">");
-            returnString.Add(souvenirsOpened.Value + " <@" + souvenirsOpened.UserId + ">");
-            returnString.Add(dropsOpened.Value + " <@" + dropsOpened.UserId + ">");
-            returnString.Add(sticksOpened.Value + " <@" + sticksOpened.UserId + ">");
-
-            _leaderboardsLeaders = returnString;
         }
 
         /// <summary>
@@ -254,15 +247,14 @@ namespace UncrateGo.Modules.Csgo
         /// <param name="comparisonInputNew"></param>
         /// <param name="comparisonInputOriginal"></param>
         /// <returns></returns>
-        private static LeaderboardData FindEntryLeader(UserInfo user, long comparisonInputNew, LeaderboardData comparisonInputOriginal)
+        private static void FindEntryLeader(UserInfo user, long comparisonInputNew,
+            LeaderboardData comparisonInputOriginal)
         {
             if (comparisonInputNew > comparisonInputOriginal.Value)
             {
                 comparisonInputOriginal.Value = comparisonInputNew;
                 comparisonInputOriginal.UserId = user.UserId;
             }
-
-            return comparisonInputOriginal;
         }
 
         private class LeaderboardData

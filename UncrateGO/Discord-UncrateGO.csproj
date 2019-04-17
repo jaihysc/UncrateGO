@@ -141,10 +141,6 @@
     <Compile Include="Modules\Csgo\CsgoLeaderboardsManager.cs" />
     <Compile Include="Modules\DiscordBotsListUpdater.cs" />
     <Compile Include="Modules\UserInteraction.cs" />
-    <Compile Include="Models\CsgoContainers.cs" />
-    <Compile Include="Models\CsgoItemData.cs" />
-    <Compile Include="Models\HelpMenuCommands.cs" />
-    <Compile Include="Models\UserData.cs" />
     <Compile Include="Modules\Commands\UserRateLimit.cs" />
     <Compile Include="Modules\Commands\UserStorageCheckerPrecondition.cs" />
     <Compile Include="Core\EventLogger.cs" />

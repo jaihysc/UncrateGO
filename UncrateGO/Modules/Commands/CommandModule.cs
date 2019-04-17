@@ -6,7 +6,6 @@ using System;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using System.Linq;
-using UncrateGo.Models;
 using Discord;
 
 namespace UncrateGo.Modules.Commands
@@ -36,7 +35,7 @@ namespace UncrateGo.Modules.Commands
                 CsgoDataHandler.GetUserSkinStorage();
                 GuildCommandPrefixManager.PopulateGuildCommandPrefix();
 
-                CsgoDataHandler.UpdateRootWeaponSkin();
+                CsgoDataHandler.UpdateRootWeaponSkin(null);
                 EventLogger.LogMessage("Reloading data from file...DONE!", ConsoleColor.Yellow);
             }
 
@@ -44,7 +43,7 @@ namespace UncrateGo.Modules.Commands
             [Command("flush", RunMode = RunMode.Async)]
             public async Task FlushDataAsync()
             {
-                MainProgram.FlushAllData();
+                MainProgram.FlushAllData(null);
             }
         }
 

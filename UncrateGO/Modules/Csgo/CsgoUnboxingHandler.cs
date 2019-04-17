@@ -2,7 +2,6 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using UncrateGo.Core;
-using UncrateGo.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -510,5 +509,50 @@ namespace UncrateGo.Modules.Csgo
         }
 
 
+    }
+
+    public class CsgoContainers
+    {
+        public List<Container> Containers { get; set; }
+    }
+    public class Container
+    {
+        public string Name { get; set; }
+        public string CollectionName { get; set; }
+        public string IconUrl { get; set; }
+        public bool IsSticker { get; set; }
+        public bool IsSouvenir { get; set; }
+        public bool IsTournamentSticker { get; set; }
+        public bool SouvenirAvailable { get; set; }
+        public List<ContainerEntry> ContainerEntries { get; set; }
+    }
+    public class ContainerEntry
+    {
+        //When adding skins
+        // 1) Do NOT input the skin wear, wear is automatically looked for
+        // 2) Do NOT put a space between the last letter of the skin name and the start of the wear
+        // 3) Do NOT input stattrak, Stattrak is automatically accounted for
+        public string SkinName { get; set; }
+    }
+
+    public class ItemListType
+    {
+        public Rarity Rarity { get; set; }
+        public WeaponType? WeaponType { get; set; }
+        public WeaponType? BlackListWeaponType { get; set; }
+    }
+
+
+    //User skin storage
+    public class UserSkinStorage
+    {
+        public List<UserSkinEntry> UserSkinEntries { get; set; }
+    }
+    public class UserSkinEntry
+    {
+        public ulong OwnerId { get; set; }
+        public string ClassId { get; set; }
+        public DateTime UnboxDate { get; set; }
+        public string MarketName { get; set; }
     }
 }

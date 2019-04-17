@@ -1,5 +1,4 @@
 ﻿using UncrateGo.Core;
-using UncrateGo.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -62,44 +61,25 @@ namespace UncrateGo.Modules.Csgo
         }
 
         /// <summary>
-        /// Update the weapon skin data every 5 hours, this should be run in async
-        /// </summary>
-        public static async Task UpdateRootWeaponSkinTimer()
-        {
-            //This will keep running
-            while (true)
-            {
-                //Delay goes in front to delay after initial program start
-                await Task.Delay(57600000); //Update every 16 hours
-                try
-                {
-                    UpdateRootWeaponSkin();
-                }
-                catch (Exception)
-                {
-                    EventLogger.LogMessage("Unable to update rootSkinData", ConsoleColor.Red);
-                }
-            }       
-        }
-
-        /// <summary>
         /// Fetches item info from API and formats it, replaces the current rootWeaponSkin in memory
         /// </summary>
-        public static async void UpdateRootWeaponSkin()
+        public static async void UpdateRootWeaponSkin(object state)
         {
-            var skinData = await GetRootSkinDataOnline();
-
-            if (skinData != null)
+            try
             {
-                var processedSkinData = ProcessRawRootSkinData(skinData);
+                var skinData = await GetRootSkinDataOnline();
 
-                //Replace current one in memory
-                RootWeaponSkin = processedSkinData;
+                if (skinData != null)
+                {
+                    var processedSkinData = ProcessRawRootSkinData(skinData);
 
-                ////This will not write to memory, maybe do that?
-                //string jsonToWrite = JsonConvert.SerializeObject(processedSkinData);
-                //FileAccessManager.WriteStringToFile(jsonToWrite, true,
-                //FileAccessManager.GetFileLocation("skinData.json"));
+                    //Replace current one in memory
+                    RootWeaponSkin = processedSkinData;
+                }
+            }
+            catch
+            {
+                EventLogger.LogMessage("Unable to update rootSkinData", ConsoleColor.Red);
             }
         }
 
