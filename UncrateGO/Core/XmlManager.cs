@@ -83,21 +83,28 @@ namespace UncrateGo.Core
         /// </summary>
         public static T FromXmlFile<T>(string filePath)
         {
-            StreamReader sr = new StreamReader(filePath);
-            try
+            if (File.Exists(filePath))
             {
-                var result = FromXml<T>(sr.ReadToEnd());
-                return result;
+                StreamReader sr = new StreamReader(filePath);
+
+                try
+                {
+                    var result = FromXml<T>(sr.ReadToEnd());
+                    return result;
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("There was an error attempting to read the file " + filePath);
+                    return default(T);
+                }
+                finally
+                {
+                    sr.Close();
+                }
             }
-            catch (Exception)
-            {
-                Console.WriteLine("There was an error attempting to read the file " + filePath);
-                return default(T);
-            }
-            finally
-            {
-                sr.Close();
-            }
+
+            return default(T);
+
         }
         
     }

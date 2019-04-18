@@ -142,7 +142,7 @@ namespace UncrateGo.Core
                 }
                 catch (Exception)
                 {
-                    EventLogger.LogMessage("Unable to generate pagination pages", ConsoleColor.Red);
+                    EventLogger.LogMessage("Unable to generate pagination pages", EventLogger.LogLevel.Error);
                 }
             }
 

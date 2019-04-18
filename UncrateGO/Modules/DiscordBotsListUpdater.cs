@@ -27,7 +27,7 @@ namespace UncrateGo.Modules
             }
             catch (Exception)
             {
-                EventLogger.LogMessage("Unable to update stats, possible invalid token?", ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to update stats, possible invalid token?", EventLogger.LogLevel.Error);
             }
         }
     }

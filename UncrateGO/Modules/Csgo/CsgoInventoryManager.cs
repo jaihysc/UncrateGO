@@ -4,6 +4,7 @@ using Discord.Commands;
 using UncrateGo.Core;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UncrateGo.Modules.Csgo
 {
@@ -73,7 +74,7 @@ namespace UncrateGo.Modules.Csgo
                 SkinDataItem skinDataItem = new SkinDataItem();
 
                 //Try to index with the more efficient dictionary first
-                if (item.MarketName == null || !rootWeaponSkin.ItemsList.TryGetValue(item.MarketName, out skinDataItem)) //Error here!
+                if (item.MarketName == null || !rootWeaponSkin.ItemsList.TryGetValue(item.MarketName, out skinDataItem))
                 {
                     //Try to index with the more efficient dictionary, then resort to the more tedious process
 
@@ -112,7 +113,7 @@ namespace UncrateGo.Modules.Csgo
                 }
                 catch (Exception)
                 {
-                    EventLogger.LogMessage("Unable to add emotes", ConsoleColor.Red);
+                    EventLogger.LogMessage("Unable to add emotes", EventLogger.LogLevel.Error);
                 }
 
             }

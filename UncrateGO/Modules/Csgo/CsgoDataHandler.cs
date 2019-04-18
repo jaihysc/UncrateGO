@@ -24,46 +24,61 @@ namespace UncrateGo.Modules.Csgo
         {
             if (CsgoWeaponCosmetic == null)
             {
-                Stopwatch stopwatch = new Stopwatch();
-                stopwatch.Start();
                 EventLogger.LogMessage("Gathering CS:GO cosmetic data, this may take a while");
 
-
-                CsgoCosmeticData csgoWeaponCosmeticTemp;
                 //Read skin data from local json file
-                using (StreamReader r = new StreamReader(FileAccessManager.GetFileLocation("skinData.json")))
+                string path = FileAccessManager.GetFileLocation("skinData.json");
+                if (File.Exists(path))
                 {
-                    string json = r.ReadToEnd();
-                    var rootWeaponSkin = CsgoCosmeticData.FromJson(json);
+                    CsgoCosmeticData csgoWeaponCosmeticTemp;
+                    using (StreamReader r = new StreamReader(path))
+                    {
+                        string json = r.ReadToEnd();
+                        var rootWeaponSkin = CsgoCosmeticData.FromJson(json);
 
-                    csgoWeaponCosmeticTemp = rootWeaponSkin;
+                        csgoWeaponCosmeticTemp = rootWeaponSkin;
+                    }
+
+                    //It json has not been formatted yet for use, format it
+                    if (!csgoWeaponCosmeticTemp.Processed)
+                    {
+                        //Format it
+                        csgoWeaponCosmeticTemp = ProcessRawRootSkinData(csgoWeaponCosmeticTemp);
+
+                        //Write results to skin data file
+                        string jsonToWrite = JsonConvert.SerializeObject(csgoWeaponCosmeticTemp);
+                        FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("skinData.json"));
+                    }
+
+                    CsgoWeaponCosmetic = csgoWeaponCosmeticTemp;
+
+                }
+                else //If a json file containing the skins is not found, fetch it from online
+                {
+                    EventLogger.LogMessage($"CS:GO cosmetic data not found in local json file, fetching from online...");
+
+                    UpdateRootWeaponSkin();
                 }
 
-                //It json has not been formatted yet for use, format it
-                if (!csgoWeaponCosmeticTemp.Processed)
-                {
-                    //Format it
-                    csgoWeaponCosmeticTemp = ProcessRawRootSkinData(csgoWeaponCosmeticTemp);
-
-                    //Write results to skin data file
-                    string jsonToWrite = JsonConvert.SerializeObject(csgoWeaponCosmeticTemp);
-                    FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("skinData.json"));
-                }
-
-                CsgoWeaponCosmetic = csgoWeaponCosmeticTemp;
-
-                stopwatch.Stop();
-                EventLogger.LogMessage($"Gathering CS:GO skin data, this may take a while --- Done! - Took {stopwatch.Elapsed.TotalMilliseconds} milliseconds");
+                EventLogger.LogMessage($"Gathering CS:GO cosmetic data, this may take a while --- Done!");
             }
-
 
             return CsgoWeaponCosmetic;
         }
 
         /// <summary>
+        /// Overload with object for automated timer
+        /// </summary>
+        /// <param name="o"></param>
+        public static void UpdateRootWeaponSkin(object o)
+        {
+            UpdateRootWeaponSkin();
+        }
+
+        /// <summary>
         /// Fetches item info from API and formats it, replaces the current rootWeaponSkin in memory
         /// </summary>
-        public static async void UpdateRootWeaponSkin(object state)
+        public static async void UpdateRootWeaponSkin()
         {
             try
             {
@@ -79,7 +94,7 @@ namespace UncrateGo.Modules.Csgo
             }
             catch
             {
-                EventLogger.LogMessage("Unable to update csgoCosmeticData", ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to update csgoCosmeticData", EventLogger.LogLevel.Warning);
             }
         }
 
@@ -265,6 +280,12 @@ namespace UncrateGo.Modules.Csgo
         {
             //Create a temporary csgoContainers to work with while main one is in a foreach loop
             var csgoContainersTemp = CsgoUnboxingHandler.GetCsgoContainers();
+
+            if (csgoContainersTemp.Containers.Count < 1)
+            {
+                EventLogger.LogMessage("skinCases.xml not found, containers and collections will not be available", EventLogger.LogLevel.Warning);
+            }
+
             foreach (var container in CsgoUnboxingHandler.GetCsgoContainers().Containers.ToList())
             {
                 if (container.SouvenirAvailable)
@@ -307,6 +328,7 @@ namespace UncrateGo.Modules.Csgo
                         UserSkinEntries = new List<UserSkinEntry>()
                     };
 
+                    EventLogger.LogMessage("UserSkinStorage.json not found, creating one", EventLogger.LogLevel.Info);
                 }
 
                 _userSkinStorage = userSkin;
@@ -353,7 +375,7 @@ namespace UncrateGo.Modules.Csgo
             }
             catch (Exception)
             {
-                EventLogger.LogMessage("Unable to flush user skin storage", ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to flush user skin storage", EventLogger.LogLevel.Error);
             }
 
         }

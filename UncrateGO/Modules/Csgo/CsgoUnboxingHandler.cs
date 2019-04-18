@@ -25,6 +25,8 @@ namespace UncrateGo.Modules.Csgo
 
             if (!string.IsNullOrWhiteSpace(readCaseDataFromFile))
             {
+                EventLogger.LogMessage("selectedCases.json not found, creating one", EventLogger.LogLevel.Info);
+
                 var userSelectedCaseData = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(readCaseDataFromFile);
                 if (userSelectedCaseData != null)
                 {
@@ -44,7 +46,7 @@ namespace UncrateGo.Modules.Csgo
             }
             catch (Exception)
             {
-                EventLogger.LogMessage("Unable to flush user selected cases", ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to flush user selected cases", EventLogger.LogLevel.Error);
             }
         }
 

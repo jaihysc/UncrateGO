@@ -29,15 +29,15 @@ namespace UncrateGo.Modules.Commands
             [Command("reload", RunMode = RunMode.Async)]
             public async Task ReloadDataAsync()
             {
-                EventLogger.LogMessage("Reloading data from file...", ConsoleColor.Yellow);
+                EventLogger.LogMessage("Reloading data from file...", EventLogger.LogLevel.Info);
 
                 CsgoDataHandler.GetCsgoCosmeticData();
                 UserDataManager.GetUserStorage();
                 CsgoDataHandler.GetUserSkinStorage();
                 GuildCommandPrefixManager.PopulateGuildCommandPrefix();
 
-                CsgoDataHandler.UpdateRootWeaponSkin(null);
-                EventLogger.LogMessage("Reloading data from file...DONE!", ConsoleColor.Yellow);
+                CsgoDataHandler.UpdateRootWeaponSkin();
+                EventLogger.LogMessage("Reloading data from file...DONE!", EventLogger.LogLevel.Info);
             }
 
             [RequireOwner]
@@ -257,7 +257,7 @@ namespace UncrateGo.Modules.Commands
         [Command("market", RunMode = RunMode.Async)]
         public async Task ShowItemMarketAsync([Remainder]string filterString = null)
         {
-            var pager = CsgoTransactionHandler.GetCsgoMarketInventory(Context, filterString);
+            var pager = await CsgoTransactionHandler.GetCsgoMarketInventory(Context, filterString);
 
             //Send paginated message
             var sentMessage = await PagedReplyAsync(pager, new ReactionList

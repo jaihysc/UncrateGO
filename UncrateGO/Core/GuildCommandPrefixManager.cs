@@ -43,6 +43,8 @@ namespace UncrateGo.Core
                 //Look for guild prefix, in event guild does not have one
                 if (!_guildPrefixDictionary.GuildPrefixes.TryGetValue(guildId, out _))
                 {
+                    EventLogger.LogMessage($"Failed to retrieve prefix for guild {guildId}, defaulting to {DefaultCommandPrefix}", EventLogger.LogLevel.Warning);
+
                     _guildPrefixDictionary.GuildPrefixes.Add(guildId, DefaultCommandPrefix);
                 }
 
@@ -58,6 +60,8 @@ namespace UncrateGo.Core
 
             if (_guildPrefixDictionary == null || _guildPrefixDictionary.GuildPrefixes == null)
             {
+                EventLogger.LogMessage("GuildCommandPrefix.json not found, creating one", EventLogger.LogLevel.Info);
+
                 _guildPrefixDictionary = new CommandPrefix { GuildPrefixes = new Dictionary<ulong, string>() };
 
                 //Create dictionary to file
@@ -107,7 +111,7 @@ namespace UncrateGo.Core
             }
             catch (Exception)
             {
-                EventLogger.LogMessage("Unable to flush guild command dictionary", ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to flush guild command dictionary", EventLogger.LogLevel.Error);
             }
 
         }

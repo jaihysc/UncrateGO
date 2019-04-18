@@ -34,12 +34,39 @@ namespace UncrateGo.Core
             return Task.CompletedTask;
         }
         
-        public static void LogMessage(string message, ConsoleColor intensity = ConsoleColor.White)
+        public static void LogMessage(string message, LogLevel logLevel = LogLevel.Debug)
         {
-            Console.ForegroundColor = intensity;
-            Console.WriteLine($"{DateTime.Now,-19} [    Info] Logging: {message}");
+            string severity = "";
+
+            switch (logLevel)
+            {
+                case LogLevel.Debug:
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    severity = "Debug";
+                    break;
+                case LogLevel.Info:
+                    Console.ForegroundColor = ConsoleColor.White;
+                    severity = "Info";
+                    break;
+                case LogLevel.Warning:
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    severity = "WARNING";
+                    break;
+                case LogLevel.Error:
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    severity = "ERROR";
+                    break;
+                case LogLevel.Critical:
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    severity = "CRITICAL";
+                    break;
+            }
+
+            Console.WriteLine($"{DateTime.Now,-19} [    {severity}] {message}");
             Console.ForegroundColor = ConsoleColor.White;
         }
+
+        public enum LogLevel { Debug, Info, Warning, Error, Critical }
 
         public static Task LogUserMessageAsync(SocketMessage msg)
         {

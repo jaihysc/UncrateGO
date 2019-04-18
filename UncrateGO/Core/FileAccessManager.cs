@@ -32,7 +32,7 @@ namespace UncrateGo.Core
             }
             catch
             {
-                EventLogger.LogMessage("Unable to read from file", ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to read from file", EventLogger.LogLevel.Error);
                 return "";
             }
         }
@@ -58,7 +58,7 @@ namespace UncrateGo.Core
             }
             catch (Exception)
             {
-                EventLogger.LogMessage("Unable to write string to file", ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to write string to file", EventLogger.LogLevel.Error);
             }
 
         }
@@ -79,7 +79,7 @@ namespace UncrateGo.Core
             }
             catch (Exception)
             {
-                EventLogger.LogMessage("Unable to get file location " + fileName, ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to get file location " + fileName, EventLogger.LogLevel.Error);
             }
 
             return returnFileLocation;

@@ -91,7 +91,7 @@ namespace Discord_UncrateGoTests
         [TestMethod()]
         public void ShouldUpdateCsgoCosmeticData()
         {
-            CsgoDataHandler.UpdateRootWeaponSkin(null);
+            CsgoDataHandler.UpdateRootWeaponSkin();
         }
     }
 

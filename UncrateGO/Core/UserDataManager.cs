@@ -42,6 +42,8 @@ namespace UncrateGo.Core
                 //In case the user storage file is blank
                 if (deserializedUserStorage == null)
                 {
+                    EventLogger.LogMessage("UserStorage.json not found, creating one", EventLogger.LogLevel.Info);
+
                     deserializedUserStorage = new UserStorage
                     {
                         UserInfo = new Dictionary<ulong, UserInfo>()
@@ -142,7 +144,7 @@ namespace UncrateGo.Core
             }
             catch (Exception)
             {
-                EventLogger.LogMessage("Unable to flush user storage", ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to flush user storage", EventLogger.LogLevel.Error);
             }
         }
     }

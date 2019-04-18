@@ -26,11 +26,10 @@ namespace UncrateGo
         {
             try
             {
-                DisableConsoleQuickEdit.Go(); //Disable console features
-
-                //Injection
                 Stopwatch.Start();
                 EventLogger.LogMessage("Hello World! - Beginning startup");
+
+                DisableConsoleQuickEdit.Go(); //Disable console features
 
                 //Runs setup if path file is not present
                 SetupManager.CheckIfPathsFileExists();
@@ -62,6 +61,7 @@ namespace UncrateGo
             catch (Exception ex)
             {
                 Console.WriteLine("Oh no, something went wrong!!! \n" + ex.Source + ex.StackTrace);
+                Console.WriteLine("Press ENTER to exit");
                 Console.ReadLine();
             }
 
@@ -87,10 +87,17 @@ namespace UncrateGo
 
             
             //Bot init
+            string tokenPath = FileAccessManager.GetFileLocation("BotToken.txt");
+            if (!File.Exists(tokenPath))
+            {
+                EventLogger.LogMessage("No BotToken.txt found, bot will not start", EventLogger.LogLevel.Critical);
+                throw new Exception("No bot token");
+            }
+
             try
             {
                 //Get token
-                string token = File.ReadAllLines(FileAccessManager.GetFileLocation("BotToken.txt")).FirstOrDefault();
+                string token = File.ReadAllLines(tokenPath).FirstOrDefault();
 
                 //Connect to discord
                 await _client.LoginAsync(TokenType.Bot, token);
@@ -103,9 +110,6 @@ namespace UncrateGo
             }
 
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
-
-            Stopwatch.Stop();
-            EventLogger.LogMessage($"Ready! - Took {Stopwatch.ElapsedMilliseconds} milliseconds");
 
             //Set help text
             //await _client.SetGameAsync("Mention me in server for command prefix");
@@ -124,6 +128,9 @@ namespace UncrateGo
 
             //Discord bots list updater
             new Timer(CsgoLeaderboardManager.GetStatisticsLeader, _client, 0, 60000);
+
+            Stopwatch.Stop();
+            EventLogger.LogMessage($"Ready! - Took {Stopwatch.ElapsedMilliseconds} milliseconds");
 
             //All commands before this
             await Task.Delay(-1);
@@ -250,7 +257,7 @@ namespace UncrateGo
                 }
                 else
                 {
-                    EventLogger.LogMessage($"Error - {result.ErrorReason}", ConsoleColor.Red);
+                    EventLogger.LogMessage($"Error - {result.ErrorReason}", EventLogger.LogLevel.Error);
                 }
             }
         }
@@ -260,14 +267,14 @@ namespace UncrateGo
         /// </summary>
         public static void FlushAllData(object state)
         {
-            EventLogger.LogMessage("Flushing data to file...", ConsoleColor.Yellow);
+            EventLogger.LogMessage("Flushing data to file...", EventLogger.LogLevel.Error);
 
             UserDataManager.FlushUserStorage();
             CsgoDataHandler.FlushUserSkinStorage();
             GuildCommandPrefixManager.FlushGuildCommandDictionary();
             CsgoUnboxingHandler.FlushUserSelectedCase();
 
-            EventLogger.LogMessage("Flushing data to file - DONE!", ConsoleColor.Yellow);
+            EventLogger.LogMessage("Flushing data to file - DONE!", EventLogger.LogLevel.Info);
         }
 
         //Program exit handling

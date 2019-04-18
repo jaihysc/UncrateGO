@@ -226,7 +226,7 @@ namespace UncrateGo.Modules.Csgo
             }
             catch
             {
-                EventLogger.LogMessage("Unable to update statistics", ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to update statistics", EventLogger.LogLevel.Error);
             }
         }
 

@@ -53,7 +53,7 @@ namespace UncrateGo.Modules
             }
             catch
             {
-                EventLogger.LogMessage("Unable to send initial help messages", ConsoleColor.Red);
+                EventLogger.LogMessage("Unable to send initial greeting message", EventLogger.LogLevel.Error);
             }
 
         }
