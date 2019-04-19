@@ -140,6 +140,7 @@
     <Compile Include="Core\PaginationManager.cs" />
     <Compile Include="Core\UnicodeManager.cs" />
     <Compile Include="Core\XmlManager.cs" />
+    <Compile Include="Modules\Csgo\CsgoDataUpdater.cs" />
     <Compile Include="Modules\Csgo\CsgoLeaderboardsManager.cs" />
     <Compile Include="Modules\Csgo\ItemDropProcessing.cs" />
     <Compile Include="Modules\DiscordBotsListUpdater.cs" />

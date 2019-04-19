@@ -68,54 +68,62 @@ namespace UncrateGo.Modules.Csgo
         {
             var rootWeaponSkin = CsgoDataHandler.GetCsgoCosmeticData();
 
-            //For every item belonging to sender
+            //Find every item belonging to sender
             foreach (var item in foundUserSkins)
             {
                 SkinDataItem skinDataItem = new SkinDataItem();
 
                 //Try to index with the more efficient dictionary first
-                if (item.MarketName == null || !rootWeaponSkin.ItemsList.TryGetValue(item.MarketName, out skinDataItem))
+                if (item.MarketName == null || !rootWeaponSkin.ItemsList.TryGetValue(item.MarketName, out skinDataItem)) //TODO add better handling of unicode
                 {
-                    //Try to index with the more efficient dictionary, then resort to the more tedious process
+                    //Try to index with the more efficient dictionary, then resort to the more tedious process via class ids
 
+                    bool foundItem = false;
                     //Find skin entry info
                     foreach (var storageSkinEntry in rootWeaponSkin.ItemsList.Values)
                     {
-                        //Filter by market hash name
-                        //LESSON LEARNED: Decode unicode before processing them to avoid them not being recognized
-                        if (UnicodeManager.DecodeToNonAsciiCharacters(storageSkinEntry.Classid) == UnicodeManager.DecodeToNonAsciiCharacters(item.ClassId))
+                        if (storageSkinEntry.Classid == item.ClassId)
                         {
                             skinDataItem = storageSkinEntry;
+                            foundItem = true;
                         }
                     }
+
+                    //Send warning if item could not be found
+                    if (!foundItem) EventLogger.LogMessage($"An item with the id {item.ClassId} could not be found", EventLogger.LogLevel.Warning);
                 }
 
-                //Trace down the source of this null?
                 if (skinDataItem == null)
                 {
                     skinDataItem = new SkinDataItem();
                 }
 
-                //Add
-                string skinQualityEmote = GetEmoteBySkinRarity(skinDataItem.Rarity, skinDataItem.WeaponType);
-
                 //Add skin entry
+                if (string.IsNullOrWhiteSpace(skinDataItem.Name)) continue; //Skip if name is not defined
                 try
                 {
-                    Emote emote = Emote.Parse(skinQualityEmote);
+                    //Add rarity emotes
+                    Emote emote = Emote.Parse(GetEmoteBySkinRarity(skinDataItem.Rarity, skinDataItem.WeaponType));
 
                     //Add skin entry to list
-                    _embedFieldsMaster.Add(emote + " " + skinDataItem.Name);
-
+                    _embedFieldsMaster.Add(emote + " " + skinDataItem.Name); //Looks like this: [EMOTE Abcdefghijklmn]
 
                     //Filter and Add skin price entry to list
-                    _embedPriceFieldsMaster.Add(emote + " " + skinDataItem.Price.AllTime.Average);
+                    if (skinDataItem.Price?.AllTime != null) //If skinDataItem.price isn't null and AllTime isn't null with the ?
+                    {
+                        double price = skinDataItem.Price.AllTime.Average;
+                        _embedPriceFieldsMaster.Add(emote + " " + price);
+                    }
+                    else
+                    {
+                        _embedPriceFieldsMaster.Add(emote + " " + "N/A"); //Use N/A if price cannot be found
+                    }
+                        
                 }
-                catch (Exception)
+                catch
                 {
-                    EventLogger.LogMessage("Unable to add emotes", EventLogger.LogLevel.Error);
+                    EventLogger.LogMessage("Unable to add emotes" , EventLogger.LogLevel.Error);
                 }
-
             }
 
         }

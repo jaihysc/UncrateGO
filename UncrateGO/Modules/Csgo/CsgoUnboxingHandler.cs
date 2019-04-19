@@ -13,7 +13,7 @@ namespace UncrateGo.Modules.Csgo
     public class CsgoUnboxingHandler : InteractiveBase<SocketCommandContext>
     {
         public static Dictionary<ulong, string> UserSelectedCase = new Dictionary<ulong, string>();
-        private static CsgoContainers csgoContainers;
+        private static CsgoContainers _csgoContainers;
 
         /// <summary>
         /// Gets the selected cases for all users from storage
@@ -25,13 +25,20 @@ namespace UncrateGo.Modules.Csgo
 
             if (!string.IsNullOrWhiteSpace(readCaseDataFromFile))
             {
-                EventLogger.LogMessage("selectedCases.json not found, creating one", EventLogger.LogLevel.Info);
 
                 var userSelectedCaseData = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(readCaseDataFromFile);
                 if (userSelectedCaseData != null)
                 {
                     UserSelectedCase = userSelectedCaseData;
                 }
+            }
+            else
+            {
+                EventLogger.LogMessage("selectedCases.json not found, creating one", EventLogger.LogLevel.Info);
+
+                var model = new Dictionary<ulong, string>();
+                string newJson = JsonConvert.SerializeObject(model);
+                FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("selectedCases.json"));
             }
         }
 
@@ -52,7 +59,7 @@ namespace UncrateGo.Modules.Csgo
 
         public static CsgoContainers GetCsgoContainers()
         {
-            if (csgoContainers == null)
+            if (_csgoContainers == null)
             {
                 var tempCsgoContainers = XmlManager.FromXmlFile<CsgoContainers>(FileAccessManager.GetFileLocation("skinCases.xml"));
 
@@ -64,10 +71,10 @@ namespace UncrateGo.Modules.Csgo
                     };
                 }
 
-                csgoContainers = tempCsgoContainers;
+                _csgoContainers = tempCsgoContainers;
             }
 
-            return csgoContainers;
+            return _csgoContainers;
         }
 
         /// <summary>
@@ -76,7 +83,7 @@ namespace UncrateGo.Modules.Csgo
         /// <param name="input"></param>
         public static void SetCsgoContainers(CsgoContainers input)
         {
-            csgoContainers = input;
+            _csgoContainers = input;
         }
 
         /// <summary>
@@ -90,7 +97,7 @@ namespace UncrateGo.Modules.Csgo
             var result = ItemDropProcessing.CalculateItemCaseRarity();
 
             //Get item
-            var skinItem = ItemDropProcessing.GetItem(result, CsgoDataHandler.CsgoWeaponCosmetic, context, false);
+            var skinItem = ItemDropProcessing.GetItem(result, CsgoDataHandler.CsgoCosmeticData, context, false);
 
             //Add item to user file inventory
             CsgoDataHandler.AddItemToUserInventory(context, skinItem);
@@ -110,7 +117,7 @@ namespace UncrateGo.Modules.Csgo
             var rarity = ItemDropProcessing.CalculateItemDropRarity();
 
             //Get item
-            var skinItem = ItemDropProcessing.GetItem(rarity, CsgoDataHandler.CsgoWeaponCosmetic, context, true);
+            var skinItem = ItemDropProcessing.GetItem(rarity, CsgoDataHandler.CsgoCosmeticData, context, true);
 
             //Add item to user file inventory
             CsgoDataHandler.AddItemToUserInventory(context, skinItem);
@@ -130,7 +137,7 @@ namespace UncrateGo.Modules.Csgo
             }
 
             //Get user selected case
-            string selectedCaseIcon = csgoContainers.Containers.Where(s => s.Name == UserSelectedCase[context.Message.Author.Id]).Select(s => s.IconUrl).FirstOrDefault();
+            string selectedCaseIcon = _csgoContainers.Containers.Where(s => s.Name == UserSelectedCase[context.Message.Author.Id]).Select(s => s.IconUrl).FirstOrDefault();
 
             //Set name to unboxing or item drop
             string title = "";
@@ -320,7 +327,7 @@ namespace UncrateGo.Modules.Csgo
         public string SkinName { get; set; }
     }
 
-    public class ItemListType
+    public class ItemData
     {
         public Rarity Rarity { get; set; }
         public WeaponType? WeaponType { get; set; }

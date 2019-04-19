@@ -29,20 +29,52 @@ namespace UncrateGo.Modules.Csgo
         private static List<string> _leaderboardLeaders = new List<string>();
 
         /// <summary>
-        ///     Increments the user stat tracker
+        /// Increments the user stat trackers
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="itemListType"></param>
-        /// <param name="itemCategory"></param>
-        public static void IncrementStatTracker(SocketCommandContext context, ItemListType itemListType,
+        public static void IncrementStatsCounter(ulong userId, StatItemType statItemType, ItemData itemData)
+        {
+            switch (statItemType)
+            {
+                case StatItemType.Sticker:
+                    IncrementCaseStatTracker(userId, CaseCategory.Sticker);
+                    IncrementItemStatTracker(userId, itemData, ItemCategory.Sticker);
+                    break;
+                case StatItemType.Souvenir:
+                    IncrementCaseStatTracker(userId, CaseCategory.Souvenir);
+                    IncrementItemStatTracker(userId, itemData, ItemCategory.Default);
+                    break;
+                case StatItemType.Case:
+                    IncrementCaseStatTracker(userId, CaseCategory.Case);
+                    IncrementItemStatTracker(userId, itemData, ItemCategory.Default);
+                    break;
+                case StatItemType.Drop:
+                    IncrementCaseStatTracker(userId, CaseCategory.Drop);
+                    IncrementItemStatTracker(userId, itemData, ItemCategory.Default);
+                    break;
+                case StatItemType.Other:
+                    IncrementItemStatTracker(userId, itemData, ItemCategory.Other);
+                    break;
+            }
+        }
+
+        public enum StatItemType
+        {
+            Sticker,
+            Souvenir,
+            Case,
+            Drop,
+            Other
+        }
+
+        public static void IncrementItemStatTracker(ulong userId, ItemData itemData,
             ItemCategory itemCategory)
         {
-            var userCaseStats = UserDataManager.GetUserCsgoStatsStorage(context.Message.Author.Id);
+            var userCaseStats = UserDataManager.GetUserCsgoStatsStorage(userId);
 
             //If using default category
             if (itemCategory == ItemCategory.Default)
             {
-                switch (itemListType.Rarity)
+                switch (itemData.Rarity)
                 {
                     case Rarity.ConsumerGrade:
                         userCaseStats.ConsumerGrade++;
@@ -62,9 +94,9 @@ namespace UncrateGo.Modules.Csgo
                 }
 
                 //Increment knife or covert counter
-                if (itemListType.Rarity == Rarity.Covert && itemListType.BlackListWeaponType == WeaponType.Knife)
+                if (itemData.Rarity == Rarity.Covert && itemData.BlackListWeaponType == WeaponType.Knife)
                     userCaseStats.Covert++;
-                else if (itemListType.Rarity == Rarity.Covert && itemListType.WeaponType == WeaponType.Knife)
+                else if (itemData.Rarity == Rarity.Covert && itemData.WeaponType == WeaponType.Knife)
                     userCaseStats.Special++;
             }
             //If not
@@ -85,12 +117,12 @@ namespace UncrateGo.Modules.Csgo
             }
 
             //Set stats back to master list
-            UserDataManager.SetUserCsgoStatsStorage(context.Message.Author.Id, userCaseStats);
+            UserDataManager.SetUserCsgoStatsStorage(userId, userCaseStats);
         }
 
-        public static void IncrementCaseStatTracker(SocketCommandContext context, CaseCategory caseCategory)
+        public static void IncrementCaseStatTracker(ulong userId, CaseCategory caseCategory)
         {
-            var userCaseStats = UserDataManager.GetUserCsgoStatsStorage(context.Message.Author.Id);
+            var userCaseStats = UserDataManager.GetUserCsgoStatsStorage(userId);
 
             switch (caseCategory)
             {
@@ -108,7 +140,7 @@ namespace UncrateGo.Modules.Csgo
                     break;
             }
 
-            UserDataManager.SetUserCsgoStatsStorage(context.Message.Author.Id, userCaseStats);
+            UserDataManager.SetUserCsgoStatsStorage(userId, userCaseStats);
         }
 
         /// <summary>
@@ -189,8 +221,6 @@ namespace UncrateGo.Modules.Csgo
         {
             try
             {
-                //Todo Possibly rewrite this later to be more effective with a dictionary instead
-
                 var userData = UserDataManager.GetUserStorage();
 
                 //Variables to store the leaders and their values

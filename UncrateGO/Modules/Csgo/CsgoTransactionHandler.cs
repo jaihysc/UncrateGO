@@ -10,7 +10,7 @@ using Discord.Addons.Interactive;
 
 namespace UncrateGo.Modules.Csgo
 {
-    public static class CsgoTransactionHandler
+    public static class CsgoTransactionHandler //TODO, cleanup code
     {
         //Buy
         public static async Task BuyItemFromMarketAsync(SocketCommandContext context, string itemMarketHash)
@@ -263,9 +263,9 @@ namespace UncrateGo.Modules.Csgo
         public static async Task DisplayCsgoItemStatistics(SocketCommandContext context, string filterString)
         {
             //Search by exact, then contain, then whole words
-            var skinItem = CsgoDataHandler.CsgoWeaponCosmetic.ItemsList.Values.Where(c => c.Name.ToLower() == filterString.ToLower()).FirstOrDefault();
-            if (skinItem == null) skinItem = CsgoDataHandler.CsgoWeaponCosmetic.ItemsList.Values.Where(c => c.Name.ToLower().Contains(filterString.ToLower())).FirstOrDefault();
-            if (skinItem == null) skinItem = FindSimilarItemsByWords(CsgoDataHandler.CsgoWeaponCosmetic, filterString).FirstOrDefault();
+            var skinItem = CsgoDataHandler.CsgoCosmeticData.ItemsList.Values.Where(c => c.Name.ToLower() == filterString.ToLower()).FirstOrDefault();
+            if (skinItem == null) skinItem = CsgoDataHandler.CsgoCosmeticData.ItemsList.Values.Where(c => c.Name.ToLower().Contains(filterString.ToLower())).FirstOrDefault();
+            if (skinItem == null) skinItem = FindSimilarItemsByWords(CsgoDataHandler.CsgoCosmeticData, filterString).FirstOrDefault();
 
             //Check if the skin exists
             if (skinItem != null)

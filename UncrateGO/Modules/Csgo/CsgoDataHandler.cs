@@ -8,12 +8,13 @@ using Discord.Commands;
 using System.Threading.Tasks;
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace UncrateGo.Modules.Csgo
 {
     public static class CsgoDataHandler
     {
-        public static CsgoCosmeticData CsgoWeaponCosmetic;
+        public static CsgoCosmeticData CsgoCosmeticData;
         private static UserSkinStorage _userSkinStorage;
 
         /// <summary>
@@ -22,7 +23,7 @@ namespace UncrateGo.Modules.Csgo
         /// <returns></returns>
         public static CsgoCosmeticData GetCsgoCosmeticData()
         {
-            if (CsgoWeaponCosmetic == null)
+            if (CsgoCosmeticData == null)
             {
                 EventLogger.LogMessage("Gathering CS:GO cosmetic data, this may take a while");
 
@@ -43,271 +44,53 @@ namespace UncrateGo.Modules.Csgo
                     if (!csgoWeaponCosmeticTemp.Processed)
                     {
                         //Format it
-                        csgoWeaponCosmeticTemp = ProcessRawRootSkinData(csgoWeaponCosmeticTemp);
+                        csgoWeaponCosmeticTemp = CsgoDataUpdater.ProcessRawRootSkinData(csgoWeaponCosmeticTemp);
 
                         //Write results to skin data file
                         string jsonToWrite = JsonConvert.SerializeObject(csgoWeaponCosmeticTemp);
                         FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("skinData.json"));
                     }
 
-                    CsgoWeaponCosmetic = csgoWeaponCosmeticTemp;
+                    CsgoCosmeticData = csgoWeaponCosmeticTemp;
 
                 }
                 else //If a json file containing the skins is not found, fetch it from online
                 {
                     EventLogger.LogMessage($"CS:GO cosmetic data not found in local json file, fetching from online...");
 
-                    UpdateRootWeaponSkin();
+                    CsgoDataUpdater.UpdateRootWeaponSkin();
                 }
 
                 EventLogger.LogMessage($"Gathering CS:GO cosmetic data, this may take a while --- Done!");
             }
 
-            return CsgoWeaponCosmetic;
+            return CsgoCosmeticData;
         }
 
         /// <summary>
-        /// Overload with object for automated timer
+        /// Gets the case selection of a specified user, if not existent, it sets it to danger zone case
         /// </summary>
-        /// <param name="o"></param>
-        public static void UpdateRootWeaponSkin(object o)
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public static string GetUserSelectedCaseName(ulong userId)
         {
-            UpdateRootWeaponSkin();
+            if (!CsgoUnboxingHandler.UserSelectedCase.TryGetValue(userId, out string userSelectedCaseName))
+            {
+                //Default to danger zone case if user has not made a selection
+                CsgoUnboxingHandler.UserSelectedCase.Add(userId, "Danger Zone Case");
+            }
+
+            return userSelectedCaseName;
         }
 
         /// <summary>
-        /// Fetches item info from API and formats it, replaces the current rootWeaponSkin in memory
+        /// Gets the container of the specified name
         /// </summary>
-        public static async void UpdateRootWeaponSkin()
+        /// <param name="caseName"></param>
+        /// <returns></returns>
+        public static Container GetCsgoCase(string caseName)
         {
-            try
-            {
-                var skinData = await GetCsgoCosmeticDataOnline();
-
-                if (skinData != null)
-                {
-                    var processedSkinData = ProcessRawRootSkinData(skinData);
-
-                    //Replace current one in memory
-                    CsgoWeaponCosmetic = processedSkinData;
-                }
-            }
-            catch
-            {
-                EventLogger.LogMessage("Unable to update csgoCosmeticData", EventLogger.LogLevel.Warning);
-            }
-        }
-
-        private static CsgoCosmeticData ProcessRawRootSkinData(CsgoCosmeticData csgoWeaponCosmeticInput)
-        {
-            if (!csgoWeaponCosmeticInput.Processed)
-            {
-                EventLogger.LogMessage("Formatting CS:GO skin data...");
-
-                //Sort items
-                foreach (var skin in csgoWeaponCosmeticInput.ItemsList.Values)
-                {
-                    //Multiply all prices by 100 to remove decimals on price
-                    if (skin.Price != null)
-                    {
-                        csgoWeaponCosmeticInput.ItemsList[skin.Name].Price.AllTime.Average = skin.Price.AllTime.Average * 100;
-                    }
-                    else
-                    {
-                        csgoWeaponCosmeticInput.ItemsList = csgoWeaponCosmeticInput.ItemsList.Where(s => s.Key != skin.Name).ToDictionary(x => x.Key, y => y.Value);
-                    }
-
-                    //Sort each skin into corresponding cases
-                    //Read from case data config
-                    var skinCases = CsgoUnboxingHandler.GetCsgoContainers();
-
-                    //Find the container for each skin
-                    foreach (var skinCase in skinCases.Containers)
-                    {
-                        //Check for each skin in each container
-                        foreach (var skinCaseItem in skinCase.ContainerEntries)
-                        {
-                            var comparisonItems = new List<string>();
-
-                            //if FN, MW, ETC, it will find all skin conditions + stattrak
-
-                            //For above, append statements for wear 
-                            if (!skinCase.IsSouvenir && !skinCase.IsSticker)
-                            {
-                                comparisonItems.Add(skinCaseItem.SkinName + " (Factory New)");
-                                comparisonItems.Add(skinCaseItem.SkinName + " (Minimal Wear)");
-                                comparisonItems.Add(skinCaseItem.SkinName + " (Field-Tested)");
-                                comparisonItems.Add(skinCaseItem.SkinName + " (Well-Worn)");
-                                comparisonItems.Add(skinCaseItem.SkinName + " (Battle-Scarred)");
-
-                                //Add StatTrak\u2122 before to check for stattrak
-                                comparisonItems.Add("StatTrak\u2122 " + skinCaseItem.SkinName + " (Factory New)");
-                                comparisonItems.Add("StatTrak\u2122 " + skinCaseItem.SkinName + " (Minimal Wear)");
-                                comparisonItems.Add("StatTrak\u2122 " + skinCaseItem.SkinName + " (Field-Tested)");
-                                comparisonItems.Add("StatTrak\u2122 " + skinCaseItem.SkinName + " (Well-Worn)");
-                                comparisonItems.Add("StatTrak\u2122 " + skinCaseItem.SkinName + " (Battle-Scarred)");
-
-                                //KNIVES
-
-                                //\u2605 for knives
-                                comparisonItems.Add("\u2605 " + skinCaseItem.SkinName + " (Factory New)");
-                                comparisonItems.Add("\u2605 " + skinCaseItem.SkinName + " (Minimal Wear)");
-                                comparisonItems.Add("\u2605 " + skinCaseItem.SkinName + " (Field-Tested)");
-                                comparisonItems.Add("\u2605 " + skinCaseItem.SkinName + " (Well-Worn)");
-                                comparisonItems.Add("\u2605 " + skinCaseItem.SkinName + " (Battle-Scarred)");
-
-                                //\u2605 StatTrak\u2122 for knife stattrak
-                                comparisonItems.Add("\u2605 StatTrak\u2122 " + skinCaseItem.SkinName + " (Factory New)");
-                                comparisonItems.Add("\u2605 StatTrak\u2122 " + skinCaseItem.SkinName + " (Minimal Wear)");
-                                comparisonItems.Add("\u2605 StatTrak\u2122 " + skinCaseItem.SkinName + " (Field-Tested)");
-                                comparisonItems.Add("\u2605 StatTrak\u2122 " + skinCaseItem.SkinName + " (Well-Worn)");
-                                comparisonItems.Add("\u2605 StatTrak\u2122 " + skinCaseItem.SkinName + " (Battle-Scarred)");
-                            }
-
-                            //Souvenir non sticker
-                            else if (skinCase.IsSouvenir && !skinCase.IsSticker)
-                            {
-                                comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Factory New)");
-                                comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Minimal Wear)");
-                                comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Field-Tested)");
-                                comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Well-Worn)");
-                                comparisonItems.Add("Souvenir " + skinCaseItem.SkinName + " (Battle-Scarred)");
-                            }
-
-                            //not a tournament sticker
-                            else if (skinCase.IsSticker && !skinCase.IsTournamentSticker)
-                            {
-                                comparisonItems.Add("Sticker | " + skinCaseItem.SkinName);
-                                comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Foil)");
-                                comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Holo)");
-                            }
-
-                            //is tournament sticker
-                            else if (skinCase.IsSticker && skinCase.IsTournamentSticker)
-                            {
-                                comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " | " + skinCase.CollectionName);
-                                comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Foil)" + " | " + skinCase.CollectionName);
-                                comparisonItems.Add("Sticker | " + skinCaseItem.SkinName + " (Holo)" + " | " + skinCase.CollectionName);
-                            }
-
-                            //Check for possible matches, matching CASE skin name
-                            foreach (var skinComparisonItem in comparisonItems)
-                            {
-                                string skinName = skin.Name;
-                                string skinComparisonItemName = skinComparisonItem;
-
-                                //If names have unicode, decode them first
-                                if (UnicodeManager.ContainsUnicodeCharacter(skinName))
-                                {
-                                    skinName = UnicodeManager.DecodeToNonAsciiCharacters(skinName);
-                                }
-
-                                if (UnicodeManager.ContainsUnicodeCharacter(skinComparisonItemName))
-                                {
-                                    skinComparisonItemName =
-                                        UnicodeManager.DecodeToNonAsciiCharacters(skinComparisonItemName);
-                                }
-
-
-                                if (skinName == skinComparisonItemName)
-                                {
-                                    //If skin.Cases is null, create a new list
-                                    if (skin.Cases == null) skin.Cases = new List<Case>();
-
-                                    //If item matches, set the cases property of the item to current name of the case it is checking
-                                    skin.Cases.Add(new Case
-                                    {
-                                        CaseName = skinCase.Name,
-                                        CaseCollection = skinCase.CollectionName
-                                    });
-                                    break;
-                                }
-                            }
-                        }
-
-                    }
-                }
-                csgoWeaponCosmeticInput.Processed = true;
-
-                EventLogger.LogMessage("Formatting CS:GO skin data...DONE!");
-
-                //Return processed input
-                return csgoWeaponCosmeticInput;
-            }
-
-            //If already processed, just return the original input
-            return csgoWeaponCosmeticInput;
-        }
-
-        private static async Task<CsgoCosmeticData> GetCsgoCosmeticDataOnline()
-        {
-            try
-            {
-                //The API we request info from
-                const string requestUrl = "http://csgobackpack.net/api/GetItemsList/v2/";
-
-                using (HttpClient client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.Accept.Clear();
-                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-                    //For IP-API
-                    client.BaseAddress = new Uri(requestUrl);
-                    HttpResponseMessage response = client.GetAsync(requestUrl).GetAwaiter().GetResult();
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string result = await response.Content.ReadAsStringAsync();
-                        var rootSkinData = CsgoCosmeticData.FromJson(result);
-
-                        return rootSkinData;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Unable to retrieve CS:GO item info" + ex.Message);
-            }
-
-            return null;
-
-        }
-
-        /// <summary>
-        /// Gets items available in souvenir version, generates souvenir version and add to container list
-        /// </summary>
-        public static void GenerateSouvenirCollections()
-        {
-            //Create a temporary csgoContainers to work with while main one is in a foreach loop
-            var csgoContainersTemp = CsgoUnboxingHandler.GetCsgoContainers();
-
-            if (csgoContainersTemp.Containers.Count < 1)
-            {
-                EventLogger.LogMessage("skinCases.xml not found, containers and collections will not be available", EventLogger.LogLevel.Warning);
-            }
-
-            foreach (var container in CsgoUnboxingHandler.GetCsgoContainers().Containers.ToList())
-            {
-                if (container.SouvenirAvailable)
-                {
-                    //If item has available souvenir version, generate souvenir version and add to container list
-                    var souvenirDuplicateContainer = new Container
-                    {
-                        IsSouvenir = true,
-                        SouvenirAvailable = false,
-                        Name = container.CollectionName + " Souvenir",
-                        CollectionName = container.CollectionName + " Souvenir",
-                        IconUrl = container.IconUrl,
-                        ContainerEntries = container.ContainerEntries
-                    };
-
-                    csgoContainersTemp.Containers.Add(souvenirDuplicateContainer);
-
-                }
-            }
-
-            CsgoUnboxingHandler.SetCsgoContainers(csgoContainersTemp);
-
+            return CsgoUnboxingHandler.GetCsgoContainers().Containers.FirstOrDefault(i => i.Name == caseName);
         }
 
         /// <summary>
@@ -379,6 +162,5 @@ namespace UncrateGo.Modules.Csgo
             }
 
         }
-
     }
 }

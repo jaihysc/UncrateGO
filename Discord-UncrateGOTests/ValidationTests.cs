@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Security.Cryptography.X509Certificates;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UncrateGo.Core;
 using UncrateGo.Modules;
 using UncrateGo.Modules.Csgo;
@@ -77,7 +78,7 @@ namespace Discord_UncrateGoTests
     }
 
     [TestClass()]
-    public class CsgoValidationTests
+    public class CsgoDataValidationTests
     {
         [TestMethod()]
         public void ShouldGetCsgoCosmeticData()
@@ -91,8 +92,29 @@ namespace Discord_UncrateGoTests
         [TestMethod()]
         public void ShouldUpdateCsgoCosmeticData()
         {
-            CsgoDataHandler.UpdateRootWeaponSkin();
+            CsgoDataUpdater.UpdateRootWeaponSkin();
         }
+
+        [TestMethod()]
+        public void ShouldGetCsgoCase()
+        {
+            var result = CsgoDataHandler.GetCsgoCase("Danger Zone Case");
+            if (result == null)
+            {
+                Assert.Fail();
+            }
+        }
+
+        [TestMethod()]
+        public void ShouldNotGetCsgoCase()
+        {
+            var result = CsgoDataHandler.GetCsgoCase("~~~eqasdase1e1dascqd | This case does not exist sadsa");
+            if (result != null)
+            {
+                Assert.Fail();
+            }
+        }
+
     }
 
     public class TestUser

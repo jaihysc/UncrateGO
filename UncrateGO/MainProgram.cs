@@ -34,10 +34,10 @@ namespace UncrateGo
                 //Runs setup if path file is not present
                 SetupManager.CheckIfPathsFileExists();
 
-                CsgoDataHandler.GenerateSouvenirCollections();
+                CsgoDataUpdater.GenerateSouvenirCollections();
 
                 //Timers
-                new Timer(CsgoDataHandler.UpdateRootWeaponSkin, null, 57600000, 57600000);
+                new Timer(CsgoDataUpdater.UpdateRootWeaponSkin, null, 57600000, 57600000);
                 new Timer(CsgoLeaderboardManager.GetStatisticsLeader, null, 60000, 60000);
                 new Timer(FlushAllData, null, 300000, 300000);
 

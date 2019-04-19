@@ -36,7 +36,7 @@ namespace UncrateGo.Modules.Commands
                 CsgoDataHandler.GetUserSkinStorage();
                 GuildCommandPrefixManager.PopulateGuildCommandPrefix();
 
-                CsgoDataHandler.UpdateRootWeaponSkin();
+                CsgoDataUpdater.UpdateRootWeaponSkin();
                 EventLogger.LogMessage("Reloading data from file...DONE!", EventLogger.LogLevel.Info);
             }
 
