@@ -148,7 +148,7 @@ namespace UncrateGo.Modules
             foreach (var item in storedCommands)
             {
                 //If fuzzy search difference is less than 6 or if storedCommand contains inputCommand
-                if (FuzzySearchManager.Compute(item.ToLower(), inputCommand.ToLower()) < fuzzyIndex ||
+                if (FuzzySearch.Compute(item.ToLower(), inputCommand.ToLower()) < fuzzyIndex ||
                     item.ToLower().Contains(inputCommand.ToLower()))
                 {
                     //Concat items in list together

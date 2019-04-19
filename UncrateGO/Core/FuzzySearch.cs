@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace UncrateGo.Core
 {
-    public static class FuzzySearchManager
+    public static class FuzzySearch
     {
         /// <summary>
         /// Compute the distance between two strings
@@ -53,6 +54,34 @@ namespace UncrateGo.Core
             }
             // Step 7
             return d[n, m];
+        }
+
+        public static List<string> FindSimilarItemsByWords(IEnumerable<string> itemNames, string filterString)
+        {
+            var userSkinEntries = new List<string>();
+
+            bool match = false;
+
+            string[] tokens = UnicodeManager.RemoveSpecialCharacters(filterString).ToLower().Split(' ');
+
+            //Search through for words match specified input string separated with spaces
+            foreach (var item in itemNames)
+            {
+                foreach (var t in tokens)
+                {
+                    if (!UnicodeManager.RemoveSpecialCharacters(item).ToLower().Contains(t))
+                    {
+                        match = false;
+                        break;
+                    }
+
+                    match = true;
+                }
+
+                if (match) userSkinEntries.Add(item);
+            }
+
+            return userSkinEntries;
         }
     }
 }

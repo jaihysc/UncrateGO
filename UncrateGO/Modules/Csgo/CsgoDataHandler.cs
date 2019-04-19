@@ -1,14 +1,10 @@
 ﻿using UncrateGo.Core;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Discord.Commands;
-using System.Threading.Tasks;
 using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
 
 namespace UncrateGo.Modules.Csgo
 {
@@ -81,6 +77,16 @@ namespace UncrateGo.Modules.Csgo
             }
 
             return userSelectedCaseName;
+        }
+
+        public static List<UserSkinEntry> GetUserItems(ulong userId)
+        {
+            var userSkinStorage = GetUserSkinStorage();
+
+            List<UserSkinEntry> foundUserItems = userSkinStorage.UserSkinEntries
+                .Where(s => s.OwnerId == userId).ToList();
+
+            return foundUserItems;
         }
 
         /// <summary>

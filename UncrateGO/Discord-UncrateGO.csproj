@@ -136,7 +136,7 @@
   <ItemGroup>
     <Compile Include="Core\GuildCommandPrefixManager.cs" />
     <Compile Include="Core\FileAccessManager.cs" />
-    <Compile Include="Core\FuzzySearchManager.cs" />
+    <Compile Include="Core\FuzzySearch.cs" />
     <Compile Include="Core\PaginationManager.cs" />
     <Compile Include="Core\UnicodeManager.cs" />
     <Compile Include="Core\XmlManager.cs" />

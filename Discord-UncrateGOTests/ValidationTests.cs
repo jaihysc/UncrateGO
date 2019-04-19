@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UncrateGo.Core;
 using UncrateGo.Modules;
@@ -115,6 +116,120 @@ namespace Discord_UncrateGoTests
             }
         }
 
+        [TestMethod()]
+        public void ShouldNotGetUserItems()
+        {
+            List<UserSkinEntry> result = CsgoDataHandler.GetUserItems(000000000);
+            if (result.Any())
+            {
+                Assert.Fail();
+            }
+        }
+
+        [TestMethod()]
+        public void ShouldGetUserItems()
+        {
+            List<UserSkinEntry> result = CsgoDataHandler.GetUserItems(TestUser.TestUserId);
+            if (!result.Any()) //Sometimes the user may not actually have any items
+            {
+                Assert.Fail();
+            }
+        }
+
+        [TestMethod()]
+        public void ShouldFuzzyFindSkinDataItem()
+        {
+            var cosmeticData = CsgoDataHandler.GetCsgoCosmeticData();
+
+            //Get the weapon skin specified
+            SkinDataItem marketSkin = CsgoTransactionHandler.FuzzyFindSkinDataItem(cosmeticData.ItemsList.Values.ToList(), "glock").FirstOrDefault();
+            if (marketSkin == null)
+            {
+                Assert.Fail();
+            }
+        }
+
+        [TestMethod()]
+        public void ShouldNotFuzzyFindSkinDataItem()
+        {
+            var cosmeticData = CsgoDataHandler.GetCsgoCosmeticData();
+
+            //Get the weapon skin specified
+            SkinDataItem marketSkin = CsgoTransactionHandler.FuzzyFindSkinDataItem(cosmeticData.ItemsList.Values.ToList(), "1ecfwefbhewr5132").FirstOrDefault();
+            if (marketSkin != null)
+            {
+                Assert.Fail();
+            }
+        }
+
+        [TestMethod()]
+        public void ShouldFuzzyFindUserSkinEntries()
+        {
+            List<UserSkinEntry> userItems = CsgoDataHandler.GetUserItems(TestUser.TestUserId);
+            var result = CsgoTransactionHandler.FuzzyFindUserSkinEntries(userItems, "Acid Fade").FirstOrDefault();
+
+            if (result == null)
+            {
+                Assert.Fail();
+            }
+        }
+
+        [TestMethod()]
+        public void ShouldNotFuzzyFindUserSkinEntries()
+        {
+            List<UserSkinEntry> userItems = CsgoDataHandler.GetUserItems(TestUser.TestUserId);
+            var result = CsgoTransactionHandler.FuzzyFindUserSkinEntries(userItems, "1ecfwefbhewr5132").FirstOrDefault();
+
+            if (result != null)
+            {
+                Assert.Fail();
+            }
+        }
+    }
+    
+    [TestClass()]
+    public class CoreValidationTests
+    {
+        [TestMethod()]
+        public void ShouldFindSimilarItemsByWords()
+        {
+            var testPhrases = new List<string>
+            {
+                "He told us a very exciting adventure story.",
+                "Don't step on the broken glass.",
+                "The memory we used to share is no longer coherent.",
+                "If Purple People Eaters are real… where do they find purple people to eat?",
+                "Two seats were vacant.",
+                "The lake is a long way from here.",
+                "If I don’t like something, I’ll stay away from it.",
+                "He said he was not there yesterday; however, many people saw him there.",
+                "He ran out of money, so he had to stop playing poker.",
+                "She folded her handkerchief neatly.",
+                "How was the math test?",
+                "I am happy to take your donation; any amount will be greatly appreciated.",
+                "What was the person thinking when they discovered cow’s milk was fine for human consumption… and why did they do it in the first place!?",
+                "Should we start class now, or should we wait for everyone to get here?",
+                "This is a Japanese doll.",
+            };
+
+            if (FuzzySearch.FindSimilarItemsByWords(testPhrases, "He told us a very exciting adventure story")
+                    .FirstOrDefault() != "He told us a very exciting adventure story.") Assert.Fail();
+
+            if (FuzzySearch.FindSimilarItemsByWords(testPhrases, "I happy to your")
+                    .FirstOrDefault() != "I am happy to take your donation; any amount will be greatly appreciated.") Assert.Fail();
+
+            if (FuzzySearch.FindSimilarItemsByWords(testPhrases, "ike something, I’ll s")
+                    .FirstOrDefault() != "If I don’t like something, I’ll stay away from it.") Assert.Fail();
+
+            if (FuzzySearch.FindSimilarItemsByWords(testPhrases, "THIS A JAPANESE doLL")
+                    .FirstOrDefault() != "This is a Japanese doll.") Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void ShouldComputeFuzzyDistance()
+        {
+            if (FuzzySearch.Compute("1234567890abcdefgh", "1234565890abcdefgh") > 2) Assert.Fail();
+        }
     }
 
     public class TestUser
