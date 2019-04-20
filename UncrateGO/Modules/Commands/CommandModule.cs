@@ -176,7 +176,7 @@ namespace UncrateGo.Modules.Commands
                 });
 
                 //Auto delete message after 1 minute
-                await DeleteMessage(sentMessage, TimeSpan.FromMinutes(1));
+                DeleteMessage(sentMessage, TimeSpan.FromMinutes(1));
 
                 //Get user response
                 var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(1));
@@ -215,7 +215,7 @@ namespace UncrateGo.Modules.Commands
             });
 
             //Auto delete message after 5 minutes
-            await DeleteMessage(sentMessage, TimeSpan.FromMinutes(5));
+            DeleteMessage(sentMessage, TimeSpan.FromMinutes(5));
         }
 
 
@@ -270,7 +270,7 @@ namespace UncrateGo.Modules.Commands
             });
 
             //Auto delete message after 5 minutes
-            await DeleteMessage(sentMessage, TimeSpan.FromMinutes(5));
+            DeleteMessage(sentMessage, TimeSpan.FromMinutes(5));
         }
 
 
@@ -292,19 +292,23 @@ namespace UncrateGo.Modules.Commands
         /// <param name="sentMessage"></param>
         /// <param name="timeSpan"></param>
         /// <returns></returns>
-        private async Task DeleteMessage(IUserMessage sentMessage, TimeSpan timeSpan)
+        private static void DeleteMessage(IUserMessage sentMessage, TimeSpan timeSpan)
         {
-            await Task.Delay(timeSpan);
+            Task.Run(async () =>
+            {
+                await Task.Delay(timeSpan);
 
-            //This may throw an exception if the message has already been deleted
-            try
-            {
-                await sentMessage.DeleteAsync();
-            }
-            catch (Exception)
-            {
-            }
-            
+                //This may throw an exception if the message has already been deleted
+                try
+                {
+                    await sentMessage.DeleteAsync();
+                }
+                catch (Exception)
+                {
+                }
+            });
+
+
         }
     }
 }
