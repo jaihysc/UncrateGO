@@ -15,13 +15,14 @@ namespace UncrateGo.Modules.Csgo
         public static async Task BuyItemFromMarketAsync(SocketCommandContext context, string itemMarketHash)
         {
             var cosmeticData = CsgoDataHandler.GetCsgoCosmeticData();
+            string userName = UserInteraction.BoldUserName(context.Message.Author.ToString());
 
             //Get the weapon skin specified
             SkinDataItem marketSkin = FuzzyFindSkinDataItem(cosmeticData.ItemsList.Values.ToList(), itemMarketHash).FirstOrDefault();
             //Send error if skin does not exist
             if (marketSkin == null)
             {
-                await context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", `{itemMarketHash}` does not exist in the current market");
+                await context.Message.Channel.SendMessageAsync(userName + $", `{itemMarketHash}` does not exist in the current market");
                 return;
             }
 
@@ -33,7 +34,7 @@ namespace UncrateGo.Modules.Csgo
             SkinDataItem selectedMarketSkin = new SkinDataItem();
 
             //If skin does exist, get info on it
-            SkinDataItem weaponSkin = cosmeticData.ItemsList.Values.FirstOrDefault(s => s.Name == marketSkin.Name); //TODO METHOD
+            SkinDataItem weaponSkin = cosmeticData.ItemsList.Values.FirstOrDefault(s => s.Name == marketSkin.Name);
             if (weaponSkin != null)
             {
                 weaponSkinValue = Convert.ToInt64(weaponSkin.Price.AllTime.Average);
@@ -46,7 +47,7 @@ namespace UncrateGo.Modules.Csgo
             if (userCredits < weaponSkinValue)
             {
                 await context.Message.Channel.SendMessageAsync(
-                    $"{UserInteraction.BoldUserName(context)}, you do not have enough credits to buy `{selectedMarketSkin.Name}` | **{BankingHandler.CurrencyFormatter(weaponSkinValue)}** - **{BankingHandler.CurrencyFormatter(userCredits)}** ");
+                    $"{userName}, you do not have enough credits to buy `{selectedMarketSkin.Name}` | **{BankingHandler.CurrencyFormatter(weaponSkinValue)}** - **{BankingHandler.CurrencyFormatter(userCredits)}** ");
             }
             else
             {
@@ -55,11 +56,11 @@ namespace UncrateGo.Modules.Csgo
                 //Remove user credits
                 if (BankingHandler.AddCredits(userId, -weaponSkinValue))
                 {
-                    CsgoDataHandler.AddItemToUserInventory(context, selectedMarketSkin);
+                    CsgoDataHandler.AddItemToUserInventory(context.Message.Author.Id, selectedMarketSkin);
 
                     //Send receipt
                     await context.Channel.SendMessageAsync(
-                        UserInteraction.BoldUserName(context) + $", you bought `{selectedMarketSkin.Name}`" +
+                        userName + $", you bought `{selectedMarketSkin.Name}`" +
                         $" for **{BankingHandler.CurrencyFormatter(weaponSkinValue)} Credits**");
                 }
             }
@@ -72,6 +73,8 @@ namespace UncrateGo.Modules.Csgo
             var cosmeticData = CsgoDataHandler.GetCsgoCosmeticData();
             var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
+            string userName = UserInteraction.BoldUserName(context.Message.Author.ToString());
+
             List<UserSkinEntry> userItems = CsgoDataHandler.GetUserItems(context.Message.Author.Id);
 
             //Find user selected item, make sure it is owned by user
@@ -80,7 +83,7 @@ namespace UncrateGo.Modules.Csgo
             if (selectedSkinToSell == null)
             {
                 //Send error if user does not have item
-                await context.Channel.SendMessageAsync($"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**, you do not have `{itemMarketHash}` in your inventory");
+                await context.Channel.SendMessageAsync($"{userName}, you do not have `{itemMarketHash}` in your inventory");
                 return;
             }
 
@@ -104,7 +107,7 @@ namespace UncrateGo.Modules.Csgo
 
             //Send receipt
             await context.Channel.SendMessageAsync(
-                UserInteraction.BoldUserName(context) + $", you sold your `{selectedSkinToSell.MarketName}`" +
+                userName + $", you sold your `{selectedSkinToSell.MarketName}`" +
                 $" for **{BankingHandler.CurrencyFormatter(weaponSkinValue)} Credits**");
 
         }
@@ -116,11 +119,13 @@ namespace UncrateGo.Modules.Csgo
             //Find user selected item, make sure it is owned by user
             List<UserSkinEntry> selectedItemsToSell = FuzzyFindUserSkinEntries(userItems, itemMarketHash);
 
+            string userName = UserInteraction.BoldUserName(context.Message.Author.ToString());
+
             if (!selectedItemsToSell.Any())
             {
                 //Send error if user does not have item
                 await context.Channel.SendMessageAsync(
-                    $"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**, you do not have anything containing `{itemMarketHash}` in your inventory");
+                    $"{userName}, you do not have anything containing `{itemMarketHash}` in your inventory");
                 return;
             }
 
@@ -155,7 +160,7 @@ namespace UncrateGo.Modules.Csgo
 
                 //Send receipt
                 await context.Channel.SendMessageAsync(
-                    UserInteraction.BoldUserName(context) + $", you sold your \n`{soldWeaponsString}`" +
+                    userName + $", you sold your \n`{soldWeaponsString}`" +
                     $" for **{BankingHandler.CurrencyFormatter(weaponSkinValue)} Credits**");
             }
         }
@@ -167,12 +172,15 @@ namespace UncrateGo.Modules.Csgo
             var userSkin = CsgoDataHandler.GetUserSkinStorage();
 
             List<UserSkinEntry> userSkins = CsgoDataHandler.GetUserItems(context.Message.Author.Id);
+
+            string userName = UserInteraction.BoldUserName(context.Message.Author.ToString());
+
             //If player does not have items in inventory, send error
             if (!userSkins.Any())
             {
                 //Send error user does not have any items
-                await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) +
-                                                       $", your inventory is empty! Go unbox some with `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}open`");
+                await context.Channel.SendMessageAsync(userName +
+                                                       $", your inventory is empty! Go unbox some with `{GuildCommandPrefixManager.GetGuildCommandPrefix(context.Channel)}open`");
                 return;
             }
 
@@ -189,34 +197,8 @@ namespace UncrateGo.Modules.Csgo
             }
 
             //Send receipt
-            await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) +
+            await context.Channel.SendMessageAsync(userName +
                                                    $", you sold your inventory for **{BankingHandler.CurrencyFormatter(weaponSkinValue)} Credits**");
-        }
-
-        //Helper
-        private static long GetItemValue(List<UserSkinEntry> userSkins, CsgoCosmeticData csgoCosmeticData)
-        {
-            long weaponSkinValue = 0;
-            foreach (var item in userSkins)
-            {
-                try
-                {
-                    var itemData = csgoCosmeticData.ItemsList.Values.FirstOrDefault(s => s.Name == item.MarketName);
-
-                    if (itemData != null)
-                    {
-                        weaponSkinValue += Convert.ToInt64(itemData.Price.AllTime.Average);
-                    }
-                    
-                }
-                catch (Exception)
-                {
-                    EventLogger.LogMessage("Error trying to get item value at item | " + item, EventLogger.LogLevel.Error);
-                }
-                
-            }
-
-            return weaponSkinValue;
         }
 
         public static async Task DisplayCsgoItemStatistics(SocketCommandContext context, string filterString)
@@ -292,8 +274,6 @@ namespace UncrateGo.Modules.Csgo
         //Market
         public static PaginatedMessage GetCsgoMarketInventory(SocketCommandContext context, string filterString)
         {
-            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
-
             //Get skin data
             var cosmeticData = CsgoDataHandler.GetCsgoCosmeticData();
 
@@ -323,6 +303,8 @@ namespace UncrateGo.Modules.Csgo
                     filteredRootWeaponSkinPrice.Add(emote + " " + weaponSkinValue.ToString());
                 }
             }
+
+            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context.Channel);
             //Configure paginated message
             var paginationConfig = new PaginationConfig
             {
@@ -346,6 +328,32 @@ namespace UncrateGo.Modules.Csgo
             var pager = paginationManager.GeneratePaginatedMessage(filteredRootWeaponSkin, filteredRootWeaponSkinPrice, paginationConfig);
 
             return pager;
+        }
+
+        //Helper
+        private static long GetItemValue(List<UserSkinEntry> userSkins, CsgoCosmeticData csgoCosmeticData)
+        {
+            long weaponSkinValue = 0;
+            foreach (var item in userSkins)
+            {
+                try
+                {
+                    var itemData = csgoCosmeticData.ItemsList.Values.FirstOrDefault(s => s.Name == item.MarketName);
+
+                    if (itemData != null)
+                    {
+                        weaponSkinValue += Convert.ToInt64(itemData.Price.AllTime.Average);
+                    }
+
+                }
+                catch (Exception)
+                {
+                    EventLogger.LogMessage("Error trying to get item value at item | " + item, EventLogger.LogLevel.Error);
+                }
+
+            }
+
+            return weaponSkinValue;
         }
 
         //Filtering

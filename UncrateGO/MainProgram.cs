@@ -72,7 +72,7 @@ namespace UncrateGo
         private IServiceProvider _services;
 
         //Main
-        public async Task MainAsync()
+        private async Task MainAsync()
         {
             var config = new DiscordSocketConfig { MessageCacheSize = 500 };
 
@@ -87,7 +87,7 @@ namespace UncrateGo
 
             
             //Bot init
-            string tokenPath = FileAccessManager.GetFileLocation("BotToken.txt");
+            string tokenPath = FileManager.GetFileLocation("BotToken.txt");
             if (!File.Exists(tokenPath))
             {
                 EventLogger.LogMessage("No BotToken.txt found, bot will not start", EventLogger.LogLevel.Critical);
@@ -154,7 +154,7 @@ namespace UncrateGo
             var context = new SocketCommandContext(_client, message);
 
             //Ignore commands that are not using the prefix or mentioning the bot
-            string commandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+            string commandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context.Channel);
 
             if (!message.HasStringPrefix(commandPrefix, ref argPos) && !(message.Content == ("<@" + context.Client.CurrentUser.Id.ToString() + ">") || message.Content == ("<@!" + context.Client.CurrentUser.Id.ToString() + ">")) ||
                 message.Author.IsBot)
@@ -166,7 +166,7 @@ namespace UncrateGo
             //Show prefix help if user mentions bot
             if (message.Content == ("<@" + context.Client.CurrentUser.Id.ToString() + ">") || message.Content == ("<@!" + context.Client.CurrentUser.Id.ToString() + ">"))
             {
-                await context.Channel.SendMessageAsync($"Current guild prefix: `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}` | Get help with `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help`");
+                await context.Channel.SendMessageAsync($"Current guild prefix: `{commandPrefix}` | Get help with `{commandPrefix}help`");
                 return;
             }
 
@@ -180,19 +180,24 @@ namespace UncrateGo
                 {
                     //Find similar commands
                     var commandHelpDefinitionStorage = UserHelpHandler.GetHelpMenuCommands();
-                    string similarItemsString = UserHelpHandler.FindSimilarCommands(
-                        commandHelpDefinitionStorage.CommandHelpEntry.Select(i => i.CommandName).ToList(),
-                        message.ToString().Substring(GuildCommandPrefixManager.GetGuildCommandPrefix(context).Length + 1));
+
+                    string similarItemsString = "";
+                    if (message.ToString().Length > commandPrefix.Length)
+                    {
+                        similarItemsString = UserHelpHandler.FindSimilarCommands(
+                            commandHelpDefinitionStorage.CommandHelpEntry.Select(i => i.CommandName).ToList(),
+                            message.ToString().Substring(commandPrefix.Length + 1));
+                    }
 
                     //If no similar matches are found, send nothing
                     if (string.IsNullOrEmpty(similarItemsString))
                     {
-                        await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands");
+                        await context.Channel.SendMessageAsync($"Invalid command, use `{commandPrefix}help` for a list of commands");
                     }
                     //If similar matches are found, send suggestions
                     else
                     {
-                        await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands. Did you mean: \n {similarItemsString}");
+                        await context.Channel.SendMessageAsync($"Invalid command, use `{commandPrefix}help` for a list of commands. Did you mean: \n {similarItemsString}");
                     }
                     
                 }
@@ -203,8 +208,7 @@ namespace UncrateGo
                     //Search 10 spaces up for the command in commandHelpDescription
                     string userCommand = "[command]";
 
-                    string prefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
-                    string str = message.Content.ToLower().Substring(prefix.Length);
+                    string str = message.Content.ToLower().Substring(commandPrefix.Length);
 
                     string[] tokens = str.Split(' ');
 
@@ -298,7 +302,7 @@ namespace UncrateGo
             FlushAllData(null);
 
             //Write a crashlog to file
-            FileAccessManager.WriteStringToFile(e.Message + e.StackTrace, false, FileAccessManager.GetFileLocation("crashlog.txt"));
+            FileManager.WriteStringToFile(e.Message + e.StackTrace, false, FileManager.GetFileLocation("crashlog.txt"));
         }
 
         //https://stackoverflow.com/questions/13656846/how-to-programmatic-disable-c-sharp-console-applications-quick-edit-mode

@@ -26,7 +26,7 @@ namespace UncrateGo.Core
 
             try
             {
-                FileAccessManager.WriteStringToFile(path, true, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\Paths.txt");
+                FileManager.WriteStringToFile(path, true, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\Paths.txt");
 
                 Console.WriteLine();
                 Console.WriteLine("Setup is complete");

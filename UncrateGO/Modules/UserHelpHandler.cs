@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace UncrateGo.Modules
 {
-    public class UserHelpHandler : ModuleBase<SocketCommandContext>
+    public static class UserHelpHandler
     {
         private static HelpMenuCommands _helpMenuCommands;
 
         public static async Task DisplayHelpMenu(SocketCommandContext context)
         {
-            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context.Channel);
 
             //https://leovoel.github.io/embed-visualizer/
             var embedBuilder = new EmbedBuilder()
@@ -43,7 +43,7 @@ namespace UncrateGo.Modules
 
         public static async Task DisplayCommandHelpMenu(SocketCommandContext context, string inputCommand)
         {
-            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context.Channel);
 
             //Get command help list from storage
             var commandHelpDefinitionStorage = GetHelpMenuCommands();
@@ -116,7 +116,7 @@ namespace UncrateGo.Modules
             //Read from file if unassigned
             if (_helpMenuCommands == null)
             {
-                var tempHelpMenuCommands = XmlManager.FromXmlFile<HelpMenuCommands>(FileAccessManager.GetFileLocation("CommandHelpDescription.xml"));
+                var tempHelpMenuCommands = XmlManager.FromXmlFile<HelpMenuCommands>(FileManager.GetFileLocation("CommandHelpDescription.xml"));
 
                 //Create new help menu commands if null
                 if (tempHelpMenuCommands == null)

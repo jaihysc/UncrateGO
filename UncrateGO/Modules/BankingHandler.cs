@@ -43,13 +43,15 @@ namespace UncrateGo.Modules
         {
             ulong userId = context.Message.Author.Id;
             long userCredits = UserDataManager.GetUserCredit(userId);
+            string userName = UserInteraction.BoldUserName(context.Message.Author.ToString());
+
             if (amount <= 0)
             {
-                await context.Message.Author.SendMessageAsync(UserInteraction.BoldUserName(context) + ", you must send **1 or more** Credits");
+                await context.Message.Author.SendMessageAsync(userName + ", you must send **1 or more** Credits");
             }
             else if (userCredits - amount < 0)
             {
-                await context.Message.Author.SendMessageAsync(UserInteraction.BoldUserName(context) + ", you do not have enough money to send || **" + CurrencyFormatter(userCredits) + " Credits**");
+                await context.Message.Author.SendMessageAsync(userName + ", you do not have enough money to send || **" + CurrencyFormatter(userCredits) + " Credits**");
             }
             else
             {

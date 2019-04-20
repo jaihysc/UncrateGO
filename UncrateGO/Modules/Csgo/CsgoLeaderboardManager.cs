@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -10,7 +9,7 @@ namespace UncrateGo.Modules.Csgo
 {
     public static class CsgoLeaderboardManager
     {
-        public enum CaseCategory
+        private enum CaseCategory
         {
             Case,
             Drop,
@@ -18,7 +17,7 @@ namespace UncrateGo.Modules.Csgo
             Sticker
         }
 
-        public enum ItemCategory
+        private enum ItemCategory
         {
             Default,
             Special,
@@ -37,22 +36,22 @@ namespace UncrateGo.Modules.Csgo
             {
                 case StatItemType.Sticker:
                     IncrementCaseStatTracker(userId, CaseCategory.Sticker);
-                    IncrementItemStatTracker(userId, itemData, ItemCategory.Sticker);
+                    IncrementItemStatTracker(userId, ItemCategory.Sticker);
                     break;
                 case StatItemType.Souvenir:
                     IncrementCaseStatTracker(userId, CaseCategory.Souvenir);
-                    IncrementItemStatTracker(userId, itemData, ItemCategory.Default);
+                    IncrementItemStatTracker(userId, ItemCategory.Default, itemData);
                     break;
                 case StatItemType.Case:
                     IncrementCaseStatTracker(userId, CaseCategory.Case);
-                    IncrementItemStatTracker(userId, itemData, ItemCategory.Default);
+                    IncrementItemStatTracker(userId, ItemCategory.Default, itemData);
                     break;
                 case StatItemType.Drop:
                     IncrementCaseStatTracker(userId, CaseCategory.Drop);
-                    IncrementItemStatTracker(userId, itemData, ItemCategory.Default);
+                    IncrementItemStatTracker(userId, ItemCategory.Default, itemData);
                     break;
                 case StatItemType.Other:
-                    IncrementItemStatTracker(userId, itemData, ItemCategory.Other);
+                    IncrementItemStatTracker(userId, ItemCategory.Other);
                     break;
             }
         }
@@ -66,81 +65,97 @@ namespace UncrateGo.Modules.Csgo
             Other
         }
 
-        public static void IncrementItemStatTracker(ulong userId, ItemData itemData,
-            ItemCategory itemCategory)
+        /// <summary>
+        /// Increments the item stat tracker, itemData is ignored if itemCategory is not default
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="itemCategory"></param>
+        /// <param name="itemData"></param>
+        private static void IncrementItemStatTracker(ulong userId,
+            ItemCategory itemCategory, ItemData itemData = null)
         {
             var userCaseStats = UserDataManager.GetUserCsgoStatsStorage(userId);
 
-            //If using default category
-            if (itemCategory == ItemCategory.Default)
+            if (userCaseStats != null)
             {
-                switch (itemData.Rarity)
+                //If using default category
+                if (itemCategory == ItemCategory.Default && itemData != null)
                 {
-                    case Rarity.ConsumerGrade:
-                        userCaseStats.ConsumerGrade++;
-                        break;
-                    case Rarity.IndustrialGrade:
-                        userCaseStats.IndustrialGrade++;
-                        break;
-                    case Rarity.MilSpecGrade:
-                        userCaseStats.MilSpecGrade++;
-                        break;
-                    case Rarity.Restricted:
-                        userCaseStats.Restricted++;
-                        break;
-                    case Rarity.Classified:
-                        userCaseStats.Classified++;
-                        break;
-                }
+                    switch (itemData.Rarity)
+                    {
+                        case Rarity.ConsumerGrade:
+                            userCaseStats.ConsumerGrade++;
+                            break;
+                        case Rarity.IndustrialGrade:
+                            userCaseStats.IndustrialGrade++;
+                            break;
+                        case Rarity.MilSpecGrade:
+                            userCaseStats.MilSpecGrade++;
+                            break;
+                        case Rarity.Restricted:
+                            userCaseStats.Restricted++;
+                            break;
+                        case Rarity.Classified:
+                            userCaseStats.Classified++;
+                            break;
+                    }
 
-                //Increment knife or covert counter
-                if (itemData.Rarity == Rarity.Covert && itemData.BlackListWeaponType == WeaponType.Knife)
-                    userCaseStats.Covert++;
-                else if (itemData.Rarity == Rarity.Covert && itemData.WeaponType == WeaponType.Knife)
-                    userCaseStats.Special++;
-            }
-            //If not
-            else
-            {
-                switch (itemCategory)
-                {
-                    case ItemCategory.Special:
+                    //Increment knife or covert counter based on blackList and weaponType TODO this can be simplified to a boolean
+                    if (itemData.Rarity == Rarity.Covert && itemData.BlackListWeaponType == WeaponType.Knife)
+                        userCaseStats.Covert++;
+                    else if (itemData.Rarity == Rarity.Covert && itemData.WeaponType == WeaponType.Knife)
                         userCaseStats.Special++;
-                        break;
-                    case ItemCategory.Sticker:
-                        userCaseStats.Stickers++;
-                        break;
-                    case ItemCategory.Other:
-                        userCaseStats.Other++;
-                        break;
                 }
+                else
+                {
+                    switch (itemCategory)
+                    {
+                        case ItemCategory.Special:
+                            userCaseStats.Special++;
+                            break;
+                        case ItemCategory.Sticker:
+                            userCaseStats.Stickers++;
+                            break;
+                        case ItemCategory.Other:
+                            userCaseStats.Other++;
+                            break;
+                    }
+                }
+
+                UserDataManager.SetUserCsgoStatsStorage(userId, userCaseStats);
+                return;
             }
 
-            //Set stats back to master list
-            UserDataManager.SetUserCsgoStatsStorage(userId, userCaseStats);
+            EventLogger.LogMessage($"Unable to increment item stats tracker with userId {userId}", EventLogger.LogLevel.Warning);
         }
 
-        public static void IncrementCaseStatTracker(ulong userId, CaseCategory caseCategory)
+        private static void IncrementCaseStatTracker(ulong userId, CaseCategory caseCategory)
         {
             var userCaseStats = UserDataManager.GetUserCsgoStatsStorage(userId);
 
-            switch (caseCategory)
+            if (userCaseStats != null)
             {
-                case CaseCategory.Case:
-                    userCaseStats.CasesOpened++;
-                    break;
-                case CaseCategory.Drop:
-                    userCaseStats.DropsOpened++;
-                    break;
-                case CaseCategory.Souvenir:
-                    userCaseStats.SouvenirsOpened++;
-                    break;
-                case CaseCategory.Sticker:
-                    userCaseStats.StickersOpened++;
-                    break;
+                switch (caseCategory)
+                {
+                    case CaseCategory.Case:
+                        userCaseStats.CasesOpened++;
+                        break;
+                    case CaseCategory.Drop:
+                        userCaseStats.DropsOpened++;
+                        break;
+                    case CaseCategory.Souvenir:
+                        userCaseStats.SouvenirsOpened++;
+                        break;
+                    case CaseCategory.Sticker:
+                        userCaseStats.StickersOpened++;
+                        break;
+                }
+
+                UserDataManager.SetUserCsgoStatsStorage(userId, userCaseStats);
+                return;
             }
 
-            UserDataManager.SetUserCsgoStatsStorage(userId, userCaseStats);
+            EventLogger.LogMessage($"Unable to increment case stats tracker with userId {userId}", EventLogger.LogLevel.Warning);
         }
 
         /// <summary>
@@ -201,7 +216,7 @@ namespace UncrateGo.Modules.Csgo
                 .WithAuthor(author =>
                 {
                     author
-                        .WithName(UserInteraction.UserName(context) + " statistics")
+                        .WithName(UserInteraction.UserName(context.Message.Author.ToString()) + " statistics")
                         .WithIconUrl(context.Message.Author.GetAvatarUrl());
                 })
                 .AddField("\u200b", string.Join("\n", statFields), true)
@@ -233,13 +248,9 @@ namespace UncrateGo.Modules.Csgo
                 foreach (var user in userData.UserInfo.Values)
                     if (user.UserCsgoStatsStorage != null)
                     {
-                        //Cases opened
                         FindEntryLeader(user, user.UserCsgoStatsStorage.CasesOpened, casesOpened);
-                        //Souvenirs opened
                         FindEntryLeader(user, user.UserCsgoStatsStorage.SouvenirsOpened, souvenirsOpened);
-                        //Drops opened
                         FindEntryLeader(user, user.UserCsgoStatsStorage.DropsOpened, dropsOpened);
-                        //StickersOpened
                         FindEntryLeader(user, user.UserCsgoStatsStorage.StickersOpened, sticksOpened);
                     }
 

@@ -9,25 +9,24 @@ namespace UncrateGo.Core
 {
     public static class GuildCommandPrefixManager
     {
-        private static readonly string DefaultCommandPrefix = "~";
+        private const string DefaultCommandPrefix = "~";
         private static CommandPrefix _guildPrefixDictionary = new CommandPrefix();
 
         /// <summary>
         /// Returns the command prefix for the current guild message is sent in
         /// </summary>
-        /// <param name="context"></param>
         /// <returns></returns>
-        public static string GetGuildCommandPrefix(SocketCommandContext context)
+        public static string GetGuildCommandPrefix(ISocketMessageChannel channel)
         {
             //Find guild id
-            if (context.Channel is SocketGuildChannel chnl)
+            if (channel is SocketGuildChannel chnl)
             {
                 var guildId = chnl.Guild.Id;
 
                 //Just in case the file is null, it will use default
                 if (_guildPrefixDictionary == null || _guildPrefixDictionary.GuildPrefixes == null)
                 {
-                    _guildPrefixDictionary = JsonConvert.DeserializeObject<CommandPrefix>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("GuildCommandPrefix.json")));
+                    _guildPrefixDictionary = JsonConvert.DeserializeObject<CommandPrefix>(FileManager.ReadFromFile(FileManager.GetFileLocation("GuildCommandPrefix.json")));
 
                     if (_guildPrefixDictionary == null || _guildPrefixDictionary.GuildPrefixes == null)
                     {
@@ -36,7 +35,7 @@ namespace UncrateGo.Core
 
                         //Create dictionary to file
                         string newJson = JsonConvert.SerializeObject(_guildPrefixDictionary);
-                        FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
+                        FileManager.WriteStringToFile(newJson, true, FileManager.GetFileLocation("GuildCommandPrefix.json"));
                     }              
                 }
 
@@ -54,9 +53,12 @@ namespace UncrateGo.Core
             return "~"; //Return the default prefix if it cannot get the guild prefix
         }
 
+        /// <summary>
+        /// Retrieves all the guild command prefixes from file
+        /// </summary>
         public static void PopulateGuildCommandPrefix()
         {
-            _guildPrefixDictionary = JsonConvert.DeserializeObject<CommandPrefix>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("GuildCommandPrefix.json")));
+            _guildPrefixDictionary = JsonConvert.DeserializeObject<CommandPrefix>(FileManager.ReadFromFile(FileManager.GetFileLocation("GuildCommandPrefix.json")));
 
             if (_guildPrefixDictionary == null || _guildPrefixDictionary.GuildPrefixes == null)
             {
@@ -66,7 +68,7 @@ namespace UncrateGo.Core
 
                 //Create dictionary to file
                 string newJson = JsonConvert.SerializeObject(_guildPrefixDictionary);
-                FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
+                FileManager.WriteStringToFile(newJson, true, FileManager.GetFileLocation("GuildCommandPrefix.json"));
             }
         }
 
@@ -78,8 +80,7 @@ namespace UncrateGo.Core
         public static void ChangeGuildCommandPrefix(SocketCommandContext context, string newPrefix)
         {
             //Find guild id
-            var chnl = context.Channel as SocketGuildChannel;
-            if (chnl != null)
+            if (context.Channel is SocketGuildChannel chnl)
             {
                 var guildId = chnl.Guild.Id;
 
@@ -107,7 +108,7 @@ namespace UncrateGo.Core
                 //Write new dictionary to file
                 var tempGuildPrefixDictionary = _guildPrefixDictionary;
                 string json = JsonConvert.SerializeObject(tempGuildPrefixDictionary);
-                FileAccessManager.WriteStringToFile(json, true, FileAccessManager.GetFileLocation("GuildCommandPrefix.json"));
+                FileManager.WriteStringToFile(json, true, FileManager.GetFileLocation("GuildCommandPrefix.json"));
             }
             catch (Exception)
             {

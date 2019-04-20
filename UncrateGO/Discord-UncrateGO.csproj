@@ -135,13 +135,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\GuildCommandPrefixManager.cs" />
-    <Compile Include="Core\FileAccessManager.cs" />
+    <Compile Include="Core\FileManager.cs" />
     <Compile Include="Core\FuzzySearch.cs" />
     <Compile Include="Core\PaginationManager.cs" />
     <Compile Include="Core\UnicodeManager.cs" />
     <Compile Include="Core\XmlManager.cs" />
     <Compile Include="Modules\Csgo\CsgoDataUpdater.cs" />
-    <Compile Include="Modules\Csgo\CsgoLeaderboardsManager.cs" />
+    <Compile Include="Modules\Csgo\CsgoLeaderboardManager.cs" />
     <Compile Include="Modules\Csgo\ItemDropProcessing.cs" />
     <Compile Include="Modules\DiscordBotsListUpdater.cs" />
     <Compile Include="Modules\UserInteraction.cs" />

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Discord.Commands;
 using Discord.WebSocket;
 using System.Linq;
@@ -9,21 +8,24 @@ using UncrateGo.Core;
 
 namespace UncrateGo.Modules
 {
-    public class UserInteraction
+    public static class UserInteraction
     {
         /// <summary>
-        /// Returns a bolded user name of specified user
+        /// Returns a bold user name of specified user with numbers at the end
         /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        public static string BoldUserName(SocketCommandContext context)
+        /// <returns>ABC#1234 => ABC</returns>
+        public static string BoldUserName(string userString)
         {
-            return $"**{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}**";
+            if (userString == null) return "";
+
+            return $"**{userString.Substring(0, userString.Length - 5)}**";
         }
 
-        public static string UserName(SocketCommandContext context)
+        public static string UserName(string userString)
         {
-            return $"{context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5)}";
+            if (userString == null) return "";
+
+            return $"{userString.Substring(0, userString.Length - 5)}";
         }
 
         public static async Task SendFirstTimeHelpMenuAsync(SocketGuild socketGuild)

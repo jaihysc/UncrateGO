@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UncrateGo.Core;
 using UncrateGo.Modules;
@@ -186,7 +188,51 @@ namespace Discord_UncrateGoTests
             }
         }
     }
-    
+
+    [TestClass()]
+    public class CsgoLeaderboardValidationTests
+    {
+        [TestMethod()]
+        public void ShouldIncrementStatsTracker()
+        {
+            ulong testUserId = TestUser.TestUserId;
+
+            CsgoLeaderboardManager.IncrementStatsCounter(testUserId, CsgoLeaderboardManager.StatItemType.Case, new ItemData()
+            {
+                WeaponType = WeaponType.Rifle,
+                BlackListWeaponType = WeaponType.Knife,
+                Rarity = Rarity.Covert
+            });
+            CsgoLeaderboardManager.IncrementStatsCounter(testUserId, CsgoLeaderboardManager.StatItemType.Case, new ItemData()
+            {
+                WeaponType = WeaponType.Knife,
+                Rarity = Rarity.Covert
+            });
+            CsgoLeaderboardManager.IncrementStatsCounter(testUserId, CsgoLeaderboardManager.StatItemType.Drop, new ItemData()
+            {
+                WeaponType = WeaponType.Pistol,
+                Rarity = Rarity.BaseGrade
+            });
+            CsgoLeaderboardManager.IncrementStatsCounter(testUserId, CsgoLeaderboardManager.StatItemType.Drop, new ItemData()
+            {
+                WeaponType = WeaponType.Rifle,
+                Rarity = Rarity.MilSpecGrade
+            });
+
+            CsgoLeaderboardManager.IncrementStatsCounter(17923639926321631692, CsgoLeaderboardManager.StatItemType.Case, new ItemData()
+            {
+                WeaponType = WeaponType.Rifle,
+                Rarity = Rarity.MilSpecGrade
+            });
+        }
+
+        [TestMethod()]
+        public void ShouldGetStatisticsLeader()
+        {
+            CsgoLeaderboardManager.GetStatisticsLeader(null);
+        }
+    }
+
     [TestClass()]
     public class CoreValidationTests
     {
@@ -229,6 +275,143 @@ namespace Discord_UncrateGoTests
         public void ShouldComputeFuzzyDistance()
         {
             if (FuzzySearch.Compute("1234567890abcdefgh", "1234565890abcdefgh") > 2) Assert.Fail();
+        }
+    }
+
+    [TestClass()]
+    public class FileManagerValidationTests
+    {
+        [TestMethod()]
+        public void ShouldWriteToFileNoOverwrite()
+        {
+            string filePath = Directory.GetCurrentDirectory() + @"\noOverwritePls.txt";
+
+            //Create the file
+            using (StreamWriter file = new StreamWriter(filePath, true))
+            {
+                file.WriteLine("Line 1!!--");
+            }
+
+            //Write and hopefully overwrite
+            FileManager.WriteStringToFile("overwrite", false, filePath);
+
+            using (StreamReader r = new StreamReader(filePath))
+            {
+                if (!r.ReadToEnd().Contains("Line 1!!--"))
+                {
+                    File.Delete(filePath);
+                    Assert.Fail("Overrode existing content");
+                }
+            }
+
+            //Delete the test file
+            File.Delete(filePath);
+        }
+
+        [TestMethod()]
+        public void ShouldWriteToFileOverwrite()
+        {
+            string filePath = Directory.GetCurrentDirectory() + @"\overwriteThis.txt";
+
+            //Create the file
+            using (StreamWriter file = new StreamWriter(filePath, true))
+            {
+                file.WriteLine("Line 1!!--");
+            }
+
+            //Write and hopefully overwrite
+            FileManager.WriteStringToFile("overwrite", true, filePath);
+
+            using (StreamReader r = new StreamReader(filePath))
+            {
+                if (r.ReadToEnd().Contains("Line 1!!--"))
+                {
+                    File.Delete(filePath);
+                    Assert.Fail("Did not overwrite existing content");
+                }
+            }
+
+            //Delete the test file
+            File.Delete(filePath);
+        }
+
+        [TestMethod()]
+        public void ShouldNotReadFromFile()
+        {
+            FileManager.ReadFromFile(null);
+        }
+
+        [TestMethod()]
+        public void ShouldReadFromFile()
+        {
+            //Make sure the paths file exists!
+            string result = FileManager.ReadFromFile(Directory.GetCurrentDirectory() + @"\Paths.txt");
+
+            if (string.IsNullOrWhiteSpace(result)) Assert.Fail("Failed to read from file");
+        }
+
+        [TestMethod()]
+        public void ShouldCreateFileAndRead()
+        {
+            string filePath = Directory.GetCurrentDirectory() + @"\aNon-existantFile.txt";
+
+            string result = FileManager.ReadFromFile(filePath);
+
+            if (result != "")
+            {
+                Assert.Fail("Did not read file");
+            }
+
+            if (!File.Exists(filePath))
+            {
+                Assert.Fail("Did not create file");
+            }
+
+            //Delete the test file
+            File.Delete(filePath);
+        }
+
+        [TestMethod()]
+        public void ShouldGetFileLocation()
+        {
+            FileManager.GetFileLocation("anonexistantfile.txtxt");
+            FileManager.GetFileLocation(null);
+
+            string[] fileLocations = File.ReadAllLines(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\Paths.txt");
+
+            if (FileManager.GetFileLocation("selectedCases.json") != fileLocations.FirstOrDefault() + "selectedCases.json")
+            {
+                Assert.Fail("Found file location does not line up");
+            }
+        }
+    }
+
+    [TestClass()]
+    public class UserInteractionValidationTests
+    {
+        [TestMethod()]
+        public void ShouldBoldUserName()
+        {
+            if (UserInteraction.BoldUserName("This quick brown fox jumped over the lazy dog#1234") !=
+                "**This quick brown fox jumped over the lazy dog**")
+            {
+                Assert.Fail();
+            }
+
+            UserInteraction.BoldUserName(null);
+            UserInteraction.BoldUserName("aaaaaaaaa6666666666aaaaaaaaaaaaaaaaaaaaaaaa r2 12dqefgqwludguwgdkwrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaattttttttttttttttttttthhhhhhhhhhhhhhhhhhhh");
+        }
+
+        [TestMethod()]
+        public void ShouldReturnUserName()
+        {
+            if (UserInteraction.UserName("This quick brown fox jumped over the lazy dog#1234") !=
+                "This quick brown fox jumped over the lazy dog")
+            {
+                Assert.Fail();
+            }
+            UserInteraction.UserName(null);
+            UserInteraction.UserName("aaaaaaaaa6666666666aaaaaaaaaaaaaaaaaaaaaaaa r2 12dqefgqwludguwgdkwrrrrrrrrrrrrrrrrrrrrrrrrraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaattttttttttttttttttttthhhhhhhhhhhhhhhhhhhh");
         }
     }
 

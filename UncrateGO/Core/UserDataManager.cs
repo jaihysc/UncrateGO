@@ -36,7 +36,7 @@ namespace UncrateGo.Core
         {
             if (_userStorage == null)
             {
-                var json = FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("UserStorage.json"));
+                var json = FileManager.ReadFromFile(FileManager.GetFileLocation("UserStorage.json"));
                 var deserializedUserStorage = JsonConvert.DeserializeObject<UserStorage>(json);
 
                 //In case the user storage file is blank
@@ -140,7 +140,7 @@ namespace UncrateGo.Core
                 //Create a copy to write so that we don't get an error if it was modified mid write
                 var tempUserStorage = _userStorage;
                 string jsonToWrite = JsonConvert.SerializeObject(tempUserStorage);
-                FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("UserStorage.json"));
+                FileManager.WriteStringToFile(jsonToWrite, true, FileManager.GetFileLocation("UserStorage.json"));
             }
             catch (Exception)
             {

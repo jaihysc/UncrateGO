@@ -1,12 +1,11 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
 
 namespace UncrateGo.Core
 {
-    internal class EventLogger : ModuleBase<SocketCommandContext>
+    internal static class EventLogger
     {
         
         public static Task LogAsync(LogMessage message)
@@ -71,11 +70,9 @@ namespace UncrateGo.Core
         public static Task LogUserMessageAsync(SocketMessage msg)
         {
             //Log user message to file
-            var chnl = msg.Channel as SocketGuildChannel;
-
-            if (chnl != null)
+            if (msg.Channel is SocketGuildChannel chnl)
             {
-                Console.Write($"{DateTime.Now,-19} [    Log] {chnl.Guild.Name} ||  {msg.Channel} - {msg.Author}: ");
+                Console.Write($"{DateTime.Now,-19} [    Log] {chnl.Guild.Name} | {msg.Channel} - {msg.Author}: ");
             }
             else
             {

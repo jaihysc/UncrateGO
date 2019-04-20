@@ -2,9 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using UncrateGo.Core;
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace UncrateGo.Modules.Csgo
 {
@@ -15,7 +13,7 @@ namespace UncrateGo.Modules.Csgo
 
         public static PaginatedMessage DisplayUserCsgoInventory(SocketCommandContext context)
         {
-            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context.Channel);
 
             //Reset fields
             _embedFieldsMaster = new List<string>();

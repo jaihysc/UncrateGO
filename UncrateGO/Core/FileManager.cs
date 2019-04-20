@@ -6,12 +6,11 @@ using System.Text;
 
 namespace UncrateGo.Core
 {
-    public static class FileAccessManager
+    public static class FileManager
     {
         //This must be set prior to using the methods in this class
         private static readonly string RootLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-        
         public static string ReadFromFile(string filePath)
         {
             try
@@ -23,6 +22,8 @@ namespace UncrateGo.Core
                     {
                         file.WriteLine("");
                     }
+
+                    return "";
                 }
 
                 using (StreamReader r = new StreamReader(filePath))
@@ -37,8 +38,6 @@ namespace UncrateGo.Core
             }
         }
         
-
-            
         public static void WriteStringToFile(string stringToWrite, bool overwriteExistingContent, string filePath)
         {
             try
@@ -63,11 +62,13 @@ namespace UncrateGo.Core
 
         }
         
-
+        /// <summary>
+        /// Looks through paths.txt for a path to the specified file
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         public static string GetFileLocation(string fileName)
         {
-            string returnFileLocation = "";
-
             try
             {
                 //Read root path file
@@ -75,14 +76,13 @@ namespace UncrateGo.Core
 
                 //Check path file for specified name of txt file
                 //E.G "UserCredits.txt"
-                returnFileLocation = fileLocations.FirstOrDefault() + fileName;
+                return fileLocations.FirstOrDefault() + fileName;
             }
             catch (Exception)
             {
                 EventLogger.LogMessage("Unable to get file location " + fileName, EventLogger.LogLevel.Error);
+                return "";
             }
-
-            return returnFileLocation;
         }
     }
 }

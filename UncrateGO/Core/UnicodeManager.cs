@@ -49,9 +49,8 @@ namespace UncrateGo.Core
             for (int i = 0; i < str.Length; i++)
             {
                 if ((str[i] >= '0' && str[i] <= '9')
-                    || (str[i] >= 'A' && str[i] <= 'z'
-                        || (str[i] == '.' || str[i] == '_'))
-                            || str[i] == ' ')
+                    || (str[i] >= 'A' && str[i] <= 'z')
+                        || str[i] == ' ')
                 {
                     sb.Append(str[i]);
                 }

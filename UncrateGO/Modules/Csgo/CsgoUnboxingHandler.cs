@@ -6,11 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord.WebSocket;
 using Newtonsoft.Json;
 
 namespace UncrateGo.Modules.Csgo
 {
-    public class CsgoUnboxingHandler : InteractiveBase<SocketCommandContext>
+    public static class CsgoUnboxingHandler
     {
         public static Dictionary<ulong, string> UserSelectedCase = new Dictionary<ulong, string>();
         private static CsgoContainers _csgoContainers;
@@ -21,7 +22,7 @@ namespace UncrateGo.Modules.Csgo
         public static void GetUserSelectedCase()
         {
             string readCaseDataFromFile =
-                FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("selectedCases.json"));
+                FileManager.ReadFromFile(FileManager.GetFileLocation("selectedCases.json"));
 
             if (!string.IsNullOrWhiteSpace(readCaseDataFromFile))
             {
@@ -38,7 +39,7 @@ namespace UncrateGo.Modules.Csgo
 
                 var model = new Dictionary<ulong, string>();
                 string newJson = JsonConvert.SerializeObject(model);
-                FileAccessManager.WriteStringToFile(newJson, true, FileAccessManager.GetFileLocation("selectedCases.json"));
+                FileManager.WriteStringToFile(newJson, true, FileManager.GetFileLocation("selectedCases.json"));
             }
         }
 
@@ -49,7 +50,7 @@ namespace UncrateGo.Modules.Csgo
                 //Create a copy to write so that we don't get an error if it was modified mid write
                 Dictionary<ulong, string> tempUserSelectedCaseData = UserSelectedCase;
                 string jsonToWrite = JsonConvert.SerializeObject(tempUserSelectedCaseData);
-                FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("selectedCases.json"));
+                FileManager.WriteStringToFile(jsonToWrite, true, FileManager.GetFileLocation("selectedCases.json"));
             }
             catch (Exception)
             {
@@ -61,7 +62,7 @@ namespace UncrateGo.Modules.Csgo
         {
             if (_csgoContainers == null)
             {
-                var tempCsgoContainers = XmlManager.FromXmlFile<CsgoContainers>(FileAccessManager.GetFileLocation("skinCases.xml"));
+                var tempCsgoContainers = XmlManager.FromXmlFile<CsgoContainers>(FileManager.GetFileLocation("skinCases.xml"));
 
                 if (tempCsgoContainers == null)
                 {
@@ -100,7 +101,7 @@ namespace UncrateGo.Modules.Csgo
             var skinItem = ItemDropProcessing.GetItem(result, CsgoDataHandler.CsgoCosmeticData, context, false);
 
             //Add item to user file inventory
-            CsgoDataHandler.AddItemToUserInventory(context, skinItem);
+            CsgoDataHandler.AddItemToUserInventory(context.Message.Author.Id, skinItem);
 
             //Send item into
             await SendOpenedItemInfo(context, skinItem, Convert.ToInt64(skinItem.Price.AllTime.Average), UnboxType.CaseUnboxing);
@@ -120,7 +121,7 @@ namespace UncrateGo.Modules.Csgo
             var skinItem = ItemDropProcessing.GetItem(rarity, CsgoDataHandler.CsgoCosmeticData, context, true);
 
             //Add item to user file inventory
-            CsgoDataHandler.AddItemToUserInventory(context, skinItem);
+            CsgoDataHandler.AddItemToUserInventory(context.Message.Author.Id, skinItem);
 
             //Send item into
             await SendOpenedItemInfo(context, skinItem, Convert.ToInt64(skinItem.Price.AllTime.Average), UnboxType.ItemDrop);
@@ -186,14 +187,14 @@ namespace UncrateGo.Modules.Csgo
     public static class CsgoCaseSelectionHandler
     {
         /// <summary>
-        /// Selects the appropriate cs go container to open, user replies with a number corrosponding to the case
+        /// Selects the appropriate cs go container to open, user replies with a number corresponding to the case
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="channel"></param>
         /// <param name="filter"></param>
         /// <returns></returns>
-        public static PaginatedMessage ShowPossibleCases(SocketCommandContext context, string filter = null)
+        public static PaginatedMessage ShowPossibleCases(ISocketMessageChannel channel, string filter = null)
         {
-            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(channel);
 
             //Create pagination entries
             var leftCounter = new List<string>();
@@ -257,8 +258,10 @@ namespace UncrateGo.Modules.Csgo
 
             List<Container> containers = CsgoUnboxingHandler.GetCsgoContainers().Containers.Where(c => c.Name != null).ToList();
 
+            string userName = UserInteraction.BoldUserName(context.Message.Author.ToString());
+
             //Try to turn user input to string
-            Container userSelectedContainer = new Container();
+            Container userSelectedContainer;
             try
             {
                 int userInput = int.Parse(input);
@@ -268,7 +271,7 @@ namespace UncrateGo.Modules.Csgo
             }
             catch (Exception)
             {
-                await context.Channel.SendMessageAsync("Case Selection: " + UserInteraction.BoldUserName(context) + ", please input a valid number. No additional text. E.G `13`");
+                await context.Channel.SendMessageAsync("Case Selection: " + userName + ", please input a valid number. No additional text. E.G `13`");
                 return;
             }
 
@@ -289,7 +292,7 @@ namespace UncrateGo.Modules.Csgo
                 else return;
             }
 
-            await context.Channel.SendMessageAsync(UserInteraction.BoldUserName(context) + $", you set your case to open to **{userSelectedContainer.Name}**");
+            await context.Channel.SendMessageAsync(userName + $", you set your case to open to **{userSelectedContainer.Name}**");
         }
 
         public static bool GetHasUserSelectedCase(SocketCommandContext context)

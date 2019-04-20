@@ -16,9 +16,9 @@ namespace UncrateGo.Modules
 
                 if (client.CurrentUser != null)
                 {
-                    AuthDiscordBotListApi DblApi = new AuthDiscordBotListApi(client.CurrentUser.Id, FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("DiscordBotListToken.txt")));
+                    AuthDiscordBotListApi dblApi = new AuthDiscordBotListApi(client.CurrentUser.Id, FileManager.ReadFromFile(FileManager.GetFileLocation("DiscordBotListToken.txt")));
 
-                    var me = await DblApi.GetMeAsync();
+                    var me = await dblApi.GetMeAsync();
 
                     // Update stats guildCount
                     await me.UpdateStatsAsync(client.Guilds.Count());

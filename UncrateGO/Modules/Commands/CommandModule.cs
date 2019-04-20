@@ -65,19 +65,18 @@ namespace UncrateGo.Modules.Commands
         [Command("prefix", RunMode = RunMode.Async)]
         public async Task ChangeGuildCommandPrefixAsync([Remainder]string input)
         {
-            //Find guild id
-            var chnl = Context.Channel as SocketGuildChannel;
+            string userName = UserInteraction.BoldUserName(Context.Message.Author.ToString());
 
             //Make sure invoker is owner of guild
-            if (chnl != null && chnl.Guild.OwnerId == Context.Message.Author.Id)
+            if (Context.Channel is SocketGuildChannel chnl && chnl.Guild.OwnerId == Context.Message.Author.Id)
             {
                 GuildCommandPrefixManager.ChangeGuildCommandPrefix(Context, input);
-                await Context.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + $", server prefix has successfully been changed to `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}`");
+                await Context.Channel.SendMessageAsync(userName + $", server prefix has successfully been changed to `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context.Channel)}`");
             }
             //Otherwise send error
             else
             {
-                await Context.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + ", only the server owner may invoke this command");
+                await Context.Channel.SendMessageAsync(userName + ", only the server owner may invoke this command");
             }
         }
 
@@ -91,9 +90,11 @@ namespace UncrateGo.Modules.Commands
         [Command("balance", RunMode = RunMode.Async)]
         public async Task BalanceAsync()
         {
+            string userName = UserInteraction.BoldUserName(Context.Message.Author.ToString());
+
             long userCredits = UserDataManager.GetUserCredit(Context.Message.Author.Id);
 
-            await Context.Message.Channel.SendMessageAsync(UserInteraction.BoldUserName(Context) + $", you have **{BankingHandler.CurrencyFormatter(userCredits)} Credits**");
+            await Context.Message.Channel.SendMessageAsync(userName + $", you have **{BankingHandler.CurrencyFormatter(userCredits)} Credits**");
         }
 
         [Command("moneyTransfer", RunMode = RunMode.Async)]
@@ -115,7 +116,7 @@ namespace UncrateGo.Modules.Commands
             else
             {
                 //See if user has opened a case before, if not, send a help tip
-                if (!CsgoCaseSelectionHandler.GetHasUserSelectedCase(Context)) await ReplyAndDeleteAsync($"Tip: Use `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context)}select` to select different cases to open", timeout: TimeSpan.FromSeconds(30));
+                if (!CsgoCaseSelectionHandler.GetHasUserSelectedCase(Context)) await ReplyAndDeleteAsync($"Tip: Use `{GuildCommandPrefixManager.GetGuildCommandPrefix(Context.Channel)}select` to select different cases to open", timeout: TimeSpan.FromSeconds(30));
 
                 await CsgoUnboxingHandler.OpenCase(Context);
             }
@@ -159,11 +160,11 @@ namespace UncrateGo.Modules.Commands
                 PaginatedMessage pager;
                 if (input == null)
                 {
-                    pager = CsgoCaseSelectionHandler.ShowPossibleCases(Context);
+                    pager = CsgoCaseSelectionHandler.ShowPossibleCases(Context.Channel);
                 }
                 else //Add filter if input is a string and not a number string
                 {
-                    pager = CsgoCaseSelectionHandler.ShowPossibleCases(Context, input);
+                    pager = CsgoCaseSelectionHandler.ShowPossibleCases(Context.Channel, input);
                 }
                 
 

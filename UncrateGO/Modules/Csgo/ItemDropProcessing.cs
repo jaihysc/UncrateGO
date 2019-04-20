@@ -7,11 +7,11 @@ namespace UncrateGo.Modules.Csgo
 {
     internal static class ItemDropProcessing
     {
-        static readonly Random rand = new Random();
+        private static readonly Random Rand = new Random();
 
         public static ItemData CalculateItemCaseRarity()
         {
-            int randomNumber = rand.Next(9999);
+            int randomNumber = Rand.Next(9999);
 
             if (randomNumber < 10000 && randomNumber >= 2008) return new ItemData { Rarity = Rarity.MilSpecGrade };
             if (randomNumber < 2008 && randomNumber >= 410) return new ItemData { Rarity = Rarity.Restricted };
@@ -24,7 +24,7 @@ namespace UncrateGo.Modules.Csgo
 
         public static ItemData CalculateItemDropRarity()
         {
-            int randomNumber = rand.Next(9999);
+            int randomNumber = Rand.Next(9999);
 
             if (randomNumber < 10000 && randomNumber >= 2008) return new ItemData { Rarity = Rarity.ConsumerGrade };
             if (randomNumber < 2008 && randomNumber >= 410) return new ItemData { Rarity = Rarity.IndustrialGrade };
@@ -91,7 +91,7 @@ namespace UncrateGo.Modules.Csgo
             //Randomly select a skin from the filtered list of possible skins
             if (sortedResult.Any())
             {
-                KeyValuePair<string, SkinDataItem> selectedSkin = sortedResult[rand.Next(sortedResult.Count())];
+                KeyValuePair<string, SkinDataItem> selectedSkin = sortedResult[Rand.Next(sortedResult.Count())];
 
                 bool giveStatTrak = CalculateStatTrakDrop();
                 //Give stattrak
@@ -139,7 +139,7 @@ namespace UncrateGo.Modules.Csgo
             else //Randomly pick a skin out of everything if it was unable to find one
             {
                 List<KeyValuePair<string, SkinDataItem>> sortedResult2 = cosmeticData.ItemsList.Where(s => s.Value.Rarity == Rarity.MilSpecGrade).ToList();
-                KeyValuePair<string, SkinDataItem> selectedSkin = sortedResult2[rand.Next(sortedResult2.Count())];
+                KeyValuePair<string, SkinDataItem> selectedSkin = sortedResult2[Rand.Next(sortedResult2.Count())];
 
                 return selectedSkin.Value;
             }           
@@ -207,7 +207,7 @@ namespace UncrateGo.Modules.Csgo
 
         private static bool CalculateStatTrakDrop()
         {
-            if (rand.Next(9) == 0)
+            if (Rand.Next(9) == 0)
             {
                 return true;
             }

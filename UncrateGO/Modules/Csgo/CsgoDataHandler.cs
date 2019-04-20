@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Discord.Commands;
 using System;
 
 namespace UncrateGo.Modules.Csgo
@@ -24,7 +23,7 @@ namespace UncrateGo.Modules.Csgo
                 EventLogger.LogMessage("Gathering CS:GO cosmetic data, this may take a while");
 
                 //Read skin data from local json file
-                string path = FileAccessManager.GetFileLocation("skinData.json");
+                string path = FileManager.GetFileLocation("skinData.json");
                 if (File.Exists(path))
                 {
                     CsgoCosmeticData csgoWeaponCosmeticTemp;
@@ -44,7 +43,7 @@ namespace UncrateGo.Modules.Csgo
 
                         //Write results to skin data file
                         string jsonToWrite = JsonConvert.SerializeObject(csgoWeaponCosmeticTemp);
-                        FileAccessManager.WriteStringToFile(jsonToWrite, true, FileAccessManager.GetFileLocation("skinData.json"));
+                        FileManager.WriteStringToFile(jsonToWrite, true, FileManager.GetFileLocation("skinData.json"));
                     }
 
                     CsgoCosmeticData = csgoWeaponCosmeticTemp;
@@ -108,7 +107,7 @@ namespace UncrateGo.Modules.Csgo
             //Read from file if this is null
             if (_userSkinStorage == null)
             {
-                var userSkin = JsonConvert.DeserializeObject<UserSkinStorage>(FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("UserSkinStorage.json")));
+                var userSkin = JsonConvert.DeserializeObject<UserSkinStorage>(FileManager.ReadFromFile(FileManager.GetFileLocation("UserSkinStorage.json")));
 
                 if (userSkin == null)
                 {
@@ -129,15 +128,15 @@ namespace UncrateGo.Modules.Csgo
         /// <summary>
         /// Adds the specified item to the user inventory
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="userId"></param>
         /// <param name="skinItem"></param>
-        public static void AddItemToUserInventory(SocketCommandContext context, SkinDataItem skinItem)
+        public static void AddItemToUserInventory(ulong userId, SkinDataItem skinItem)
         {
             var userSkin = GetUserSkinStorage();
             userSkin.UserSkinEntries.Add(new UserSkinEntry
             {
                 ClassId = skinItem.Classid,
-                OwnerId = context.Message.Author.Id,
+                OwnerId = userId,
                 UnboxDate = DateTime.UtcNow, MarketName = skinItem.Name
             });
         }
@@ -160,7 +159,7 @@ namespace UncrateGo.Modules.Csgo
             {
                 var tempUserSkinStorage = _userSkinStorage;
                 var json = JsonConvert.SerializeObject(tempUserSkinStorage);
-                FileAccessManager.WriteStringToFile(json, true, FileAccessManager.GetFileLocation("UserSkinStorage.json"));
+                FileManager.WriteStringToFile(json, true, FileManager.GetFileLocation("UserSkinStorage.json"));
             }
             catch (Exception)
             {
