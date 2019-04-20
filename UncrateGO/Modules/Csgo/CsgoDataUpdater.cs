@@ -135,7 +135,7 @@ namespace UncrateGo.Modules.Csgo
                             }
 
                             //Check for possible matches, matching CASE skin name
-                            foreach (var skinComparisonItem in comparisonItems) //TODO errors may be slipping by due to unicode characters, all unicode should be decoded at the source
+                            foreach (var skinComparisonItem in comparisonItems)
                             {
                                 //If names have unicode, decode them
                                 if (UnicodeManager.ContainsUnicodeCharacter(skin.Name))

@@ -72,7 +72,7 @@ namespace UncrateGo.Modules.Csgo
                 SkinDataItem skinDataItem = new SkinDataItem();
 
                 //Try to index with the more efficient dictionary first
-                if (item.MarketName == null || !rootWeaponSkin.ItemsList.TryGetValue(item.MarketName, out skinDataItem)) //TODO add better handling of unicode
+                if (item.MarketName == null || !rootWeaponSkin.ItemsList.TryGetValue(item.MarketName, out skinDataItem))
                 {
                     //Try to index with the more efficient dictionary, then resort to the more tedious process via class ids
 

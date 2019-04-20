@@ -16,6 +16,7 @@ namespace UncrateGo.Core
             {
                 UserId = context.Message.Author.Id,
                 UserCredit = 0,
+                UserCsgoStatsStorage = new UserCsgoStatsStorage()
             });
         }
 
@@ -25,6 +26,7 @@ namespace UncrateGo.Core
             {
                 UserId = user.Id,
                 UserCredit = 0,
+                UserCsgoStatsStorage = new UserCsgoStatsStorage()
             });
         }
 
@@ -70,6 +72,7 @@ namespace UncrateGo.Core
                 return userVal.UserCredit;
             }
 
+            EventLogger.LogMessage($"Could not get user with id {userId}", EventLogger.LogLevel.Warning);
             return -1;
         }
 
@@ -161,6 +164,23 @@ namespace UncrateGo.Core
     }
     public class UserCsgoStatsStorage
     {
+        public UserCsgoStatsStorage()
+        {
+            CasesOpened = 0;
+            SouvenirsOpened = 0;
+            DropsOpened = 0;
+            StickersOpened = 0;
+            ConsumerGrade = 0;
+            IndustrialGrade = 0;
+            MilSpecGrade = 0;
+            Restricted = 0;
+            Classified = 0;
+            Covert = 0;
+            Special = 0;
+            Stickers = 0;
+            Other = 0;
+        }
+
         public long CasesOpened { get; set; }
         public long SouvenirsOpened { get; set; }
         public long DropsOpened { get; set; }

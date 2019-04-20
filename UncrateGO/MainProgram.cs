@@ -271,7 +271,7 @@ namespace UncrateGo
         /// </summary>
         public static void FlushAllData(object state)
         {
-            EventLogger.LogMessage("Flushing data to file...", EventLogger.LogLevel.Error);
+            EventLogger.LogMessage("Flushing data to file...", EventLogger.LogLevel.Info);
 
             UserDataManager.FlushUserStorage();
             CsgoDataHandler.FlushUserSkinStorage();

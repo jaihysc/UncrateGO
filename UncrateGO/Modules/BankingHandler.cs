@@ -120,6 +120,7 @@ namespace UncrateGo.Modules
             }
 
             //False to indicate that user does not have enough credits to be deducted
+            EventLogger.LogMessage($"{userId} has credits below 0, either they are not initialized or something is wrong", EventLogger.LogLevel.Warning);
             return false;
         }
 
