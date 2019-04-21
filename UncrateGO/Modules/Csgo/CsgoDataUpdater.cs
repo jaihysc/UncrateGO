@@ -33,7 +33,7 @@ namespace UncrateGo.Modules.Csgo
                     var processedSkinData = ProcessRawRootSkinData(skinData);
 
                     //Replace current one in memory
-                    CsgoDataHandler.CsgoCosmeticData = processedSkinData;
+                    CsgoDataHandler.SetCsgoCosmeticData(processedSkinData);
                 }
             }
             catch

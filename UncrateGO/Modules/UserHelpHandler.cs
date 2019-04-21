@@ -32,7 +32,7 @@ namespace UncrateGo.Modules
                         .WithIconUrl(context.Client.CurrentUser.GetAvatarUrl());
                 })
                 .AddField("Currency Commands", "`balance` `moneytransfer`")
-                .AddField("Case Commands", "`open` `drop` `select` `inventory` `market` `buy` `sell` `view` `statistics`")
+                .AddField("Case Commands", "`open` `drop` `select` `inventory` `market` `buy` `sell` `sellall` `view` `statistics`")
                 .AddField("Settings Commands", "`prefix` `info` `reset`")
                 .AddField("\u200b", $"To check command usage, type `{botCommandPrefix}help [command]` ");
 

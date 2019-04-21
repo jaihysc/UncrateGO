@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace UncrateGo.Core
@@ -69,6 +70,8 @@ namespace UncrateGo.Core
 
         public static Task LogUserMessageAsync(SocketMessage msg)
         {
+            Console.BackgroundColor = ConsoleColor.DarkGreen;
+
             //Log user message to file
             if (msg.Channel is SocketGuildChannel chnl)
             {
@@ -79,9 +82,15 @@ namespace UncrateGo.Core
                 Console.Write($"{DateTime.Now,-19} [    Log] Direct Message >| {msg.Channel} - {msg.Author}: ");
             }
 
+            //Outline embeds
+            if (msg.Embeds.Any())
+            {
+                Console.BackgroundColor = ConsoleColor.DarkBlue;
+                Console.WriteLine("Embed: " + msg.Embeds.Count);
+            }
+
             Console.BackgroundColor = ConsoleColor.DarkGray;
             Console.WriteLine(msg.ToString());
-
             Console.BackgroundColor = ConsoleColor.Black;
             return Task.CompletedTask;
         }

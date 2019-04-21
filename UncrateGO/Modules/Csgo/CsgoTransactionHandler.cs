@@ -363,7 +363,7 @@ namespace UncrateGo.Modules.Csgo
         /// <param name="skinDataItems"></param>
         /// <param name="itemName"></param>
         /// <returns></returns>
-        public static List<SkinDataItem> FuzzyFindSkinDataItem(List<SkinDataItem> skinDataItems, string itemName)
+        public static List<SkinDataItem> FuzzyFindSkinDataItem(List<SkinDataItem> skinDataItems, string itemName) //TODO perhaps make these 2 methods one?
         {
             //Get the weapon skin specified
             List<SkinDataItem> marketSkins = skinDataItems.Where(s => s.Name.ToLower() == itemName.ToLower()).ToList();
@@ -376,9 +376,21 @@ namespace UncrateGo.Modules.Csgo
                 //If it still cannot be found, search by whole words
                 if (!marketSkins.Any())
                 {
-                    string foundSkinName = FuzzySearch.FindSimilarItemsByWords(skinDataItems.Select(c => c.Name), itemName).FirstOrDefault();
+                    List<string> foundSkinNames = FuzzySearch.FindSimilarItemsByWords(skinDataItems.Select(c => c.Name), itemName);
 
-                    if (!string.IsNullOrWhiteSpace(foundSkinName)) marketSkins = skinDataItems.Where(s => s.Name == foundSkinName).ToList();
+                    //Go through the list of found items and add all of them
+                    foreach (string foundSkinName in foundSkinNames)
+                    {
+                        if (!string.IsNullOrWhiteSpace(foundSkinName))
+                        {
+                            List<SkinDataItem> items = skinDataItems.Where(s => s.Name == foundSkinName).ToList();
+
+                            foreach (SkinDataItem item in items)
+                            {
+                                marketSkins.Add(item);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -397,9 +409,23 @@ namespace UncrateGo.Modules.Csgo
                 //Try to search by whole words if still null
                 if (!selectedItems.Any())
                 {
-                    string foundItem = FuzzySearch.FindSimilarItemsByWords(userItems.Select(i => i.MarketName), itemName).FirstOrDefault();
+                    List<string> foundItems = FuzzySearch.FindSimilarItemsByWords(userItems.Select(i => i.MarketName), itemName);
 
-                    if (!string.IsNullOrWhiteSpace(foundItem)) selectedItems = userItems.Where(s => s.MarketName == foundItem).ToList();
+                    if (selectedItems.Any()) selectedItems.Clear();
+
+                    //Go through the list of found items and add all of them
+                    foreach (string foundItem in foundItems)
+                    {
+                        if (!string.IsNullOrWhiteSpace(foundItem))
+                        {
+                            List<UserSkinEntry> items = userItems.Where(s => s.MarketName == foundItem).ToList();
+
+                            foreach (UserSkinEntry item in items)
+                            {
+                                selectedItems.Add(item);
+                            }
+                        }
+                    }
                 }
             }
 

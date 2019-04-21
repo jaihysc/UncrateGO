@@ -5,7 +5,7 @@ using Discord.Commands;
 
 namespace UncrateGo.Modules.Csgo
 {
-    internal static class ItemDropProcessing
+    internal static class CsgoDropProcessing
     {
         private static readonly Random Rand = new Random();
 

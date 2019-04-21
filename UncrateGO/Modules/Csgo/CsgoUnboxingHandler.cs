@@ -95,10 +95,11 @@ namespace UncrateGo.Modules.Csgo
         public static async Task OpenCase(SocketCommandContext context)
         {
             //Get rarity
-            var result = ItemDropProcessing.CalculateItemCaseRarity();
+            var result = CsgoDropProcessing.CalculateItemCaseRarity();
 
             //Get item
-            var skinItem = ItemDropProcessing.GetItem(result, CsgoDataHandler.CsgoCosmeticData, context, false);
+            CsgoCosmeticData cosmeticData = CsgoDataHandler.GetCsgoCosmeticData();
+            var skinItem = CsgoDropProcessing.GetItem(result, cosmeticData, context, false);
 
             //Add item to user file inventory
             CsgoDataHandler.AddItemToUserInventory(context.Message.Author.Id, skinItem);
@@ -115,10 +116,11 @@ namespace UncrateGo.Modules.Csgo
         public static async Task OpenDrop(SocketCommandContext context)
         {
             //Select a rarity, this is slightly modified towards the white side of the spectrum, higher value items are harder to get as this is a drop
-            var rarity = ItemDropProcessing.CalculateItemDropRarity();
+            var rarity = CsgoDropProcessing.CalculateItemDropRarity();
 
             //Get item
-            var skinItem = ItemDropProcessing.GetItem(rarity, CsgoDataHandler.CsgoCosmeticData, context, true);
+            CsgoCosmeticData cosmeticData = CsgoDataHandler.GetCsgoCosmeticData();
+            var skinItem = CsgoDropProcessing.GetItem(rarity, cosmeticData, context, true);
 
             //Add item to user file inventory
             CsgoDataHandler.AddItemToUserInventory(context.Message.Author.Id, skinItem);

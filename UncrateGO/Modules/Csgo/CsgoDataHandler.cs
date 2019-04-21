@@ -9,7 +9,7 @@ namespace UncrateGo.Modules.Csgo
 {
     public static class CsgoDataHandler
     {
-        public static CsgoCosmeticData CsgoCosmeticData;
+        private static CsgoCosmeticData _csgoCosmeticData;
         private static UserSkinStorage _userSkinStorage;
 
         /// <summary>
@@ -18,7 +18,7 @@ namespace UncrateGo.Modules.Csgo
         /// <returns></returns>
         public static CsgoCosmeticData GetCsgoCosmeticData()
         {
-            if (CsgoCosmeticData == null)
+            if (_csgoCosmeticData == null)
             {
                 EventLogger.LogMessage("Gathering CS:GO cosmetic data, this may take a while");
 
@@ -46,7 +46,7 @@ namespace UncrateGo.Modules.Csgo
                         FileManager.WriteStringToFile(jsonToWrite, true, FileManager.GetFileLocation("skinData.json"));
                     }
 
-                    CsgoCosmeticData = csgoWeaponCosmeticTemp;
+                    _csgoCosmeticData = csgoWeaponCosmeticTemp;
 
                 }
                 else //If a json file containing the skins is not found, fetch it from online
@@ -59,8 +59,14 @@ namespace UncrateGo.Modules.Csgo
                 EventLogger.LogMessage($"Gathering CS:GO cosmetic data, this may take a while --- Done!");
             }
 
-            return CsgoCosmeticData;
+            return _csgoCosmeticData;
         }
+
+        public static void SetCsgoCosmeticData(CsgoCosmeticData cosmeticData)
+        {
+            _csgoCosmeticData = cosmeticData;
+        }
+
 
         /// <summary>
         /// Gets the case selection of a specified user, if not existent, it sets it to danger zone case
@@ -125,12 +131,13 @@ namespace UncrateGo.Modules.Csgo
             return _userSkinStorage;
         }
 
+
         /// <summary>
         /// Adds the specified item to the user inventory
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="skinItem"></param>
-        public static void AddItemToUserInventory(ulong userId, SkinDataItem skinItem)
+        public static void AddItemToUserInventory(ulong userId, SkinDataItem skinItem) //TODO, add item limit of n to prevent bot abuse
         {
             var userSkin = GetUserSkinStorage();
             userSkin.UserSkinEntries.Add(new UserSkinEntry
