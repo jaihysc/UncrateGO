@@ -12,6 +12,8 @@ namespace UncrateGo.Modules
         {
             try
             {
+                EventLogger.LogMessage("Updating discord bots list bot info...", EventLogger.LogLevel.Info);
+
                 var client = (DiscordSocketClient)state;
 
                 if (client.CurrentUser != null)
@@ -23,7 +25,8 @@ namespace UncrateGo.Modules
                     // Update stats guildCount
                     await me.UpdateStatsAsync(client.Guilds.Count());
                 }
-                
+
+                EventLogger.LogMessage("Updating discord bots list bot info... Done", EventLogger.LogLevel.Info);
             }
             catch (Exception)
             {

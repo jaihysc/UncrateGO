@@ -127,7 +127,7 @@ namespace UncrateGo
             _client.MessageReceived += HandleCommandAsync;
 
             //Discord bots list updater
-            new Timer(CsgoLeaderboardManager.GetStatisticsLeader, _client, 0, 60000);
+            new Timer(DiscordBotsListUpdater.UpdateDiscordBotsListInfo, _client, 900000, 900000);
 
             Stopwatch.Stop();
             EventLogger.LogMessage($"Ready! - Took {Stopwatch.ElapsedMilliseconds} milliseconds");

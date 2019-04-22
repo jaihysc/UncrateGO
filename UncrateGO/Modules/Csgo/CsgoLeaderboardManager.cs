@@ -234,6 +234,8 @@ namespace UncrateGo.Modules.Csgo
         /// </summary>
         public static void GetStatisticsLeader(object state)
         {
+            EventLogger.LogMessage("Updating statistics...", EventLogger.LogLevel.Info);
+
             try
             {
                 var userData = UserDataManager.GetUserStorage();
@@ -246,6 +248,7 @@ namespace UncrateGo.Modules.Csgo
 
                 //Find the leaders
                 foreach (var user in userData.UserInfo.Values)
+                {
                     if (user.UserCsgoStatsStorage != null)
                     {
                         FindEntryLeader(user, user.UserCsgoStatsStorage.CasesOpened, casesOpened);
@@ -253,6 +256,7 @@ namespace UncrateGo.Modules.Csgo
                         FindEntryLeader(user, user.UserCsgoStatsStorage.DropsOpened, dropsOpened);
                         FindEntryLeader(user, user.UserCsgoStatsStorage.StickersOpened, sticksOpened);
                     }
+                }
 
                 //Generate the string to return
                 var returnString = new List<string>
@@ -269,6 +273,8 @@ namespace UncrateGo.Modules.Csgo
             {
                 EventLogger.LogMessage("Unable to update statistics", EventLogger.LogLevel.Error);
             }
+
+            EventLogger.LogMessage("Updating statistics... Done", EventLogger.LogLevel.Info);
         }
 
         /// <summary>
