@@ -40,7 +40,7 @@ namespace UncrateGo.Modules.Commands
             [Command("flush", RunMode = RunMode.Async)]
             public async Task FlushDataAsync()
             {
-                MainProgram.FlushAllData(null);
+                MainProgram.FlushAllData();
             }
         }
 

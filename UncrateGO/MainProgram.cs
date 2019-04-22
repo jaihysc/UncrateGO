@@ -12,7 +12,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using UncrateGo.Modules;
-using System.Threading;
 using System.Runtime.InteropServices;
 using UncrateGo.Modules.Commands;
 
@@ -37,9 +36,33 @@ namespace UncrateGo
                 CsgoDataUpdater.GenerateSouvenirCollections();
 
                 //Timers
-                new Timer(CsgoDataUpdater.UpdateRootWeaponSkin, null, 57600000, 57600000);
-                new Timer(CsgoLeaderboardManager.GetStatisticsLeader, null, 60000, 60000);
-                new Timer(FlushAllData, null, 300000, 300000);
+                Task.Run(async () =>
+                {
+                    while (true)
+                    {
+                        await Task.Delay(57600000);
+                        CsgoDataUpdater.UpdateRootWeaponSkin();
+                    }
+
+                });
+                Task.Run(async () =>
+                {
+                    while (true)
+                    {
+                        await Task.Delay(60000);
+                        CsgoLeaderboardManager.GetStatisticsLeader();
+
+                    }
+
+                });
+                Task.Run(async () =>
+                {
+                    while (true)
+                    {
+                        await Task.Delay(300000);
+                        FlushAllData();
+                    }
+                });
 
                 //Setup
                 CsgoDataHandler.GetCsgoCosmeticData();
@@ -276,7 +299,7 @@ namespace UncrateGo
         /// <summary>
         /// Flushes all data stored to file
         /// </summary>
-        public static void FlushAllData(object state)
+        public static void FlushAllData()
         {
             EventLogger.LogMessage("Flushing data to file...", EventLogger.LogLevel.Info);
 
@@ -291,7 +314,7 @@ namespace UncrateGo
         //Program exit handling
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            FlushAllData(null); //Flush any remaining data
+            FlushAllData(); //Flush any remaining data
         }
 
         /// <summary>
@@ -306,7 +329,7 @@ namespace UncrateGo
             Console.WriteLine("Runtime terminating: {0}", args.IsTerminating);
             Console.WriteLine(e.StackTrace);
 
-            FlushAllData(null);
+            FlushAllData();
 
             //Write a crashlog to file
             FileManager.WriteStringToFile(e.Message + e.StackTrace, false, FileManager.GetFileLocation("crashlog.txt"));
