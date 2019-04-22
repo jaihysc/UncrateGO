@@ -7,13 +7,13 @@ using UncrateGo.Core;
 
 namespace UncrateGo.Modules
 {
-    public class BankingHandler
+    public static class BankingHandler
     {
-        public static void CheckIfUserCreditProfileExists(SocketGuildUser user)
+        private static void CheckIfUserCreditProfileExists(SocketGuildUser user)
         {
             var userStorage = UserDataManager.GetUserStorage();
             //Create txt user credit entry if user does not exist
-            if (!userStorage.UserInfo.TryGetValue(user.Id, out var i))
+            if (!userStorage.UserInfo.TryGetValue(user.Id, out _))
             {
                 //Create user profile
                 UserDataManager.CreateNewUserEntry(user);
@@ -25,11 +25,11 @@ namespace UncrateGo.Modules
         /// </summary>
         /// <param name="inputCredits"></param>
         /// <returns></returns>
-        public static string CreditCurrencyFormatter(long inputCredits)
+        public static string CurrencyFormatter(long inputCredits)
         {
             //Formats number to use currency numeration
-            var numberGroupSeperator = new NumberFormatInfo { NumberGroupSeparator = " " };
-            return inputCredits.ToString("N0", numberGroupSeperator);
+            var numberGroupSeparator = new NumberFormatInfo { NumberGroupSeparator = " " };
+            return inputCredits.ToString("N0", numberGroupSeparator);
         }
 
         /// <summary>
@@ -41,138 +41,97 @@ namespace UncrateGo.Modules
         /// <returns></returns>
         public static async Task TransferCredits(SocketCommandContext context, string targetUser, long amount)
         {
+            ulong userId = context.Message.Author.Id;
+            long userCredits = UserDataManager.GetUserCredit(userId);
+            string userName = UserInteraction.BoldUserName(context.Message.Author.ToString());
+
             if (amount <= 0)
             {
-                await context.Message.Author.SendMessageAsync(UserInteraction.BoldUserName(context) + ", you must send **1 or more** Credits");
+                await context.Message.Author.SendMessageAsync(userName + ", you must send **1 or more** Credits");
             }
-            else if (GetUserCredits(context) - amount < 0)
+            else if (userCredits - amount < 0)
             {
-                await context.Message.Author.SendMessageAsync(UserInteraction.BoldUserName(context) + ", you do not have enough money to send || **" + BankingHandler.CreditCurrencyFormatter(GetUserCredits(context)) + " Credits**");
+                await context.Message.Author.SendMessageAsync(userName + ", you do not have enough money to send || **" + CurrencyFormatter(userCredits) + " Credits**");
             }
             else
             {
                 var recipient = context.Guild.GetUser(MentionUtils.ParseUser(targetUser));
 
                 //Check if recipient has a profile
-                BankingHandler.CheckIfUserCreditProfileExists(recipient);
+                CheckIfUserCreditProfileExists(recipient);
 
                 //Subtract money from sender
-                AddCredits(context, -amount);
+                if (AddCredits(userId, -amount))
+                {
+                    //If successfully subtracted money, add credits to receiver
+                    AddCredits(MentionUtils.ParseUser(targetUser), amount);
 
-                //AddCredits credits to receiver
-                AddCredits(context, MentionUtils.ParseUser(targetUser), amount);
+                    //Send receipts to both parties
+                    var embedBuilder = new EmbedBuilder()
+                        .WithTitle("Transaction Receipt")
+                        .WithDescription("​")
+                        .WithColor(new Color(68, 199, 40))
+                        .WithFooter(footer =>
+                        {
+                        })
+                        .WithAuthor(author =>
+                        {
+                            author
+                                .WithName("UncrateGO Banking")
+                                .WithIconUrl("https://freeiconshop.com/wp-content/uploads/edd/bank-flat.png");
+                        })
+                        .AddInlineField("Sender", context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5))
+                        .AddInlineField("Id", context.Message.Author.Id)
+                        .AddInlineField("Total Amount", $"-{CurrencyFormatter(amount)}")
 
-                //Send receipts to both parties
-                var embedBuilder = new EmbedBuilder()
-                    .WithTitle("Transaction Receipt")
-                    .WithDescription("​")
-                    .WithColor(new Color(68, 199, 40))
-                    .WithFooter(footer =>
-                    {
-                    })
-                    .WithAuthor(author =>
-                    {
-                        author
-                            .WithName("UncrateGO Banking")
-                            .WithIconUrl("https://freeiconshop.com/wp-content/uploads/edd/bank-flat.png");
-                    })
-                    .AddInlineField("Sender", context.Message.Author.ToString().Substring(0, context.Message.Author.ToString().Length - 5))
-                    .AddInlineField("Id", context.Message.Author.Id)
-                    .AddInlineField("Total Amount", $"-{BankingHandler.CreditCurrencyFormatter(amount)}")
+                        .AddInlineField("Recipient", recipient.ToString().Substring(0, recipient.ToString().Length - 5))
+                        .AddInlineField("​", recipient.Id)
+                        .AddInlineField("​", CurrencyFormatter(amount))
 
-                    .AddInlineField("Recipient", recipient.ToString().Substring(0, recipient.ToString().Length - 5))
-                    .AddInlineField("​", recipient.Id)
-                    .AddInlineField("​", BankingHandler.CreditCurrencyFormatter(amount))
+                        .AddInlineField("​", "​")
+                        .AddInlineField("​", "​");
 
-                    .AddInlineField("​", "​")
-                    .AddInlineField("​", "​");
+                    var embed = embedBuilder.Build();
 
-                var embed = embedBuilder.Build();
-
-                await context.Message.Author.SendMessageAsync("", embed: embed).ConfigureAwait(false);
-                await recipient.SendMessageAsync("", embed: embed).ConfigureAwait(false);
-            }
-        }
-
-        //READ
-        /// <summary>
-        /// Returns the credits the specified user has
-        /// </summary>
-        /// <param name="context">This is the user, typically the sender</param>
-        /// <returns></returns>
-        public static long GetUserCredits(SocketCommandContext context)
-        {
-            var userStorage = UserDataManager.GetUserStorage();
-
-            return userStorage.UserInfo[context.Message.Author.Id].UserBankingStorage.Credit;
-        }
-
-        //READ + WRITE
-        /// <summary>
-        /// Adds input amount to user balance
-        /// </summary>
-        /// <param name="context">This is the user, typically the sender</param>
-        /// <param name="addAmount">Amount to add</param>
-        /// <returns></returns>
-        public static bool AddCredits(SocketCommandContext context, long addAmount)
-        {
-            //Get user credit storage
-            var userStorage = UserDataManager.GetUserStorage();
-
-            //Check if user has sufficient credits
-            if (GetUserCredits(context) + addAmount >= 0)
-            {
-                //Calculate new credits
-                long userCreditsNew = 0;
-                userCreditsNew = userStorage.UserInfo[context.Message.Author.Id].UserBankingStorage.Credit + addAmount;
-
-
-                userStorage.UserInfo[context.Message.Author.Id].UserBankingStorage.Credit = userCreditsNew;
-
-                //Set new credits amount 
-                UserDataManager.SetUserStorage(userStorage);
-
-                return true;
-            }
-            else
-            {
-                //False to indicate that user does not have enough credits to be deducted
-                return false;
+                    await context.Message.Author.SendMessageAsync("", embed: embed).ConfigureAwait(false);
+                    await recipient.SendMessageAsync("", embed: embed).ConfigureAwait(false);
+                }
             }
         }
 
         /// <summary>
         /// Adds input amount to user balance
         /// </summary>
-        /// <param name="context">Used to determine channel to send messages to if necessary</param>
-        /// <param name="guildID">Guild ID where the target user is in</param>
-        /// <param name="userID">Target user ID</param>
+        /// <param name="userId"></param>
         /// <param name="addAmount">Amount to add</param>
         /// <returns></returns>
-        public static bool AddCredits(SocketCommandContext context, ulong userID, long addAmount)
+        public static bool AddCredits(ulong userId, long addAmount)
         {
-            //Get user credits
-            var userStorage = UserDataManager.GetUserStorage();
-
             //Check if user has sufficient credits
-            if (GetUserCredits(context) + addAmount >= 0)
+            long userCredits = UserDataManager.GetUserCredit(userId);
+            if (userCredits >= 0 && userCredits + addAmount >= 0)
             {
                 //Calculate new credits
-                long userCreditsNew = 0;
+                long userCreditsNew = CreditsCalculator(userCredits, addAmount);
 
-                userCreditsNew = userStorage.UserInfo[userID].UserBankingStorage.Credit + addAmount;
-
-                userStorage.UserInfo[userID].UserBankingStorage.Credit = userCreditsNew;
-
-                //Set new credits amount 
-                UserDataManager.SetUserStorage(userStorage);
+                UserDataManager.SetUserCredit(userId, userCreditsNew);
 
                 return true;
             }
-            else
+
+            //False to indicate that user does not have enough credits to be deducted
+            EventLogger.LogMessage($"{userId} has credits below 0, either they are not initialized or something is wrong", EventLogger.LogLevel.Warning);
+            return false;
+        }
+
+        private static long CreditsCalculator(long baseCredits, long addAmount)
+        {
+            if (baseCredits + addAmount >= 0)
             {
-                return false;
+                return baseCredits + addAmount;
             }
+
+            return 0; //Return 0 if baseCredits + addAmount is below 0
         }
     }
 }

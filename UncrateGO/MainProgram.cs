@@ -14,35 +14,35 @@ using System.Threading.Tasks;
 using UncrateGo.Modules;
 using System.Threading;
 using System.Runtime.InteropServices;
-using UncrateGo.Modules.Commands.Preconditions;
+using UncrateGo.Modules.Commands;
 
 namespace UncrateGo
 {
     public class MainProgram
     {
-        private static Stopwatch stopwatch = new Stopwatch();
+        private static readonly Stopwatch Stopwatch = new Stopwatch();
 
         public static void Main(string[] args)
         {
             try
             {
-                DisableConsoleQuickEdit.Go(); //Disable console features
-
-                //Injection
-                stopwatch.Start();
+                Stopwatch.Start();
                 EventLogger.LogMessage("Hello World! - Beginning startup");
+
+                DisableConsoleQuickEdit.Go(); //Disable console features
 
                 //Runs setup if path file is not present
                 SetupManager.CheckIfPathsFileExists();
 
-                CsgoDataHandler.GenerateSouvenirCollections();
+                CsgoDataUpdater.GenerateSouvenirCollections();
 
-                //Timers - do not await these
-                CsgoDataHandler.UpdateRootWeaponSkinTimer();
-                CsgoLeaderboardsManager.GetStatisticsLeaderTimer();
+                //Timers
+                new Timer(CsgoDataUpdater.UpdateRootWeaponSkin, null, 57600000, 57600000);
+                new Timer(CsgoLeaderboardManager.GetStatisticsLeader, null, 60000, 60000);
+                new Timer(FlushAllData, null, 300000, 300000);
 
                 //Setup
-                CsgoDataHandler.GetRootWeaponSkin();
+                CsgoDataHandler.GetCsgoCosmeticData();
                 UserDataManager.GetUserStorage();
                 CsgoDataHandler.GetUserSkinStorage();
                 GuildCommandPrefixManager.PopulateGuildCommandPrefix();
@@ -50,7 +50,7 @@ namespace UncrateGo
 
                 //Exception handling
                 AppDomain currentDomain = AppDomain.CurrentDomain;
-                currentDomain.UnhandledException += new UnhandledExceptionEventHandler(ExceptionHandler);
+                currentDomain.UnhandledException += ExceptionHandler;
 
                 //Program exit handling
                 currentDomain.ProcessExit += CurrentDomain_ProcessExit;
@@ -61,21 +61,22 @@ namespace UncrateGo
             catch (Exception ex)
             {
                 Console.WriteLine("Oh no, something went wrong!!! \n" + ex.Source + ex.StackTrace);
+                Console.WriteLine("Press ENTER to exit");
                 Console.ReadLine();
             }
 
         }
 
-        public DiscordSocketClient _client;
-        public CommandService _commands;
-        public IServiceProvider _services;
+        private DiscordSocketClient _client;
+        private CommandService _commands;
+        private IServiceProvider _services;
 
         //Main
-        public async Task MainAsync()
+        private async Task MainAsync()
         {
-            var _config = new DiscordSocketConfig { MessageCacheSize = 500 };
+            var config = new DiscordSocketConfig { MessageCacheSize = 500 };
 
-            _client = new DiscordSocketClient(_config);
+            _client = new DiscordSocketClient(config);
             _commands = new CommandService();
             _services = new ServiceCollection()
                 .AddSingleton(_client)
@@ -86,10 +87,17 @@ namespace UncrateGo
 
             
             //Bot init
+            string tokenPath = FileManager.GetFileLocation("BotToken.txt");
+            if (!File.Exists(tokenPath))
+            {
+                EventLogger.LogMessage("No BotToken.txt found, bot will not start", EventLogger.LogLevel.Critical);
+                throw new Exception("No bot token");
+            }
+
             try
             {
                 //Get token
-                string token = File.ReadAllLines(FileAccessManager.GetFileLocation("BotToken.txt")).FirstOrDefault();
+                string token = File.ReadAllLines(tokenPath).FirstOrDefault();
 
                 //Connect to discord
                 await _client.LoginAsync(TokenType.Bot, token);
@@ -102,9 +110,6 @@ namespace UncrateGo
             }
 
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
-
-            stopwatch.Stop();
-            EventLogger.LogMessage($"Ready! - Took {stopwatch.ElapsedMilliseconds} milliseconds");
 
             //Set help text
             //await _client.SetGameAsync("Mention me in server for command prefix");
@@ -121,19 +126,25 @@ namespace UncrateGo
             //Handles command on message received event
             _client.MessageReceived += HandleCommandAsync;
 
-            //Threads
-            Thread discordBotsListUpdater = new Thread(() => DiscordBotsListUpdater.UpdateDiscordBotsListInfo(_client));
-            discordBotsListUpdater.Start();
+            //Discord bots list updater
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await Task.Delay(900000);
+                    DiscordBotsListUpdater.UpdateDiscordBotsListInfo(_client.CurrentUser.Id, _client.Guilds.Count);
+                }
+            });
 
-            Thread fileAutoFlush = new Thread(() => FlushDataTimer());
-            fileAutoFlush.Start();
+            Stopwatch.Stop();
+            EventLogger.LogMessage($"Ready! - Took {Stopwatch.ElapsedMilliseconds} milliseconds");
 
             //All commands before this
             await Task.Delay(-1);
         }
 
         //Command Handler
-        public async Task HandleCommandAsync(SocketMessage messageParam)
+        private async Task HandleCommandAsync(SocketMessage messageParam)
         {
             // Don't process the command if it was a system message, if sender is bot
             if (!(messageParam is SocketUserMessage message)) return;
@@ -150,19 +161,19 @@ namespace UncrateGo
             var context = new SocketCommandContext(_client, message);
 
             //Ignore commands that are not using the prefix or mentioning the bot
-            string commandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+            string commandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context.Channel);
 
             if (!message.HasStringPrefix(commandPrefix, ref argPos) && !(message.Content == ("<@" + context.Client.CurrentUser.Id.ToString() + ">") || message.Content == ("<@!" + context.Client.CurrentUser.Id.ToString() + ">")) ||
                 message.Author.IsBot)
                 return;
 
             //Only process command if user is not in cooldown
-            if (await RatelimitPrecondtion.UserRateLimited(context.Message.Author.Id, context)) return;
+            if (Ratelimit.UserRateLimited(context.Message.Author.Id, context)) return;
 
             //Show prefix help if user mentions bot
             if (message.Content == ("<@" + context.Client.CurrentUser.Id.ToString() + ">") || message.Content == ("<@!" + context.Client.CurrentUser.Id.ToString() + ">"))
             {
-                await context.Channel.SendMessageAsync($"Current guild prefix: `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}` | Get help with `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help`");
+                await context.Channel.SendMessageAsync($"Current guild prefix: `{commandPrefix}` | Get help with `{commandPrefix}help`");
                 return;
             }
 
@@ -176,19 +187,24 @@ namespace UncrateGo
                 {
                     //Find similar commands
                     var commandHelpDefinitionStorage = UserHelpHandler.GetHelpMenuCommands();
-                    string similarItemsString = UserHelpHandler.FindSimilarCommands(
-                        commandHelpDefinitionStorage.CommandHelpEntry.Select(i => i.CommandName).ToList(),
-                        message.ToString().Substring(GuildCommandPrefixManager.GetGuildCommandPrefix(context).Length + 1));
+
+                    string similarItemsString = "";
+                    if (message.ToString().Length > commandPrefix.Length)
+                    {
+                        similarItemsString = UserHelpHandler.FindSimilarCommands(
+                            commandHelpDefinitionStorage.CommandHelpEntry.Select(i => i.CommandName).ToList(),
+                            message.ToString().Substring(commandPrefix.Length + 1));
+                    }
 
                     //If no similar matches are found, send nothing
                     if (string.IsNullOrEmpty(similarItemsString))
                     {
-                        await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands");
+                        await context.Channel.SendMessageAsync($"Invalid command, use `{commandPrefix}help` for a list of commands");
                     }
                     //If similar matches are found, send suggestions
                     else
                     {
-                        await context.Channel.SendMessageAsync($"Invalid command, use `{GuildCommandPrefixManager.GetGuildCommandPrefix(context)}help` for a list of commands. Did you mean: \n {similarItemsString}");
+                        await context.Channel.SendMessageAsync($"Invalid command, use `{commandPrefix}help` for a list of commands. Did you mean: \n {similarItemsString}");
                     }
                     
                 }
@@ -199,12 +215,11 @@ namespace UncrateGo
                     //Search 10 spaces up for the command in commandHelpDescription
                     string userCommand = "[command]";
 
-                    string prefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
-                    string str = message.Content.ToLower().Substring(prefix.Length);
+                    string str = message.Content.ToLower().Substring(commandPrefix.Length);
 
                     string[] tokens = str.Split(' ');
 
-                    //Extract the command from the user (minus prefix and any invalid arguements)
+                    //Extract the command from the user (minus prefix and any invalid arguments)
                     for (int i = 1; i < 10; i++)
                     {
                         bool resultFound = false;
@@ -253,40 +268,30 @@ namespace UncrateGo
                 }
                 else
                 {
-                    EventLogger.LogMessage($"Error - {result.ErrorReason}", ConsoleColor.Red);
+                    EventLogger.LogMessage($"Error - {result.ErrorReason}", EventLogger.LogLevel.Error);
                 }
-            }
-        }
-
-        private static void FlushDataTimer()
-        {
-            while (true)
-            {
-                //Delay the initial flush since startup
-                Thread.Sleep(300000);
-                FlushAllData();
             }
         }
 
         /// <summary>
         /// Flushes all data stored to file
         /// </summary>
-        public static void FlushAllData()
+        public static void FlushAllData(object state)
         {
-            EventLogger.LogMessage("Flushing data to file...", ConsoleColor.Yellow);
+            EventLogger.LogMessage("Flushing data to file...", EventLogger.LogLevel.Info);
 
             UserDataManager.FlushUserStorage();
             CsgoDataHandler.FlushUserSkinStorage();
             GuildCommandPrefixManager.FlushGuildCommandDictionary();
             CsgoUnboxingHandler.FlushUserSelectedCase();
 
-            EventLogger.LogMessage("Flushing data to file - DONE!", ConsoleColor.Yellow);
+            EventLogger.LogMessage("Flushing data to file - DONE!", EventLogger.LogLevel.Info);
         }
 
         //Program exit handling
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            FlushAllData(); //Flush any remaining data
+            FlushAllData(null); //Flush any remaining data
         }
 
         /// <summary>
@@ -294,26 +299,26 @@ namespace UncrateGo
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        static void ExceptionHandler(object sender, UnhandledExceptionEventArgs args)
+        private static void ExceptionHandler(object sender, UnhandledExceptionEventArgs args)
         {
             Exception e = (Exception)args.ExceptionObject;
             Console.WriteLine("Caught: " + e.Message);
             Console.WriteLine("Runtime terminating: {0}", args.IsTerminating);
             Console.WriteLine(e.StackTrace);
 
-            FlushAllData();
+            FlushAllData(null);
 
             //Write a crashlog to file
-            FileAccessManager.WriteStringToFile(e.Message + e.StackTrace, false, FileAccessManager.GetFileLocation("crashlog.txt"));
+            FileManager.WriteStringToFile(e.Message + e.StackTrace, false, FileManager.GetFileLocation("crashlog.txt"));
         }
 
         //https://stackoverflow.com/questions/13656846/how-to-programmatic-disable-c-sharp-console-applications-quick-edit-mode
         static class DisableConsoleQuickEdit
         {
-            const uint ENABLE_QUICK_EDIT = 0x0040;
+            const uint EnableQuickEdit = 0x0040;
 
             // STD_INPUT_HANDLE (DWORD): -10 is the standard input device.
-            const int STD_INPUT_HANDLE = -10;
+            const int StdInputHandle = -10;
 
             [DllImport("kernel32.dll", SetLastError = true)]
             static extern IntPtr GetStdHandle(int nStdHandle);
@@ -324,30 +329,26 @@ namespace UncrateGo
             [DllImport("kernel32.dll")]
             static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
 
-            internal static bool Go()
+            internal static void Go()
             {
 
-                IntPtr consoleHandle = GetStdHandle(STD_INPUT_HANDLE);
+                IntPtr consoleHandle = GetStdHandle(StdInputHandle);
 
                 // get current console mode
-                uint consoleMode;
-                if (!GetConsoleMode(consoleHandle, out consoleMode))
+                if (!GetConsoleMode(consoleHandle, out var consoleMode))
                 {
                     // ERROR: Unable to get console mode.
-                    return false;
+                    return;
                 }
 
                 // Clear the quick edit bit in the mode flags
-                consoleMode &= ~ENABLE_QUICK_EDIT;
+                consoleMode &= ~EnableQuickEdit;
 
                 // set the new mode
                 if (!SetConsoleMode(consoleHandle, consoleMode))
                 {
                     // ERROR: Unable to set console mode
-                    return false;
                 }
-
-                return true;
             }
         }
     }

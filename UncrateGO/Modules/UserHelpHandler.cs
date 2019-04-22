@@ -1,20 +1,19 @@
 ﻿using Discord;
 using Discord.Commands;
 using UncrateGo.Core;
-using UncrateGo.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace UncrateGo.Modules
 {
-    public class UserHelpHandler : ModuleBase<SocketCommandContext>
+    public static class UserHelpHandler
     {
-        private static HelpMenuCommands helpMenuCommands;
+        private static HelpMenuCommands _helpMenuCommands;
 
         public static async Task DisplayHelpMenu(SocketCommandContext context)
         {
-            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context.Channel);
 
             //https://leovoel.github.io/embed-visualizer/
             var embedBuilder = new EmbedBuilder()
@@ -23,7 +22,7 @@ namespace UncrateGo.Modules
                 .WithFooter(footer =>
                 {
                     footer
-                        .WithText($"Sent by " + context.Message.Author.ToString())
+                        .WithText("Sent by " + context.Message.Author.ToString())
                         .WithIconUrl(context.Message.Author.GetAvatarUrl());
                 })
                 .WithAuthor(author =>
@@ -33,7 +32,7 @@ namespace UncrateGo.Modules
                         .WithIconUrl(context.Client.CurrentUser.GetAvatarUrl());
                 })
                 .AddField("Currency Commands", "`balance` `moneytransfer`")
-                .AddField("Case Commands", "`open` `drop` `select` `inventory` `market` `buy` `sell` `view` `statistics`")
+                .AddField("Case Commands", "`open` `drop` `select` `inventory` `market` `buy` `sell` `sellall` `view` `statistics`")
                 .AddField("Settings Commands", "`prefix` `info` `reset`")
                 .AddField("\u200b", $"To check command usage, type `{botCommandPrefix}help [command]` ");
 
@@ -44,7 +43,7 @@ namespace UncrateGo.Modules
 
         public static async Task DisplayCommandHelpMenu(SocketCommandContext context, string inputCommand)
         {
-            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context);
+            string botCommandPrefix = GuildCommandPrefixManager.GetGuildCommandPrefix(context.Channel);
 
             //Get command help list from storage
             var commandHelpDefinitionStorage = GetHelpMenuCommands();
@@ -115,9 +114,9 @@ namespace UncrateGo.Modules
         public static HelpMenuCommands GetHelpMenuCommands()
         {
             //Read from file if unassigned
-            if (helpMenuCommands == null)
+            if (_helpMenuCommands == null)
             {
-                var tempHelpMenuCommands = XmlManager.FromXmlFile<HelpMenuCommands>(FileAccessManager.GetFileLocation("CommandHelpDescription.xml"));
+                var tempHelpMenuCommands = XmlManager.FromXmlFile<HelpMenuCommands>(FileManager.GetFileLocation("CommandHelpDescription.xml"));
 
                 //Create new help menu commands if null
                 if (tempHelpMenuCommands == null)
@@ -128,10 +127,10 @@ namespace UncrateGo.Modules
                     };
                 }
 
-                helpMenuCommands = tempHelpMenuCommands;
+                _helpMenuCommands = tempHelpMenuCommands;
             }
 
-            return helpMenuCommands;
+            return _helpMenuCommands;
         }
 
         /// <summary>
@@ -139,6 +138,7 @@ namespace UncrateGo.Modules
         /// </summary>
         /// <param name="storedCommands">String list of stored strings</param>
         /// <param name="inputCommand">Input string to check</param>
+        /// <param name="fuzzyIndex"></param>
         /// <returns></returns>
         public static string FindSimilarCommands(List<string> storedCommands, string inputCommand, int fuzzyIndex=3)
         {
@@ -148,7 +148,7 @@ namespace UncrateGo.Modules
             foreach (var item in storedCommands)
             {
                 //If fuzzy search difference is less than 6 or if storedCommand contains inputCommand
-                if (FuzzySearchManager.Compute(item.ToLower(), inputCommand.ToLower()) < fuzzyIndex ||
+                if (FuzzySearch.Compute(item.ToLower(), inputCommand.ToLower()) < fuzzyIndex ||
                     item.ToLower().Contains(inputCommand.ToLower()))
                 {
                     //Concat items in list together
@@ -159,6 +159,19 @@ namespace UncrateGo.Modules
 
             return similarItemsString;
         }
+    }
+
+    public class HelpMenuCommands
+    {
+        public List<HelpMenuCommandEntry> CommandHelpEntry { get; set; }
+    }
+    public class HelpMenuCommandEntry
+    {
+        public string CommandName { get; set; }
+        public string CommandDescription { get; set; }
+        public string CommandRequiredPermissions { get; set; }
+        public string CommandUsage { get; set; }
+        public string CommandUsageDefinition { get; set; }
     }
 }
 

@@ -1,37 +1,29 @@
-﻿using Discord.WebSocket;
-using DiscordBotsList.Api;
+﻿using DiscordBotsList.Api;
 using System;
-using System.Linq;
-using System.Threading;
 using UncrateGo.Core;
 
 namespace UncrateGo.Modules
 {
-    public class DiscordBotsListUpdater
+    public static class DiscordBotsListUpdater
     {
-        public static async void UpdateDiscordBotsListInfo(DiscordSocketClient _client)
+        public static async void UpdateDiscordBotsListInfo(ulong userId, int guildsCount)
         {
-            while (true)
+            try
             {
-                try
-                {
-                    if (_client.CurrentUser != null)
-                    {
-                        AuthDiscordBotListApi DblApi = new AuthDiscordBotListApi(_client.CurrentUser.Id, FileAccessManager.ReadFromFile(FileAccessManager.GetFileLocation("DiscordBotListToken.txt")));
+                EventLogger.LogMessage("Updating discord bots list bot info...", EventLogger.LogLevel.Info);
 
-                        var me = await DblApi.GetMeAsync();
+                AuthDiscordBotListApi dblApi = new AuthDiscordBotListApi(userId, FileManager.ReadFromFile(FileManager.GetFileLocation("DiscordBotListToken.txt")));
 
-                        // Update stats           guildCount
-                        await me.UpdateStatsAsync(_client.Guilds.Count());
-                    }
-                    
-                }
-                catch (Exception)
-                {
-                    EventLogger.LogMessage("Unable to update stats, possible invalid token?", ConsoleColor.Red);
-                }
+                var me = await dblApi.GetMeAsync();
 
-                Thread.Sleep(300000);
+                // Update stats guildCount
+                await me.UpdateStatsAsync(guildsCount);
+
+                EventLogger.LogMessage("Updating discord bots list bot info... Done", EventLogger.LogLevel.Info);
+            }
+            catch (Exception)
+            {
+                EventLogger.LogMessage("Unable to update stats, possible invalid token?", EventLogger.LogLevel.Error);
             }
         }
     }

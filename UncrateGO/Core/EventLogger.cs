@@ -1,12 +1,12 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace UncrateGo.Core
 {
-    class EventLogger : ModuleBase<SocketCommandContext>
+    internal static class EventLogger
     {
         
         public static Task LogAsync(LogMessage message)
@@ -34,30 +34,63 @@ namespace UncrateGo.Core
             return Task.CompletedTask;
         }
         
-        public static void LogMessage(string message, ConsoleColor intensity = ConsoleColor.White)
+        public static void LogMessage(string message, LogLevel logLevel = LogLevel.Debug)
         {
-            Console.ForegroundColor = intensity;
-            Console.WriteLine($"{DateTime.Now,-19} [    Info] Logging: {message}");
+            string severity = "";
+
+            switch (logLevel)
+            {
+                case LogLevel.Debug:
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    severity = "Debug";
+                    break;
+                case LogLevel.Info:
+                    Console.ForegroundColor = ConsoleColor.White;
+                    severity = "Info";
+                    break;
+                case LogLevel.Warning:
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    severity = "WARNING";
+                    break;
+                case LogLevel.Error:
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    severity = "ERROR";
+                    break;
+                case LogLevel.Critical:
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    severity = "CRITICAL";
+                    break;
+            }
+
+            Console.WriteLine($"{DateTime.Now,-19} [    {severity}] {message}");
             Console.ForegroundColor = ConsoleColor.White;
         }
 
+        public enum LogLevel { Debug, Info, Warning, Error, Critical }
+
         public static Task LogUserMessageAsync(SocketMessage msg)
         {
-            //Log user message to file
-            var chnl = msg.Channel as SocketGuildChannel;
+            Console.BackgroundColor = ConsoleColor.DarkGreen;
 
-            if (chnl != null)
+            //Log user message to file
+            if (msg.Channel is SocketGuildChannel chnl)
             {
-                Console.Write($"{DateTime.Now,-19} [    Log] {chnl.Guild.Name} ||  {msg.Channel} - {msg.Author}: ");
+                Console.Write($"{DateTime.Now,-19} [    Log] {chnl.Guild.Name} | {msg.Channel} - {msg.Author}: ");
             }
             else
             {
                 Console.Write($"{DateTime.Now,-19} [    Log] Direct Message >| {msg.Channel} - {msg.Author}: ");
             }
 
+            //Outline embeds
+            if (msg.Embeds.Any())
+            {
+                Console.BackgroundColor = ConsoleColor.DarkBlue;
+                Console.WriteLine("Embed: " + msg.Embeds.Count);
+            }
+
             Console.BackgroundColor = ConsoleColor.DarkGray;
             Console.WriteLine(msg.ToString());
-
             Console.BackgroundColor = ConsoleColor.Black;
             return Task.CompletedTask;
         }
