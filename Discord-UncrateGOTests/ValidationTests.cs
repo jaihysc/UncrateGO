@@ -229,7 +229,7 @@ namespace Discord_UncrateGoTests
         [TestMethod()]
         public void ShouldGetStatisticsLeader()
         {
-            CsgoLeaderboardManager.GetStatisticsLeader(null);
+            CsgoLeaderboardManager.GetStatisticsLeader();
         }
     }
 

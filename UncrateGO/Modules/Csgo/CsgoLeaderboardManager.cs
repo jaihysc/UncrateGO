@@ -232,7 +232,7 @@ namespace UncrateGo.Modules.Csgo
         /// <summary>
         ///     Finds the leaderboard leaders, returns a list of strings ready to be displayed in embed
         /// </summary>
-        public static void GetStatisticsLeader(object state)
+        public static void GetStatisticsLeader()
         {
             EventLogger.LogMessage("Updating statistics...", EventLogger.LogLevel.Info);
 
