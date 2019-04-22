@@ -1,30 +1,23 @@
-﻿using Discord.WebSocket;
-using DiscordBotsList.Api;
+﻿using DiscordBotsList.Api;
 using System;
-using System.Linq;
 using UncrateGo.Core;
 
 namespace UncrateGo.Modules
 {
     public static class DiscordBotsListUpdater
     {
-        public static async void UpdateDiscordBotsListInfo(object state)
+        public static async void UpdateDiscordBotsListInfo(ulong userId, int guildsCount)
         {
             try
             {
                 EventLogger.LogMessage("Updating discord bots list bot info...", EventLogger.LogLevel.Info);
 
-                var client = (DiscordSocketClient)state;
+                AuthDiscordBotListApi dblApi = new AuthDiscordBotListApi(userId, FileManager.ReadFromFile(FileManager.GetFileLocation("DiscordBotListToken.txt")));
 
-                if (client.CurrentUser != null)
-                {
-                    AuthDiscordBotListApi dblApi = new AuthDiscordBotListApi(client.CurrentUser.Id, FileManager.ReadFromFile(FileManager.GetFileLocation("DiscordBotListToken.txt")));
+                var me = await dblApi.GetMeAsync();
 
-                    var me = await dblApi.GetMeAsync();
-
-                    // Update stats guildCount
-                    await me.UpdateStatsAsync(client.Guilds.Count());
-                }
+                // Update stats guildCount
+                await me.UpdateStatsAsync(guildsCount);
 
                 EventLogger.LogMessage("Updating discord bots list bot info... Done", EventLogger.LogLevel.Info);
             }

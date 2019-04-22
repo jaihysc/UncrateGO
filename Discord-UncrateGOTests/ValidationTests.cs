@@ -76,7 +76,7 @@ namespace Discord_UncrateGoTests
         [TestMethod()]
         public void ShouldUpdateDiscordBotsListStats()
         {
-            DiscordBotsListUpdater.UpdateDiscordBotsListInfo(null);
+            DiscordBotsListUpdater.UpdateDiscordBotsListInfo(12312312312312, 0);
         }
     }
 
