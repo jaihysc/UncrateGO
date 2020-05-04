@@ -1,6 +1,16 @@
 # UncrateGO
-[![](https://discordbots.org/api/widget/status/523282498265022479.svg)](https://discordbots.org/bot/523282498265022479) [![](https://discordbots.org/api/widget/servers/523282498265022479.svg?noavatar=true)](https://discordbots.org/bot/523282498265022479)
 
+**NOTE** As of May 4, 2020 this bot is no longer running.
+
+Reasons are as follows: 
+- Discord.NET's issues with intermittent gateway disconnects
+- My lack of experience surrounding C# and general programming concepts at the time
+
+The above leading to a poor performing and difficult to maintain bot. I thus believe other alternatives would be better suited.
+
+It has been a great journey for the past year, and I have advanced further in programming since that time. Perhaps the bot will be reborn someday, but for now, this is its end.
+
+***
 
 Discord bot using Discord.NET, simulates the CS:GO unboxing experience 
 
